@@ -9,6 +9,7 @@ class Set(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="the user who uploaded the scripts of this set")
     name = models.CharField(max_length=100)
     published_date = models.DateTimeField(blank=True, null=True)
+    cor_est_to_actual = models.SmallIntegerField(default=0)
 
     def publish(self):
         self.published_date = timezone.now()
@@ -51,6 +52,7 @@ class Script(models.Model):
 
 
 class Comparison(models.Model):
+    set = models.ForeignKey(Set, on_delete=models.CASCADE, verbose_name="the set to which this comparison belongs")
     judge = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="the user judging the pair")
     scripti = models.ForeignKey(Script, on_delete=models.CASCADE, related_name="+", verbose_name="the left script in the comparison")
     scriptj = models.ForeignKey(Script, on_delete=models.CASCADE, related_name="+", verbose_name="the right script in the comparison")

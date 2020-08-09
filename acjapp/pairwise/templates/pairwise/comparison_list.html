@@ -5,11 +5,11 @@
         {% if comparison_list %}
         <table border="1">
             <tr>
-                <th>Key</th><th>Judge</th><th>Left Script</th><th>Left Win</th><th>Right Script</th><th>Right Win</th>
+                <th>Key</th><th>Set</th><th>Judge</th><th>Left Script</th><th>Left Win</th><th>Right Script</th><th>Right Win</th>
             </tr>
             {% for comparison in comparison_list %}
             <tr>
-                <td>{{ comparison.pk }}</td><td>{{ comparison.judge.pk }}</td><td>{{ comparison.scripti.pk }}</td><td>{{ comparison.wini }}</td><td>{{ comparison.scriptj.pk }}</td><td>{{ comparison.winj}}</td>
+                <td>{{ comparison.pk }}</td><td>{{ comparison.set.pk }}</td><td>{{ comparison.judge.pk }}</td><td>{{ comparison.scripti.pk }}</td><td>{{ comparison.wini }}</td><td>{{ comparison.scriptj.pk }}</td><td>{{ comparison.winj}}</td>
             </tr>
             {% endfor %}
         </table>
@@ -18,6 +18,6 @@
             <p>Click <a href="/compare">here</a> to do the first comparison of the set.</p>
 
           {% endif %}       
-
+        <br>
     </body>
 {% endblock %}

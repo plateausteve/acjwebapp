@@ -4,8 +4,10 @@ from django.http import HttpResponseRedirect, HttpResponse
 from .models import Script, Comparison, ComparisonForm, Set
 from random import sample
 from django.views import generic
-from numpy import log, sqrt
+from numpy import log, sqrt, corrcoef
 import numpy as np 
+import scipy
+from scipy.stats.stats import pearsonr
 import operator
 from operator import itemgetter
 
@@ -28,10 +30,13 @@ def compare(request):
                 comparison.winj=0
             else:
                 comparison.winj=1
+            comparison.set = Set.objects.get(pk=1)
             comparison.save()
 
-            #after the comparison above, update all scripts' computed fields with computations based on this comparison
+            #after the comparison above, update all scripts' computed fields with computations based on latest comparison
             scripts = Script.objects.all()
+            a = [] #we'll use a as one vector for a correlation computation actual parameter value-- only for development
+            e = [] #we'll use e as the other vector for correlation -- LO or estimated parameter value
             for script in scripts:
                 #count all the comparisons each script has been involved in
                 comparisons_as_i_count = Comparison.objects.filter(scripti=script).count()
@@ -54,13 +59,19 @@ def compare(request):
 
                 #compute the standard deviation/standard error and RMSE of all comparisons for each script
                 p=probability - .001
-                c=comps - .001
-                v = p*(1-p)/c
-                rmse = round(sqrt(wins*v/c),3)
+                v = p*(1-p)/comps
+                rmse = round(sqrt(wins*v/comps),3)
                 setattr(script, 'rmse_in_set', rmse)
 
-
+                #append to the array for correlation of parameter value to log odds--only for development
+                a.append(script.parameter_value)
+                e.append(logodds)
+                #setattr of set correlation
                 script.save()
+            r = np.corrcoef(a,e)[0][1]
+            set = Set.objects.get(pk=1) #for now, there is only one Set object to get
+            setattr(set, 'cor_est_to_actual', r)
+            set.save()
         return redirect('/compare')
 
     
@@ -86,6 +97,8 @@ def compare(request):
         scriptcount = 3 * Script.objects.all().count()
         if compcount > scriptcount:
             j=sorted(ordered_scripts, key=operator.itemgetter(1)) #sort the list of lists from least LO difference to greatest
+        else:
+            j=ordered_scripts
         scriptjselector = j[1][0] # select from the second row, second column, this is the id of the scriptj candidate with the least difference in LO to the chosen scripti
         scriptj = Script.objects.get(pk=scriptjselector) #set the scriptj candidate object
         # now both scripti and scriptj objects are set and can be returned to the compare.html template
@@ -104,7 +117,8 @@ class ComparisonListView(generic.ListView):
 
 def script_list(request):
     scripts = Script.objects.all().order_by('-lo_of_win_in_set')
-    return render(request, 'pairwise/script_list.html', {'scripts': scripts, })
+    set = Set.objects.get(pk=1)
+    return render(request, 'pairwise/script_list.html', {'scripts': scripts, 'set': set})
 
 
 def update(request):

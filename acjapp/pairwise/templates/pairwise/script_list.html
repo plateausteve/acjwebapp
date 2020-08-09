@@ -3,6 +3,7 @@
 {% block content %}
     <body>
         <h1>Script List with Current Computations:</h1>
+        <p>Set {{ set.pk }} correlation estimated to actual: {{ set.cor_est_to_actual }}</p>
         {% if scripts %} 
             <!--<div class="sidenav"> To be moved to another block content, but we need to get it working first.-->
                 <table border="1">
@@ -36,5 +37,6 @@
             <p>There are no scripts in the database.</p>
         {% endif %}   
 
+    <br>
     </body>
 {% endblock %}
