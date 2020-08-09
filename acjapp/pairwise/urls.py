@@ -10,5 +10,6 @@ urlpatterns = [
     path('compared/', views.compared, name='compared.html'),
     path('comparisons/', views.ComparisonListView.as_view(), name='comparisons'),
     path('script_list/', views.script_list, name='scripts'),
-    path('update/', views.update, name='update')
+    path('update/', views.update, name='update'),
+    path('compare_auto/', views.compare_auto, name='compare_auto')
 ]

@@ -21,7 +21,7 @@ class Set(models.Model):
 class Script(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="the user who uploaded the script")
     set = models.ForeignKey(Set, on_delete=models.CASCADE, blank=True, null=True, verbose_name="the one set to which the script belongs")
-    pdf = models.FileField(upload_to="scripts/pdfs", null=True, blank=True)
+    pdf = models.FileField(upload_to="scripts/pdfs", null=True, blank=True) #how do you deal with PDFs? Not working now.
     image = models.FileField(upload_to="scripts/images", null=True, blank=True)
     parameter_value = models.PositiveSmallIntegerField(verbose_name="the hidden parameter value to be compared by the user in development")
     wins_in_set = models.PositiveSmallIntegerField(default=0, verbose_name="count of all comparisons in which this script wins")
