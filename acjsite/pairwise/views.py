@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from .models import Script, Comparison, ComparisonForm, Set
 from random import sample
 from django.views import generic
-from numpy import log 
+from numpy import log, sqrt
 import numpy as np 
 import operator
 from operator import itemgetter
@@ -48,9 +48,18 @@ def compare(request):
                 #compute the probability, odds, and logodds for each script
                 odds = (wins/(comps - wins))+.001
                 logodds = round(log(odds), 3)
-                probability = round(((wins/comps)+.001), 3)
+                probability = round((wins/comps), 3)
                 setattr(script, 'prob_of_win_in_set', probability) 
                 setattr(script, 'lo_of_win_in_set', logodds)
+
+                #compute the standard deviation/standard error and RMSE of all comparisons for each script
+                p=probability - .001
+                c=comps - .001
+                v = p*(1-p)/c
+                rmse = round(sqrt(wins*v/c),3)
+                setattr(script, 'rmse_in_set', rmse)
+
+
                 script.save()
         return redirect('/compare')
 
