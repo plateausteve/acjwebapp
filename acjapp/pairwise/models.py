@@ -9,7 +9,7 @@ class Set(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="the user who uploaded the scripts of this set")
     name = models.CharField(max_length=100)
     published_date = models.DateTimeField(blank=True, null=True)
-    cor_est_to_actual = models.SmallIntegerField(default=0)
+    cor_est_to_actual = models.FloatField(default=0)
 
     def publish(self):
         self.published_date = timezone.now()
@@ -61,6 +61,7 @@ class Comparison(models.Model):
         Greater = 1
     wini = models.PositiveSmallIntegerField(choices=Win.choices, verbose_name="is left lesser or greater?")
     winj = models.PositiveSmallIntegerField(choices=Win.choices, verbose_name="is right lesser or greater?")
+    resulting_set_corr = models.FloatField(default=0, verbose_name="storing the resulting correlation of set est param to actual")
 
     def __str__(self):
         return str(self.pk)

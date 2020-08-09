@@ -31,6 +31,7 @@ def compare(request):
             else:
                 comparison.winj=1
             comparison.set = Set.objects.get(pk=1)
+            comparison.resulting_set_corr = comparison.set.cor_est_to_actual
             comparison.save()
 
             #after the comparison above, update all scripts' computed fields with computations based on latest comparison
@@ -58,16 +59,23 @@ def compare(request):
                 setattr(script, 'lo_of_win_in_set', logodds)
 
                 #compute the standard deviation/standard error and RMSE of all comparisons for each script
-                p=probability - .001
+                p = probability - .001
                 v = p*(1-p)/comps
                 rmse = round(sqrt(wins*v/comps),3)
                 setattr(script, 'rmse_in_set', rmse)
 
-                #append to the array for correlation of parameter value to log odds--only for development
+                
+                #compute the estimated parameter value
+                ep = 50 + (logodds * 5)
+                setattr(script, 'estimated_parameter_in_set', ep)
+
+                #append to the array for correlation of parameter values--only for development
                 a.append(script.parameter_value)
-                e.append(logodds)
-                #setattr of set correlation
+                e.append(ep)
+                
                 script.save()
+
+            #setattr of set correlation
             r = np.corrcoef(a,e)[0][1]
             set = Set.objects.get(pk=1) #for now, there is only one Set object to get
             setattr(set, 'cor_est_to_actual', r)
