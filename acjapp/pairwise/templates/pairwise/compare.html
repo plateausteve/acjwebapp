@@ -12,6 +12,11 @@
             <td>{% if scriptj.image %}<img src="{{ scriptj.image.url }}" alt="Image for {{ scriptj.id }}" style="width:200px;height:300px;">{% endif %}</td>
         </tr>
         <tr>
+            <!--<td>PDF:</td>-->
+            <td>{% if scripti.pdf %}<embed src="{{ scripti.pdf.url }}" type="application/pdf" view="fit" width="200px" height="300px" >{% endif %}</td>
+            <td>{% if scriptj.pdf %}<embed src="{{ scriptj.pdf.url }}" type="application/pdf" view="fit" width="200px" height="300px" >{% endif %}</td>
+        </tr>
+        <tr>
             <td colspan="2">
                 <form method="POST" class="comparison-form">
                     {% csrf_token %}
