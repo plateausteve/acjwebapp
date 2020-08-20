@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 from django import forms
@@ -6,7 +7,8 @@ from numpy import log
 import numpy as np 
 
 class Set(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="the user who uploaded the scripts of this set")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="the user who uploaded the scripts of this set")
+    #assessors = models.ManyToManyField(User, related_name=???, verbose_name="the users with comparing capabilities", blank=True)
     name = models.CharField(max_length=100)
     published_date = models.DateTimeField(blank=True, null=True)
     cor_est_to_actual = models.FloatField(default=0)
@@ -34,22 +36,6 @@ class Script(models.Model):
     def __str__(self):
         return str(self.pk)
 
-    def compute(self): #not using this single script update until I understand better how to call it, instead it's in a for loop in views.py
-        compsi = Comparison.objects.filter(scripti = pk).count()
-        compsj = Comparison.objects.filter(scriptj = pk).count()
-        comps = winsi + winsj + .001
-        winsi = Comparison.objects.filter(scripti = pk, wini=1).count()
-        winsj = Comparison.objects.filter(scriptj = pk, winj=1).count()
-        wins = compsi + compsj
-        self.comps_in_set = comps
-        self.wins_in_set = wins
-        self.prob_of_win_in_set = round(wins/comps, 3)
-        odds = (wins/(comps - wins))
-        logodds = round(log(odds), 3)
-        self.lo_of_win_in_set = logodds
-        self.save()
-
-
 
 class Comparison(models.Model):
     set = models.ForeignKey(Set, on_delete=models.CASCADE, verbose_name="the set to which this comparison belongs")
@@ -65,11 +51,21 @@ class Comparison(models.Model):
 
     def __str__(self):
         return str(self.pk)
+            
 
 class ComparisonForm(forms.ModelForm):
     class Meta:
         model = Comparison
         fields = ['wini','scripti','scriptj']
+        widgets = {
+            'scripti': forms.HiddenInput(), 
+            'scriptj': forms.HiddenInput(),
+        }
+
+class AutoComparisonForm(forms.ModelForm):
+    class Meta:
+        model = Comparison
+        fields = ['scripti','scriptj']
         widgets = {
             'scripti': forms.HiddenInput(), 
             'scriptj': forms.HiddenInput(),

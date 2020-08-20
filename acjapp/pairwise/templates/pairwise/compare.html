@@ -7,14 +7,14 @@
             <th>Right Item</th>
         </thead>
         <tr>
-            <!--<td>Image:</td>-->
-            <td>{% if scripti.image %}<img src="{{ scripti.image.url }}" alt="Image for {{ scripti.id }}" style="width:200px;height:300px;">{% endif %}</td>
-            <td>{% if scriptj.image %}<img src="{{ scriptj.image.url }}" alt="Image for {{ scriptj.id }}" style="width:200px;height:300px;">{% endif %}</td>
+            <!--Image:
+            <td>{% if scripti.image %}<img src="{{ scripti.image.url }}" alt="Image for {{ scripti.id }}" style="width:425px;height:550px;">{% endif %}</td>
+            <td>{% if scriptj.image %}<img src="{{ scriptj.image.url }}" alt="Image for {{ scriptj.id }}" style="width:425px;height:550px;">{% endif %}</td>
         </tr>
-        <tr>
-            <!--<td>PDF:</td>-->
-            <td>{% if scripti.pdf %}<embed src="{{ scripti.pdf.url }}" type="application/pdf" view="fit" width="200px" height="300px" >{% endif %}</td>
-            <td>{% if scriptj.pdf %}<embed src="{{ scriptj.pdf.url }}" type="application/pdf" view="fit" width="200px" height="300px" >{% endif %}</td>
+        <tr>-->
+            <!--PDF:-->
+            <td>{% if scripti.pdf %}<embed src="{{ scripti.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="425px" height="550px" >{% endif %}</td>
+            <td>{% if scriptj.pdf %}<embed src="{{ scriptj.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="425px" height="550px" >{% endif %}</td>
         </tr>
         <tr>
             <td colspan="2">
@@ -28,6 +28,6 @@
             </td>
         </tr>
     </table>
-    {{ j }}
-    {{ x }}
+    <p>Debug information:</p>
+    <p>script selection array j[id, lodiff, rmse] = {{ j }}</p>
 {% endblock %}
