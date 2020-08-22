@@ -4,7 +4,9 @@ from django.http import HttpResponseRedirect, HttpResponse
 from .models import Script, Comparison, ComparisonForm, Set, AutoComparisonForm
 from random import sample
 from django.views import generic
-from .utils import compute_scripts_and_save, script_selection
+from .utils import compute_scripts_and_save, script_selection, ordered_scripts_by_rmse, ordered_scripts_by_comps, compute_diffs, build_compslist
+import operator
+from operator import itemgetter
 
 def index(request):
     return render(request, 'pairwise/index.html', {})
@@ -22,7 +24,7 @@ def script_list(request):
             comparison.judge = request.user
             comparison.scripti = Script.objects.get(pk=request.POST.get('scripti'))
             comparison.scriptj = Script.objects.get(pk=request.POST.get('scriptj'))
-            comparison.set = Set.objects.get(pk=1)#for now there is only one set object
+            comparison.set = Set.objects.get(pk=1) #for now there is only one set object
             comparison.resulting_set_corr = comparison.set.cor_est_to_actual
             #set winj value to the opposite of wini
             if comparison.scripti.parameter_value > comparison.scriptj.parameter_value:
@@ -36,15 +38,24 @@ def script_list(request):
         return redirect('/script_list')
 
     else: #if the form is being generated for the first time send the template what it needs, i.e. which two scripts to compare
-        j, scripti, scriptj = script_selection() 
+        compslist, j, scripti, scriptj = script_selection()
+        listcount = len(compslist)
+        jcount = len(j)
+        diffs = compute_diffs()
+        c = Comparison.objects.count()
         form = AutoComparisonForm()
         return render(request, 'pairwise/script_list.html', {
                 'j': j,
+                'listcount': listcount,
+                'jcount': jcount,
+                'compslist': compslist,
                 'scripti': scripti,
                 'scriptj': scriptj,
                 'form': form,
                 'script_table': script_table, 
                 'set': set,
+                'c': c,
+                'diffs': diffs,
                 } 
                 )
 
@@ -69,9 +80,8 @@ def compare(request):
             compute_scripts_and_save()
         return redirect('/compare')
 
-    
     else: #if the form is being generated for the first time send the template what it needs, i.e. which two scripts to compare
-        j, scripti, scriptj = script_selection() 
+        compslist, j, scripti, scriptj = script_selection() 
         form = ComparisonForm()
         return render(request, 'pairwise/compare.html', {
                 'j': j,
@@ -82,19 +92,10 @@ def compare(request):
                 )
 
 def compare_auto(request):
-    comparisons_to_do = int((Script.objects.all().count() * (Script.objects.all().count()-1)/2) - Comparison.objects.all().count())
-    compcount = Comparison.objects.all().count()
-    scriptcount = 20 * Script.objects.all().count() #when to switch selection algorithms
+    comparisons_to_do = Script.objects.count() # save for later int((Script.objects.all().count() * (Script.objects.all().count()-1)/2) - Comparison.objects.all().count())
     #do all the comparisons needed
-    for i in range(comparisons_to_do):
-        scripti, ordered_scripts = ordered_scripts_by_comps(compcount, scriptcount)
-        if compcount > scriptcount:
-            j=sorted(ordered_scripts, key=operator.itemgetter(1)) #sort the list of lists from least LO difference to greatest
-        else:
-            j=ordered_scripts
-        #j is an array of all ordered scripts. Do we really need all 30? Why not just do the first two instead of looping through all? Interesting for debug info.
-        scriptjselector = j[1][0] # select from the second row, first column, this is the id of the scriptj candidate with the least difference in LO to the chosen scripti
-        scriptj = Script.objects.get(pk=scriptjselector) #set the scriptj candidate object
+    for x in range(comparisons_to_do):
+        compslist, j, scripti, scriptj = script_selection()
         # now both scripti and scriptj objects are selected, time to assign wins and losses
         if scripti.parameter_value > scriptj.parameter_value: #compare scripts using development mode param value
             wini = 1
@@ -106,17 +107,12 @@ def compare_auto(request):
         set = Set.objects.get(pk=1)
         resulting_set_corr = set.cor_est_to_actual
         Comparison.objects.create(set=set, scripti=scripti, scriptj=scriptj, judge=judge, wini=wini, winj=winj, resulting_set_corr=resulting_set_corr)
-        
         #after a comparison above, update all scripts' computed fields with computations based on latest comparison
         compute_scripts_and_save()
-        compcount -= 1
-    return redirect('/comparisons')
-
-
+    return redirect('/script_list')
 
 class ComparisonListView(generic.ListView):
     model = Comparison
-
 
 def update(request):
     compute_scripts_and_save()

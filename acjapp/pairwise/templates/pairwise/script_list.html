@@ -3,9 +3,16 @@
 {% block content %}
     <body>
         <h1>Script List with Current Computations:</h1>
-        <p>Set {{ set.pk }} correlation estimated to actual: {{ set.cor_est_to_actual }}</p>
+        <p>Set {{ set.pk }} correlation estimated to actual: {{ set.cor_est_to_actual }}          Comparisons: {{ c }}    Average diff from actual: {{ diffs }}</p>
+        <form method="POST" class="autocomparisonform">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="hidden" name="scripti" value="{{ scripti }}">
+            <input type="hidden" name="scriptj" value="{{ scriptj }}">
+            <input type="submit" value="Click this button to autocompare Script #{{ scripti.id }} and Script #{{ scriptj.id }}">
+        </form>
         {% if script_table %} 
-                <table border="1" style="font-size:small">
+                <table border="1" style="font-size:x-small">
                     <tr>
                         <th>User</th>
                         <th>Script</th>
@@ -13,8 +20,8 @@
                         <th>Wins</th>
                         <th>Prob</th>
                         <th>LO</th>
-                        <th>Est Value</th>
-                        <th>Actual Value</th>
+                        <th>Est</th>
+                        <th>Actual</th>
                         <th>RMSE</th>
                     </tr>
                     {% for script in script_table %}
@@ -37,15 +44,10 @@
         {% endif %}   
 
     <br>
-    <!-- Add an autocompare form input to this script list. Just hit any button and it will autocompare one pair and come back here!-->
-    <form method="POST" class="autocomparisonform">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="hidden" name="scripti" value="{{ scripti }}">
-        <input type="hidden" name="scriptj" value="{{ scriptj }}">
-        <input type="submit" value="Click this button to do an autocomparison of Script #{{ scripti.id }} and Script #{{ scriptj.id }}"><!-- this submit button should just run the computations and then bring us back here with a clean empty form GET-->
-    </form>
     <small>Debug information:</small>
-    <small>script selection array j[id, lodiff, rmse] = {{ j }}</small>
+    <br>
+    <small>Script J Selection Array: Length: {{ jcount }} Elements: j[id, lodiff, rmse] {{ j }}</small>
+    <br>
+    <small>Compslist of {{ listcount }}: {{ compslist }}</small>
     </body>
 {% endblock %}

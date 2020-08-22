@@ -4,44 +4,69 @@ from numpy import log, sqrt, corrcoef
 import operator
 from operator import itemgetter
 
-#def no_duplicate_pairings():
-#   figure out how to prevent duplicate pairings wherever there is an ordered_scripts variable
-#both of the ordered_scripts_by. .. functions below need a guard against selecting a pair that has already been done.
-#after an ordered_scripts is made perhaps it checks each and deletes it if a similar combination has been done before?
-def order_scripts_by_comps(compcount, scriptcount):
+def build_compslist():
+    comps = Comparison.objects.all()
+    compslist = []
+    for comp in comps:
+        i = comp.scripti.id
+        j = comp.scriptj.id 
+        compslist.append([i, j])
+    return compslist
+    
+def ordered_scripts_by_comps(compcount, switchcount, compslist):
     ordered_scripts = []
     for index, script in enumerate(Script.objects.all().order_by('comps_in_set','?'), start=0): #enumerate all the instances of Script in ascending order by number of comparisons. Change this to RMSE if preferred.
-        if index == 0:
-            scripti = Script.objects.get(pk=script.id) # for first iteration only, create an object to be scripti in the current comparison, the least-compared or if tied withothers, random select among least 
+        if index == 0: #scripti is set as the first in the ordered set
+            scripti = script # for first iteration only, create an object to be scripti in the current comparison, the least-compared or if tied withothers, random select among least 
             loi = scripti.lo_of_win_in_set # use this to compute differences in subsequent iterations
             rmse = scripti.rmse_in_set
             lodiff = 0
-        else:  
-            scriptj = Script.objects.get(pk=script.id) #temporary scriptj get and set: get the object to be used for LO field value set for each scriptj candidate
+        else: # all the others get added
+            scriptj = script #temporary scriptj get and set: get the object to be used for LO field value set for each scriptj candidate
             loj = scriptj.lo_of_win_in_set
             rmse = scriptj.rmse_in_set
             lodiff = abs(loi - loj) # compute the difference in LO between scripti and scriptj candidate
-        ordered_scripts.append([script.id, lodiff, rmse]) #add this computed LO difference value and rmse diff value to the list of differences between script i's attributes and script j's attributes
-    #this is where the check against previously paired happens and deletes them from the list of lists
+            #prevent appending this combination to the ordered_scripts list when it exists already in compslist
+            if [scripti.id, scriptj.id] not in compslist and [scriptj.id, scripti.id] not in compslist: 
+                ordered_scripts.append([script.id, lodiff, rmse]) #add this computed LO difference value and rmse diff value to the list of differences between script i's attributes and script j's attributes
+            #else skip it, eliminating duplicate comparisons.
     return scripti, ordered_scripts 
 
 
-def ordered_scripts_by_rmse(compcount, scriptcount):
+def ordered_scripts_by_rmse(compcount, switchcount, compslist):
     ordered_scripts = []
     for index, script in enumerate(Script.objects.all().order_by('-rmse_in_set','comps_in_set'), start=0): #enumerate all the instances of Script in ascending order by number of comparisons. Change this to RMSE if preferred.
         if index == 0:
-            scripti = Script.objects.get(pk=script.id) # for first iteration only, create an object to be scripti in the current comparison, the least-compared or if tied withothers, random select among least 
+            scripti = script # first time through the loop script i 
             loi = scripti.lo_of_win_in_set # use this to compute differences in subsequent iterations
             rmse = scripti.rmse_in_set
             lodiff = 0
         else:
-            scriptj = Script.objects.get(pk=script.id) #temporary scriptj get and set: get the object to be used for LO field value set for each scriptj candidate
-            loj = scriptj.lo_of_win_in_set
-            rmse = scriptj.rmse_in_set
+            scriptj = script #other times through the loop scripts j
+            loj = script.lo_of_win_in_set
+            rmse = script.rmse_in_set
             lodiff = abs(loi - loj) # compute the difference in LO between scripti and scriptj candidate
-        ordered_scripts.append([script.id, lodiff, rmse]) #add this computed LO difference value and rmse diff value to the list of differences between script i's attributes and script j's attributes
-    #this is where the check against previously paired happens and deletes them from the list of lists
+            if [scripti.id, scriptj.id] not in compslist and [scriptj.id, scripti.id] not in compslist:
+                ordered_scripts.append([script.id, lodiff, rmse]) #add this computed LO difference value and rmse diff value to the list of differences between script i's attributes and script j's attributes
     return scripti, ordered_scripts 
+
+
+def script_selection():
+    #select the scripti with fewest comparisons so far (or random if tied), and select the scriptj with least difference in log odds (or random if tied)
+    switchcount = 20 * Script.objects.count()
+    compslist = build_compslist()
+    compcount = len(compslist)
+    if compcount < switchcount:    # at first, select scriptj by choosing from among those with least number of comparisons
+        scripti, ordered_scripts = ordered_scripts_by_comps(compcount, switchcount, compslist)
+    else: #later select scriptj by choosing from among those with least LO diff to scripti
+        scripti, ordered_scripts = ordered_scripts_by_rmse(compcount, switchcount, compslist)
+    j=sorted(ordered_scripts, key = operator.itemgetter(1)) #sort the list of lists from least LO difference to greatest. 
+    #j is an array of script.id, each script's LO difference between it and scripti, and each script's RMSE
+    scriptjselector = j[0][0] # select from the first row, first column, this is the id of the scriptj candidate matching criteria
+    scriptj = Script.objects.get(pk=scriptjselector) #set the scriptj candidate object
+    # now both scripti and scriptj objects are set and can be returned to the compare.html template
+    return compslist, j, scripti, scriptj
+
 
 
 def compute_scripts_and_save():
@@ -62,16 +87,16 @@ def compute_scripts_and_save():
         setattr(script, 'wins_in_set', wins)
         
         #compute the logodds and probability for each script, set these attributes
-        odds = (wins/(comps - wins))+.001
+        odds = (wins/(comps - wins)) + .001
         logodds = round(log(odds), 3)
         probability = round((wins/comps), 3)
         setattr(script, 'prob_of_win_in_set', probability) 
         setattr(script, 'lo_of_win_in_set', logodds)
 
         #compute the standard error of sample mean and RMSE of all comparisons for script, set this attribute
-        p = probability - .001
-        variance = p*(1-p)/comps
-        rmse = round(sqrt(wins*variance/comps),3)
+        mean = wins/comps
+        diffs = mean*(1-mean)/comps # SE of mean of sample (which is all comparisons so far)
+        rmse = round(sqrt(wins*diffs/comps),3)
         setattr(script, 'rmse_in_set', rmse)
         
         #compute the estimated parameter value--an arbitrary linear function to closely match known values in dev or other convenient scale
@@ -91,21 +116,12 @@ def compute_scripts_and_save():
     set.save()
     return()
 
-def script_selection():
-    #select the scripti with fewest comparisons so far (or random if tied), and select the scriptj with least difference in log odds (or random if tied)
-    compcount = Comparison.objects.all().count()
-    scriptcount = 3 * Script.objects.all().count()
-    if compcount < scriptcount:    # at first, select scripti by choosing from among those with least number of comparisons
-        scripti, ordered_scripts = ordered_scripts_by_comps(compcount, scriptcount)
-    else: #later select scripti by choosing from among those with greatest RMSE
-        scripti, ordered_scripts = ordered_scripts_by_rmse(compcount, scriptcount)
-    if compcount < scriptcount:
-        j=ordered_scripts
-    else:
-        j=sorted(ordered_scripts, key=operator.itemgetter(1)) #sort the list of lists from least LO difference to greatest. For RMSE difference
-    #j is an array of script.id, each script's LO difference between it and scripti, and each script's RMSE
-    scriptjselector = j[1][0] # select from the second row, first column, this is the id of the scriptj candidate with the least difference in LO to the chosen scripti
-    scriptj = Script.objects.get(pk=scriptjselector) #set the scriptj candidate object
-    # now both scripti and scriptj objects are set and can be returned to the compare.html template
-    return j, scripti, scriptj
+def compute_diffs():
+    scripts = Script.objects.all()
+    count = Script.objects.count()
+    diffs = 0
+    for script in scripts:
+        diffs += abs(script.parameter_value - script.estimated_parameter_in_set)
+    diffs = round(diffs/count, 3)
+    return(diffs)
 
