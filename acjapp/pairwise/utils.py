@@ -32,7 +32,7 @@ def ordered_scripts_by_comps(compcount, switchcount, compslist):
             #else skip it, eliminating duplicate comparisons.
     return scripti, ordered_scripts 
 
-
+#is this RMSE method is not useful after all for selecting scripti?
 def ordered_scripts_by_rmse(compcount, switchcount, compslist):
     ordered_scripts = []
     for index, script in enumerate(Script.objects.all().order_by('-rmse_in_set','comps_in_set'), start=0): #enumerate all the instances of Script in ascending order by number of comparisons. Change this to RMSE if preferred.
@@ -50,24 +50,25 @@ def ordered_scripts_by_rmse(compcount, switchcount, compslist):
                 ordered_scripts.append([script.id, lodiff, rmse]) #add this computed LO difference value and rmse diff value to the list of differences between script i's attributes and script j's attributes
     return scripti, ordered_scripts 
 
-
 def script_selection():
     #select the scripti with fewest comparisons so far (or random if tied), and select the scriptj with least difference in log odds (or random if tied)
-    switchcount = 20 * Script.objects.count()
+    switchcount = 5 * Script.objects.count()
     compslist = build_compslist()
     compcount = len(compslist)
-    if compcount < switchcount:    # at first, select scriptj by choosing from among those with least number of comparisons
+    if compcount < switchcount:    # at first, select scripti by choosing from among those with least number of comparisons
         scripti, ordered_scripts = ordered_scripts_by_comps(compcount, switchcount, compslist)
-    else: #later select scriptj by choosing from among those with least LO diff to scripti
+    else: #later select scripti by choosing from among those with greatest RMSE
         scripti, ordered_scripts = ordered_scripts_by_rmse(compcount, switchcount, compslist)
-    j=sorted(ordered_scripts, key = operator.itemgetter(1)) #sort the list of lists from least LO difference to greatest. 
+    #now resort the scriptj list by least lo diff
+    j=sorted(ordered_scripts, key = operator.itemgetter(1))
     #j is an array of script.id, each script's LO difference between it and scripti, and each script's RMSE
-    scriptjselector = j[0][0] # select from the first row, first column, this is the id of the scriptj candidate matching criteria
-    scriptj = Script.objects.get(pk=scriptjselector) #set the scriptj candidate object
+    if len(j) > 0:
+        scriptjselector = j[0][0] # select from the first row, first column, this is the id of the scriptj candidate matching criteria
+        scriptj = Script.objects.get(pk=scriptjselector) #set the scriptj candidate object
+    else:
+        scriptj = None
     # now both scripti and scriptj objects are set and can be returned to the compare.html template
     return compslist, j, scripti, scriptj
-
-
 
 def compute_scripts_and_save():
     scripts = Script.objects.all()
@@ -106,7 +107,7 @@ def compute_scripts_and_save():
         #append to the array for correlation of development-only assigned parameter values--only for development testing
         a.append(script.parameter_value)
         e.append(ep)
-        
+    
         script.save()
 
     #compute new set correlation of actual and estimated parameter values

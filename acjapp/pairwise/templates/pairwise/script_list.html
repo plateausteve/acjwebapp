@@ -3,7 +3,8 @@
 {% block content %}
     <body>
         <h1>Script List with Current Computations:</h1>
-        <p>Set {{ set.pk }} correlation estimated to actual: {{ set.cor_est_to_actual }}          Comparisons: {{ c }}    Average diff from actual: {{ diffs }}</p>
+        <p>Set {{ set.pk }} correlation estimated to actual: {{ set.cor_est_to_actual }}          Comparisons: {{ listcount }}    Average diff from actual: {{ diffs }}</p>
+        {% if jcount > 0 %}
         <form method="POST" class="autocomparisonform">
             {% csrf_token %}
             {{ form.as_p }}
@@ -11,6 +12,8 @@
             <input type="hidden" name="scriptj" value="{{ scriptj }}">
             <input type="submit" value="Click this button to autocompare Script #{{ scripti.id }} and Script #{{ scriptj.id }}">
         </form>
+        {% else %}<h1>Ran out of scripts to pair.</h1>
+        {% endif %}
         {% if script_table %} 
                 <table border="1" style="font-size:x-small">
                     <tr>
@@ -42,10 +45,7 @@
         {% else %}
             <p>There are no scripts in the database. Head to the <a href="/admin">admin</a> section to upload a set of them.</p>
         {% endif %}   
-
-    <br>
-    <small>Debug information:</small>
-    <br>
+    <h3>Debug information:</h3>
     <small>Script J Selection Array: Length: {{ jcount }} Elements: j[id, lodiff, rmse] {{ j }}</small>
     <br>
     <small>Compslist of {{ listcount }}: {{ compslist }}</small>
