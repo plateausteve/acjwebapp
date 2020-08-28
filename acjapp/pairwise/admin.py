@@ -7,9 +7,16 @@ class ComparisonResource(resources.ModelResource):
     class Meta:
         model = Comparison
 
+class ScriptResource(resources.ModelResource):
+    class Meta:
+        model = Script
+
 class ComparisonAdmin(ImportExportModelAdmin):
     resource_class = ComparisonResource
 
+class ScriptAdmin(ImportExportModelAdmin):
+    resource_class = ScriptResource
+
 admin.site.register(Comparison, ComparisonAdmin)
-admin.site.register(Script)
+admin.site.register(Script, ScriptAdmin)
 admin.site.register(Set)

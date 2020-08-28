@@ -1,5 +1,6 @@
 from .models import Script, Comparison, Set
 import numpy as np 
+import pandas as pd
 from numpy import log, sqrt, corrcoef
 import operator
 from operator import itemgetter
@@ -12,63 +13,56 @@ def build_compslist():
         j = comp.scriptj.id 
         compslist.append([i, j])
     return compslist
-    
-def ordered_scripts_by_comps(compcount, switchcount, compslist):
-    ordered_scripts = []
-    for index, script in enumerate(Script.objects.all().order_by('comps_in_set','?'), start=0): #enumerate all the instances of Script in ascending order by number of comparisons. Change this to RMSE if preferred.
-        if index == 0: #scripti is set as the first in the ordered set
-            scripti = script # for first iteration only, create an object to be scripti in the current comparison, the least-compared or if tied withothers, random select among least 
-            loi = scripti.lo_of_win_in_set # use this to compute differences in subsequent iterations
-            rmse = scripti.rmse_in_set
-            lodiff = 0
-        else: # all the others get added
-            scriptj = script #temporary scriptj get and set: get the object to be used for LO field value set for each scriptj candidate
-            loj = scriptj.lo_of_win_in_set
-            rmse = scriptj.rmse_in_set
-            lodiff = abs(loi - loj) # compute the difference in LO between scripti and scriptj candidate
-            #prevent appending this combination to the ordered_scripts list when it exists already in compslist
-            if [scripti.id, scriptj.id] not in compslist and [scriptj.id, scripti.id] not in compslist: 
-                ordered_scripts.append([script.id, lodiff, rmse]) #add this computed LO difference value and rmse diff value to the list of differences between script i's attributes and script j's attributes
-            #else skip it, eliminating duplicate comparisons.
-    return scripti, ordered_scripts 
 
-#is this RMSE method is not useful after all for selecting scripti?
-def ordered_scripts_by_rmse(compcount, switchcount, compslist):
-    ordered_scripts = []
-    for index, script in enumerate(Script.objects.all().order_by('-rmse_in_set','comps_in_set'), start=0): #enumerate all the instances of Script in ascending order by number of comparisons. Change this to RMSE if preferred.
-        if index == 0:
-            scripti = script # first time through the loop script i 
-            loi = scripti.lo_of_win_in_set # use this to compute differences in subsequent iterations
-            rmse = scripti.rmse_in_set
-            lodiff = 0
-        else:
-            scriptj = script #other times through the loop scripts j
-            loj = script.lo_of_win_in_set
-            rmse = script.rmse_in_set
+def order_scripts(compslist, orderby, scriptcount):
+    ordered_scriptsj = []
+    scriptcount -= 1
+    if orderby == "rmse":
+        scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount, se__lt=10).order_by('-rmse_in_set', 'comps_in_set', '?'), start=0)
+        # enumerate all instances of Script not maxed out already, not SE of 10 (all wins or all losses), ordered by lowest SE, then lowest comps so far, then random
+    elif orderby == "comps":
+        scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('comps_in_set', '?'), start=0)
+        # enumerate all instances of Script not maxed out already, ordered by lowest comps so far, then random
+    else:
+        scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('?'), start=0)
+        # enumerate all instances of Script not maxed out already, ordered by random
+    for index, script in scripts: 
+        fisher_info = script.fisher_info
+        se = script.se
+        rmse = script.rmse_in_set
+        if index > 0: #after first time through the loop do scriptjs
+            scriptj = script 
+            loj = script.lo_of_win_in_set    
             lodiff = abs(loi - loj) # compute the difference in LO between scripti and scriptj candidate
             if [scripti.id, scriptj.id] not in compslist and [scriptj.id, scripti.id] not in compslist:
-                ordered_scripts.append([script.id, lodiff, rmse]) #add this computed LO difference value and rmse diff value to the list of differences between script i's attributes and script j's attributes
-    return scripti, ordered_scripts 
+                ordered_scriptsj.append([script.id, lodiff, fisher_info, se, rmse])
+        else: # first time through the loop do scripti 
+            scripti = script 
+            loi = script.lo_of_win_in_set # use this to compute differences in subsequent iterations
+            lodiff = 0
+        #now resort the scriptj list by least lo diff that's the second row in the array
+        j=sorted(ordered_scriptsj, key = operator.itemgetter(1))
+        #j is an array of script.id, each script's LO difference between it and other data that only be useful in development
+    return scripti, j 
 
 def script_selection():
     #select the scripti with fewest comparisons so far (or random if tied), and select the scriptj with least difference in log odds (or random if tied)
-    switchcount = 5 * Script.objects.count()
+    scriptcount = Script.objects.count()
+    switchcount = 5 * scriptcount
     compslist = build_compslist()
     compcount = len(compslist)
-    if compcount < switchcount:    # at first, select scripti by choosing from among those with least number of comparisons
-        scripti, ordered_scripts = ordered_scripts_by_comps(compcount, switchcount, compslist)
-    else: #later select scripti by choosing from among those with greatest RMSE
-        scripti, ordered_scripts = ordered_scripts_by_rmse(compcount, switchcount, compslist)
-    #now resort the scriptj list by least lo diff
-    j=sorted(ordered_scripts, key = operator.itemgetter(1))
-    #j is an array of script.id, each script's LO difference between it and scripti, and each script's RMSE
+    if compcount < switchcount: # at first, select scripti by choosing from among those with least number of comparisons
+        orderby = "comps" 
+    else: # later select scripti by choosing from among those with highest SE
+        orderby = "rmse"    
+    scripti, j = order_scripts(compslist, orderby, scriptcount)
     if len(j) > 0:
         scriptjselector = j[0][0] # select from the first row, first column, this is the id of the scriptj candidate matching criteria
         scriptj = Script.objects.get(pk=scriptjselector) #set the scriptj candidate object
+        return compslist, j, scripti, scriptj
     else:
-        scriptj = None
-    # now both scripti and scriptj objects are set and can be returned to the compare.html template
-    return compslist, j, scripti, scriptj
+        scriptj = None # FIX: better check to see if a different scripti is available with unpaired scriptjs to compare before returning this function.
+        return compslist, j, scripti, scriptj
 
 def compute_scripts_and_save():
     scripts = Script.objects.all()
@@ -95,14 +89,25 @@ def compute_scripts_and_save():
         setattr(script, 'lo_of_win_in_set', logodds)
 
         #compute the standard error of sample mean and RMSE of all comparisons for script, set this attribute
-        mean = wins/comps
-        diffs = mean*(1-mean)/comps # SE of mean of sample (which is all comparisons so far)
-        rmse = round(sqrt(wins*diffs/comps),3)
+        mean = wins/comps #same as probability, but no rounding
+        diffs = mean * (1 - mean)/comps # SE of mean of sample (which is all comparisons so far)
+        rmse = round(sqrt(wins * diffs / comps),3)
         setattr(script, 'rmse_in_set', rmse)
         
-        #compute the estimated parameter value--an arbitrary linear function to closely match known values in dev or other convenient scale
-        ep = round(50 + (logodds * 5),3)
+        #compute the Fisher information and standard error for MLE parameter value 
+        fisher_info = round(comps * probability * (1 - probability) + .01, 2)
+        se = round(1 / sqrt(fisher_info), 3)
+        
+
+        #compute the MLE of parameter value--an arbitrary linear function to closely match known values in dev or other convenient scale
+        ep = round(50 + (logodds * 10),3)
+        lo95ci = round(logodds - (1.96 * sqrt(1 / fisher_info)), 3)
+        hi95ci = round(logodds + (1.96 * sqrt(1 / fisher_info)), 3)
         setattr(script, 'estimated_parameter_in_set', ep)
+        setattr(script, 'lo_lo95ci', lo95ci)
+        setattr(script, 'lo_hi95ci', hi95ci)
+        setattr(script, 'fisher_info', fisher_info)
+        setattr(script, 'se', se)
 
         #append to the array for correlation of development-only assigned parameter values--only for development testing
         a.append(script.parameter_value)
@@ -126,3 +131,19 @@ def compute_diffs():
     diffs = round(diffs/count, 3)
     return(diffs)
 
+def build_btl_array():
+    scriptsx = Script.objects.all()
+    scriptsy = Script.objects.all()
+    btl_array = []
+    for scripti in scriptsx:
+        row = []
+        loi = scripti.lo_of_win_in_set
+        for scriptj in scriptsy:
+            loj = scriptj.lo_of_win_in_set
+            lodiff = round(loi - loj,3)
+            btl = round(np.exp(lodiff)/(1 + np.exp(lodiff)), 2) #probability that scripti will beat scriptj according to BTL Model
+            row.append(btl)
+        row = pd.Series(row)
+        btl_array.append(row)
+    df = pd.DataFrame(btl_array)
+    return btl_array, df

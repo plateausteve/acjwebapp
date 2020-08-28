@@ -29,8 +29,12 @@ class Script(models.Model):
     wins_in_set = models.PositiveSmallIntegerField(default=0, verbose_name="count of all comparisons in which this script wins")
     comps_in_set = models.PositiveSmallIntegerField(default=0, verbose_name="count of all comparisons with this script")
     prob_of_win_in_set = models.FloatField(default=0, verbose_name="ratio of wins to comparisons for this script")
-    lo_of_win_in_set = models.FloatField(default=0, verbose_name="log odds of winning for this script")
-    estimated_parameter_in_set = models.FloatField(default=0, verbose_name="estimated parameter from comparisons of this script")
+    lo_of_win_in_set = models.FloatField(default=0, verbose_name="&phi; log odds of winning for this script")
+    lo_lo95ci = models.FloatField(default=0, verbose_name="@phi; log odds low 95% confidence interval")
+    lo_hi95ci = models.FloatField(default=0, verbose_name="@phi; log odds high 95% confidence interval")
+    estimated_parameter_in_set = models.FloatField(default=0, verbose_name="MLE of parameter from comparisons of this script")
+    fisher_info = models.FloatField(default=0, verbose_name="Fisher information for MLE of parameter based on comparison data")
+    se = models.FloatField(default=0, verbose_name="standard error of parameter for this script")
     rmse_in_set = models.FloatField(default=0, verbose_name="RSME of parameter for this script")
 
     def __str__(self):

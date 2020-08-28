@@ -4,9 +4,10 @@ from django.http import HttpResponseRedirect, HttpResponse
 from .models import Script, Comparison, ComparisonForm, Set, AutoComparisonForm
 from random import sample
 from django.views import generic
-from .utils import compute_scripts_and_save, script_selection, ordered_scripts_by_rmse, ordered_scripts_by_comps, compute_diffs, build_compslist
+from .utils import compute_scripts_and_save, script_selection, compute_diffs, build_btl_array
 import operator
 from operator import itemgetter
+import numpy as np
 
 def index(request):
     return render(request, 'pairwise/index.html', {})
@@ -116,7 +117,7 @@ def compare(request):
                 )
 
 def compare_auto(request):
-    comparisons_to_do = Script.objects.count() # save for later int((Script.objects.all().count() * (Script.objects.all().count()-1)/2) - Comparison.objects.all().count())
+    comparisons_to_do = 10 * Script.objects.count() # save for later int((Script.objects.all().count() * (Script.objects.all().count()-1)/2) - Comparison.objects.all().count())
     set = Set.objects.get(pk=1)
     #do all the comparisons needed
     for x in range(comparisons_to_do):
@@ -158,5 +159,6 @@ class ComparisonListView(generic.ListView):
 
 def update(request):
     compute_scripts_and_save()
-    return render(request, 'pairwise/update.html', {})
+    btl_array, df = build_btl_array()
+    return render(request, 'pairwise/update.html', {'btl_array': btl_array, 'df': df})
 

@@ -2,5 +2,9 @@
 
 {% block content %}
 <h1>Updated!</h1>
-<p>This page has update the databased with new calculations for all script computed fields.</p><p>Click <a href="/script_list">here</a> to see the new data.</a></p>
+<p>This page has update the databased with new calculations for all script computed fields.</p>
+<p>Click <a href="/script_list">here</a> to see the new data.</a></p>
+{% if btl_array %}<p>This is the BTL model Numpy array. Each script's probability of winning against each other script in the matrix is computed using BTL model. The .5 probabilty indicates even chances of winnning (against self).</p>
+{{ btl_array }}
+{% endif %}
 {% endblock %}

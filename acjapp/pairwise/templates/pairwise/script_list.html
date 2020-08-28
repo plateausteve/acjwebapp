@@ -22,9 +22,13 @@
                         <th>Comps</th>
                         <th>Wins</th>
                         <th>Prob</th>
-                        <th>LO</th>
-                        <th>Est</th>
+                        <th>low 95% CI</th>
+                        <th>LO &phi;</th>
+                        <th>high 95% CI</th>
+                        <th>MLE &theta;</th>
                         <th>Actual</th>
+                        <th>I(&phi;)</th>
+                        <th>SE(&phi;)</th>
                         <th>RMSE</th>
                     </tr>
                     {% for script in script_table %}
@@ -34,9 +38,13 @@
                         <td>{{ script.comps_in_set }}</td>
                         <td>{{ script.wins_in_set }}</td>
                         <td>{{ script.prob_of_win_in_set }}</td>
+                        <td>{{ script.lo_lo95ci }}</td>
                         <td>{{ script.lo_of_win_in_set }}</td>
+                        <td>{{ script.lo_hi95ci }}</td>
                         <td>{{ script.estimated_parameter_in_set }}</td>
                         <td>{{ script.parameter_value }}</td>
+                        <td>{{ script.fisher_info }}</td>
+                        <td>{{ script.se }}</td>
                         <td>{{ script.rmse_in_set }}</td>
                     </tr>
                     {% endfor %}
@@ -46,7 +54,7 @@
             <p>There are no scripts in the database. Head to the <a href="/admin">admin</a> section to upload a set of them.</p>
         {% endif %}   
     <h3>Debug information:</h3>
-    <small>Script J Selection Array: Length: {{ jcount }} Elements: j[id, lodiff, rmse] {{ j }}</small>
+    <small>Script J Selection Array: Length: {{ jcount }} Elements: j[id, lodiff, fisher_info, se, rmse] {{ j }}</small>
     <br>
     <small>Compslist of {{ listcount }}: {{ compslist }}</small>
     </body>
