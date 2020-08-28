@@ -100,7 +100,9 @@ def compute_scripts_and_save():
         
 
         #compute the MLE of parameter value--an arbitrary linear function to closely match known values in dev or other convenient scale
-        ep = round(50 + (logodds * 10),3)
+        ep = round(57.689 + (logodds * 11.826),3) 
+        #modeled the actual correlation between phi and theta at 300 comps using the 7n switchcount 
+        #y intercept=57.689 and slope is 11.826
         lo95ci = round(logodds - (1.96 * sqrt(1 / fisher_info)), 3)
         hi95ci = round(logodds + (1.96 * sqrt(1 / fisher_info)), 3)
         setattr(script, 'estimated_parameter_in_set', ep)
