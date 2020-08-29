@@ -88,17 +88,20 @@ def compute_scripts_and_save():
         setattr(script, 'prob_of_win_in_set', probability) 
         setattr(script, 'lo_of_win_in_set', logodds)
 
-        #compute the standard error of sample mean and RMSE of all comparisons for script, set this attribute
+        #compute the standar deviation of sample, standard error of sample mean and RMSE for script, set this attribute
         mean = wins/comps #same as probability, but no rounding
         diffs = mean * (1 - mean)/comps # SE of mean of sample (which is all comparisons so far)
         rmse = round(sqrt(wins * diffs / comps),3)
+        stdev = round(sqrt(((((1 - mean) ** 2) * wins) + (((0 - mean) ** 2) * (comps - wins))) / comps), 3)
         setattr(script, 'rmse_in_set', rmse)
+        setattr(script, 'stdev', stdev)
         
         #compute the Fisher information and standard error for MLE parameter value 
         fisher_info = round(comps * probability * (1 - probability) + .01, 2)
         se = round(1 / sqrt(fisher_info), 3)
-        
-
+        setattr(script, 'fisher_info', fisher_info)
+        setattr(script, 'se', se)
+    
         #compute the MLE of parameter value--an arbitrary linear function to closely match known values in dev or other convenient scale
         ep = round(57.689 + (logodds * 11.826),3) 
         #modeled the actual correlation between phi and theta at 300 comps using the 7n switchcount 
@@ -108,8 +111,6 @@ def compute_scripts_and_save():
         setattr(script, 'estimated_parameter_in_set', ep)
         setattr(script, 'lo_lo95ci', lo95ci)
         setattr(script, 'lo_hi95ci', hi95ci)
-        setattr(script, 'fisher_info', fisher_info)
-        setattr(script, 'se', se)
 
         #append to the array for correlation of development-only assigned parameter values--only for development testing
         a.append(script.parameter_value)

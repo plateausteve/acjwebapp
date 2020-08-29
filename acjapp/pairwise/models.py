@@ -35,6 +35,7 @@ class Script(models.Model):
     estimated_parameter_in_set = models.FloatField(default=0, verbose_name="MLE of parameter from comparisons of this script")
     fisher_info = models.FloatField(default=0, verbose_name="Fisher information for MLE of parameter based on comparison data")
     se = models.FloatField(default=0, verbose_name="standard error of parameter for this script")
+    stdev = models.FloatField(default=0, verbose_name="standard deviation of comps sample for this script")
     rmse_in_set = models.FloatField(default=0, verbose_name="RSME of parameter for this script")
 
     def __str__(self):
