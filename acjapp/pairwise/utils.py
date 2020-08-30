@@ -4,6 +4,8 @@ import pandas as pd
 from numpy import log, sqrt, corrcoef
 import operator
 from operator import itemgetter
+from chartit import DataPool, Chart
+
 
 def build_compslist():
     comps = Comparison.objects.all()
@@ -150,3 +152,42 @@ def build_btl_array():
         btl_array.append(row)
     df = pd.DataFrame(btl_array)
     return btl_array, df
+
+def get_scriptchart():
+    scriptdata = DataPool(
+        series=[{
+            'options': {
+                'source': Script.objects.filter(se__lt=10)
+            },
+            'terms': [
+                'lo_of_win_in_set',
+                'fisher_info',
+                'se',
+                'stdev',
+                'rmse_in_set'
+            ]
+        }]
+)
+    cht = Chart(
+        datasource=scriptdata,
+        series_options=[{
+            'options': {
+                'type': 'scatter', 
+                'lineWidth': '1',
+            }, 
+            'terms': {
+                'lo_of_win_in_set': [
+                    'fisher_info', 
+                    'se', 
+                    'stdev', 
+                    'rmse_in_set'
+                ]
+            }}
+            ],
+        chart_options={
+            'title': {'text': 'Script Data'}, 
+            'xAxis': {'title': {'text': 'Logodds'}}, 
+            'yAxis': {'title': {'text': 'Value'}}, 
+            'legend': {'enabled': True}, 'credits': {'enabled': True}}
+)
+    return cht

@@ -13,6 +13,10 @@
                 <th>Right Script</th>
                 <th>Right Win</th>
                 <th>Set Correl</th>
+                <th>Uninterrupted</th>
+                <th>Interest Rating</th>
+                <th>Difficulty Rating</th>
+                <th>Duration</th>
             </tr>
             {% for comparison in comparison_list %}
             <tr>
@@ -22,8 +26,12 @@
                 <td>{{ comparison.scripti.pk }}</td>
                 <td>{{ comparison.wini }}</td>
                 <td>{{ comparison.scriptj.pk }}</td>
-                <td>{{ comparison.winj}}</td>
+                <td>{{ comparison.winj }}</td>
                 <td>{{ comparison.resulting_set_corr }}</td>
+                <td>{{ comparison.uninterrupted }}</td>
+                <td>{{ comparison.interest_rating }}</td>
+                <td>{{ comparison.difficulty_rating }}</td>
+                <td>{{ comparison.duration }}</td>
             </tr>
             {% endfor %}
         </table>
