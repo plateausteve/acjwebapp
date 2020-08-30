@@ -1,9 +1,15 @@
 {% extends 'pairwise/base.html' %}
 
 {% block content %}
+    <script src="https://code.highcharts.com/highcharts.src.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"   integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU="   crossorigin="anonymous"></script>
+    
+    {% load chartit %}
+    {{ scriptchart|load_charts:"cht" }}
     <body>
         <h1>Script List with Current Computations:</h1>
         <p>Set {{ set.pk }} correlation estimated to actual: {{ set.cor_est_to_actual }}          Comparisons: {{ listcount }}    Average diff from actual: {{ diffs }}</p>
+        <div id='cht'> Chart will be rendered here </div>
         {% if jcount > 0 %}
         <form method="POST" class="autocomparisonform">
             {% csrf_token %}
@@ -55,9 +61,7 @@
         {% else %}
             <p>There are no scripts in the database. Head to the <a href="/admin">admin</a> section to upload a set of them.</p>
         {% endif %}   
-    <h3>Debug information:</h3>
-    <small>Script J Selection Array: Length: {{ jcount }} Elements: j[id, lodiff, fisher_info, se, rmse] {{ j }}</small>
-    <br>
-    <small>Compslist of {{ listcount }}: {{ compslist }}</small>
+        <h3>Debug information:</h3>
+        <small>Script J Selection Array: Length: {{ jcount }} Elements: j[id, lodiff, fisher_info, se, rmse] {{ j }}</small>
     </body>
 {% endblock %}

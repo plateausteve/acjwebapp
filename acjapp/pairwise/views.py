@@ -8,6 +8,7 @@ from .utils import compute_scripts_and_save, script_selection, compute_diffs, bu
 import operator
 from operator import itemgetter
 import numpy as np
+from chartit import DataPool, Chart
 
 def index(request):
     return render(request, 'pairwise/index.html', {})
@@ -44,17 +45,53 @@ def script_list(request):
         jcount = len(j)
         diffs = compute_diffs()
         form = AutoComparisonForm()
+        scriptdata = DataPool(
+            series=[{
+                'options': {
+                    'source': Script.objects.filter(se__lt=10)
+                },
+                'terms': [
+                    'pk',
+                    'fisher_info',
+                    'se',
+                    'stdev',
+                    'rmse_in_set'
+                ]
+            }]
+)
+        cht = Chart(
+            datasource=scriptdata,
+            series_options=[{
+                'options': {
+                    'type': 'line', 
+                    'stacking': False
+                }, 
+                'terms': {
+                    'pk': [
+                        'fisher_info', 
+                        'se', 
+                        'stdev', 
+                        'rmse_in_set'
+                    ]
+                }}
+                ],
+            chart_options={
+                'title': {'text': 'Script Data'}, 
+                'xAxis': {'title': {'text': 'Script'}}, 
+                'yAxis': {'title': {'text': 'Value'}}, 
+                'legend': {'enabled': True}, 'credits': {'enabled': True}}
+    )
         return render(request, 'pairwise/script_list.html', {
                 'j': j,
                 'listcount': listcount,
                 'jcount': jcount,
-                'compslist': compslist,
                 'scripti': scripti,
                 'scriptj': scriptj,
                 'form': form,
                 'script_table': script_table, 
                 'set': set,
                 'diffs': diffs,
+                'scriptchart': cht
                 } 
                 )
 
@@ -91,7 +128,6 @@ def compare(request):
                     'j': j,
                     'listcount': listcount,
                     'jcount': jcount,
-                    'compslist': compslist,
                     'scripti': scripti,
                     'scriptj': scriptj,
                     'form': form,
@@ -140,6 +176,45 @@ def compare_auto(request):
     diffs = compute_diffs()
     script_table = Script.objects.all().order_by('-lo_of_win_in_set')
     form = AutoComparisonForm()
+
+    scriptdata = DataPool(
+        series=[{
+            'options': {
+                'source': Script.objects.filter(se__lt=10)
+            },
+            'terms': [
+                'pk',
+                'fisher_info',
+                'se',
+                'stdev',
+                'rmse_in_set'
+            ]
+        }]
+)
+    cht = Chart(
+        datasource=scriptdata,
+        series_options=[{
+            'options': {
+                'type': 'line', 
+                'stacking': False
+            }, 
+            'terms': {
+                'pk': [
+                    'fisher_info', 
+                    'se', 
+                    'stdev', 
+                    'rmse_in_set'
+                ]
+            }}
+            ],
+        chart_options={
+            'title': {'text': 'Script Data'}, 
+            'xAxis': {'title': {'text': 'Script'}}, 
+            'yAxis': {'title': {'text': 'Value'}}, 
+            'legend': {'enabled': True}, 'credits': {'enabled': True}}
+    )
+
+
     return render(request, 'pairwise/script_list.html', {
         'j': j,
         'listcount': listcount,
@@ -151,6 +226,7 @@ def compare_auto(request):
         'script_table': script_table, 
         'set': set,
         'diffs': diffs,
+        'scriptchart': cht,
         } 
         )
 
@@ -161,4 +237,45 @@ def update(request):
     compute_scripts_and_save()
     btl_array, df = build_btl_array()
     return render(request, 'pairwise/update.html', {'btl_array': btl_array, 'df': df})
+
+# duplicating this in script_list view, needs to by pythonized and made into a function make_chart()
+def script_chart_view(request):
+    scriptdata = DataPool(
+        series=[{
+            'options': {
+                'source': Script.objects.all()
+            },
+            'terms': [
+                'pk',
+                'fisher_info',
+                'se',
+                'stdev',
+                'rmse_in_set'
+            ]
+        }]
+)
+    cht = Chart(
+        datasource=scriptdata,
+        series_options=[{
+            'options': {
+                'type': 'line', 
+                'stacking': False
+            }, 
+            'terms': {
+                'pk': [
+                    'fisher_info', 
+                    'se', 
+                    'stdev', 
+                    'rmse_in_set'
+                ]
+            }}
+            ],
+        chart_options={
+            'title': {'text': 'Script Data'}, 
+            'xAxis': {'title': {'text': 'Script'}}, 
+            'yAxis': {'title': {'text': 'Value'}}, 
+            'legend': {'enabled': True}, 'credits': {'enabled': True}}
+    )
+    return render(request, 'pairwise/script_chart.html', {'scriptchart': cht})
+
 
