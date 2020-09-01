@@ -5,6 +5,7 @@ from django.utils import timezone
 from django import forms
 from numpy import log 
 import numpy as np 
+import datetime
 
 class Set(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="the user who uploaded the scripts of this set")
@@ -63,13 +64,14 @@ class Comparison(models.Model):
         Neutral = 3
         Interesting = 4
         Very_interesting = 5
-    interest_rating = models.IntegerField(choices=Interest.choices, default=3, blank=False, verbose_name="how interesting the assessor found this comparison")
+    interest_rating = models.IntegerField(choices=Interest.choices, default=3, blank=False, verbose_name="how interesting is this comparison")
     class Difficulty(models.IntegerChoices):
         Not_at_all_difficult = 0
         Not_too_difficult = 1
         Difficult = 2
         Very_difficult = 3
-    difficulty_rating = models.IntegerField(choices=Difficulty.choices, default=0, blank=False)
+    difficulty_rating = models.IntegerField(choices=Difficulty.choices, default=0, blank=False, verbose_name="how difficult is the comparison to judge?")
+    form_start_variable = models.FloatField(blank=True, null=True)
     decision_start = models.DateTimeField(blank=True, null=True)
     decision_end = models.DateTimeField(blank=True, null=True)
     duration = models.DurationField(blank=True, null=True)
@@ -80,12 +82,11 @@ class Comparison(models.Model):
 class ComparisonForm(forms.ModelForm):
     class Meta:
         model = Comparison
-        fields = ['wini','scripti','scriptj', 'uninterrupted', 'interest_rating', 'difficulty_rating', 'decision_start', 'decision_end']
+        fields = ['wini','scripti','scriptj', 'form_start_variable'] # 'uninterrupted', 'interest_rating', 'difficulty_rating', 
         widgets = {
             'scripti': forms.HiddenInput(), 
             'scriptj': forms.HiddenInput(),
-            'decision_start': forms.HiddenInput(),
-            'decision_end': forms.HiddenInput(),
+            'form_start_variable': forms.HiddenInput(),
         }
 
 class AutoComparisonForm(forms.ModelForm):

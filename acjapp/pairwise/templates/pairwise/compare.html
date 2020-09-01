@@ -24,16 +24,17 @@
                     {{ form.as_p }}
                     <input type="hidden" name="scripti" value="{{ scripti }}">
                     <input type="hidden" name="scriptj" value="{{ scriptj }}">
-                    <input type="hidden" name="decision_start" value="{{ starttime }}"
-                    <input type="hidden" name="decision_end" value="">
+                    <input type="hidden" name="form_start_variable" value="{{ starttime }}">
                     <input type="submit" value="Submit">
                 </form>
             </td>
         </tr>
     </table>
-    {% else %}<h3>Ran out of comparisons to do</h3>
-    {% endif %}
+
+{% else %}
+    <h3>Ran out of comparisons to do</h3>
+{% endif %}
     <p>Debug information:</p>
     <p>Start time: {{ starttime }}</p>
-    <p>script selection array j[id, lodiff, rmse]: {{ j }}</p>
+    <p>script selection array j[id, lodiff, rmse, se]: {{ j }}</p>
 {% endblock %}
