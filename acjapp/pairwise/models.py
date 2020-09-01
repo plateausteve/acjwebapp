@@ -38,6 +38,7 @@ class Script(models.Model):
     se = models.FloatField(default=0, verbose_name="standard error of parameter for this script")
     stdev = models.FloatField(default=0, verbose_name="standard deviation of comps sample for this script")
     rmse_in_set = models.FloatField(default=0, verbose_name="RMSE of parameter for this script")
+    count_same_p = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return str(self.pk)
@@ -52,7 +53,7 @@ class Comparison(models.Model):
         Lesser = 0
         Greater = 1
     wini = models.PositiveSmallIntegerField(choices=Win.choices, verbose_name="is left lesser or greater?")
-    winj = models.PositiveSmallIntegerField(choices=Win.choices, verbose_name="is right lesser or greater?")
+    winj = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name="is right lesser or greater?")
     resulting_set_corr = models.FloatField(default=0, verbose_name="computing the resulting correlation of set est param to actual")
     class Interruption(models.IntegerChoices):
         Uninterrupted = 1
@@ -84,6 +85,7 @@ class ComparisonForm(forms.ModelForm):
         model = Comparison
         fields = ['wini','scripti','scriptj', 'form_start_variable'] # 'uninterrupted', 'interest_rating', 'difficulty_rating', 
         widgets = {
+            #'wini': forms.CheckboxInput(),
             'scripti': forms.HiddenInput(), 
             'scriptj': forms.HiddenInput(),
             'form_start_variable': forms.HiddenInput(),

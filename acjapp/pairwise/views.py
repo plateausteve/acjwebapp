@@ -29,11 +29,12 @@ def script_list(request):
             comparison.scriptj = Script.objects.get(pk=request.POST.get('scriptj'))
             comparison.set = Set.objects.get(pk=1) #for now there is only one set object
             comparison.resulting_set_corr = comparison.set.cor_est_to_actual
-            end = timezone.now()
+            start = timezone.now()
+            end = timezone.now() #use datetime instead of timezone because of conversion from timestamp
             comparison.decision_end = end
-            comparison.decision_start = end
-            comparison.duration = 0
-
+            comparison.decision_start = start
+            duration = end - start
+            comparison.duration = duration
             #set winj value to the opposite of wini
             if comparison.scripti.parameter_value > comparison.scriptj.parameter_value:
                 comparison.winj=0 
@@ -141,7 +142,7 @@ def compare(request):
 def compare_auto(request):
     comparisons_to_do = Script.objects.count() # save for later int((Script.objects.all().count() * (Script.objects.all().count()-1)/2) - Comparison.objects.all().count())
     set = Set.objects.get(pk=1)
-    #do all the comparisons needed
+    #do all the comparisons determined
     for x in range(comparisons_to_do):
         compslist, j, scripti, scriptj = script_selection()
         jcount = len(j)
@@ -156,7 +157,10 @@ def compare_auto(request):
                 winj = 1
             judge = request.user
             resulting_set_corr = set.cor_est_to_actual
-            Comparison.objects.create(set=set, scripti=scripti, scriptj=scriptj, judge=judge, wini=wini, winj=winj, resulting_set_corr=resulting_set_corr)
+            start = timezone.now()
+            end = timezone.now()
+            duration = end - start
+            Comparison.objects.create(set=set, scripti=scripti, scriptj=scriptj, judge=judge, wini=wini, winj=winj, resulting_set_corr=resulting_set_corr, decision_end=end, decision_start=start, duration=duration)
             compute_scripts_and_save()
     diffs = compute_diffs()
     script_table = Script.objects.all().order_by('-lo_of_win_in_set')

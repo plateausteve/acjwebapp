@@ -6,6 +6,13 @@ import operator
 from operator import itemgetter
 from chartit import DataPool, Chart
 
+def compute_same_p():
+    scriptsp=Script.objects.all()
+    for script in scriptsp:
+        count=Script.objects.filter(prob_of_win_in_set=script.prob_of_win_in_set).count()
+        setattr(script, 'count_same_p', count)
+        script.save()
+    return()
 
 def build_compslist():
     comps = Comparison.objects.all()
@@ -24,6 +31,9 @@ def order_scripts(compslist, orderby, scriptcount):
         # enumerate all instances of Script not maxed out already, not SE of 10 (all wins or all losses), ordered by lowest SE, then lowest comps so far, then random
     elif orderby == "comps":
         scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('comps_in_set', '?'), start=0)
+        # enumerate all instances of Script not maxed out already, ordered by lowest comps so far, then random
+    elif orderby == "samep":
+        scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('-count_same_p', '?'), start=0)
         # enumerate all instances of Script not maxed out already, ordered by lowest comps so far, then random
     else:
         scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('?'), start=0)
@@ -50,13 +60,13 @@ def order_scripts(compslist, orderby, scriptcount):
 def script_selection():
     #select the scripti with fewest comparisons so far (or random if tied), and select the scriptj with least difference in log odds (or random if tied)
     scriptcount = Script.objects.count()
-    switchcount = 5 * scriptcount
+    switchcount = 1 * scriptcount
     compslist = build_compslist()
     compcount = len(compslist)
     if compcount < switchcount: # at first, select scripti by choosing from among those with least number of comparisons
         orderby = "comps" 
     else: # later select scripti by choosing from among those with highest SE
-        orderby = "rmse"    
+        orderby = "samep"    
     scripti, j = order_scripts(compslist, orderby, scriptcount)
     if len(j) > 0:
         scriptjselector = j[0][0] # select from the first row, first column, this is the id of the scriptj candidate matching criteria
@@ -120,6 +130,9 @@ def compute_scripts_and_save():
     
         script.save()
 
+
+    #compute all scripts' count of same probability
+    compute_same_p()
     #compute new set correlation of actual and estimated parameter values
     r = round(np.corrcoef(a,e)[0][1],5)
     set = Set.objects.get(pk=1) #for now, there is only one Set object to get
