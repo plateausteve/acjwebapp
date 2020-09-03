@@ -3,7 +3,7 @@ from datetime import datetime
 from django.utils import timezone
 from django.urls import reverse
 from django.http import HttpResponseRedirect, HttpResponse
-from .models import Script, Comparison, ComparisonForm, Set, AutoComparisonForm
+from .models import Script, Comparison, ComparisonForm, Set, AutoComparisonForm, WinForm
 from random import sample
 from django.views import generic
 from .utils import compute_scripts_and_save, script_selection, compute_diffs, build_btl_array, get_scriptchart
@@ -96,9 +96,7 @@ def compare(request):
                 comparison.winj=1
             comparison.save()
             compute_scripts_and_save()
-            return redirect('/compare')
-        else:
-            return HttpResponse('Invalid form')
+        return redirect('/compare')
 
     else: #if the form is being generated for the first time send the template what it needs
         compslist, j, scripti, scriptj = script_selection() 
@@ -110,7 +108,7 @@ def compare(request):
         starttime = now.timestamp
         #figure out how to check that there are no more pairings for others either to prevent early abort
         if len(j) > 0: #as long as there are pairings available keep comparing
-            form = ComparisonForm()
+            form = WinForm()
             return render(request, 'pairwise/compare.html', {
                     'j': j,
                     'listcount': listcount,

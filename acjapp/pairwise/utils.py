@@ -33,7 +33,7 @@ def order_scripts(compslist, orderby, scriptcount):
         scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('comps_in_set', '?'), start=0)
         # enumerate all instances of Script not maxed out already, ordered by lowest comps so far, then random
     elif orderby == "samep":
-        scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('-count_same_p', '?'), start=0)
+        scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('-count_same_p', '-rmse_in_set', '?'), start=0)
         # enumerate all instances of Script not maxed out already, ordered by lowest comps so far, then random
     else:
         scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('?'), start=0)
@@ -60,13 +60,14 @@ def order_scripts(compslist, orderby, scriptcount):
 def script_selection():
     #select the scripti with fewest comparisons so far (or random if tied), and select the scriptj with least difference in log odds (or random if tied)
     scriptcount = Script.objects.count()
-    switchcount = 1 * scriptcount
     compslist = build_compslist()
     compcount = len(compslist)
-    if compcount < switchcount: # at first, select scripti by choosing from among those with least number of comparisons
+    if compcount < (scriptcount * 2): # at first, select scripti by choosing from among those with least number of comparisons
         orderby = "comps" 
-    else: # later select scripti by choosing from among those with highest SE
-        orderby = "samep"    
+    elif compcount < (scriptcount * 5):# later select scripti by choosing from among those with highest SE
+        orderby = "samep"   
+    else:
+        orderby = "rmse" 
     scripti, j = order_scripts(compslist, orderby, scriptcount)
     if len(j) > 0:
         scriptjselector = j[0][0] # select from the first row, first column, this is the id of the scriptj candidate matching criteria
