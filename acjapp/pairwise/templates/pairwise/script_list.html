@@ -44,7 +44,7 @@
                     {% for script in script_table %}
                     <tr>
                         <td>{{ script.user.pk }}</td>
-                        <td>{{ script.pk }}</td>
+                        <td><a href="{% url 'script_detail' pk=script.pk %}">{{ script.pk }}</a></td>
                         <td>{{ script.comps_in_set }}</td>
                         <td>{{ script.wins_in_set }}</td>
                         <td>{{ script.prob_of_win_in_set }}</td>

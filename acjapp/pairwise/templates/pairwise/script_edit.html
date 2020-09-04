@@ -1,0 +1,12 @@
+{% extends "pairwise/base.html" %}
+
+{% block content %}
+    <h1>Edit Item {{ script }}</h1>
+    {% if script.pdf %}
+    <p><embed src="{{ script.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="425px" height="550px"></p>
+    {% endif %}
+    <form method="POST" class="script-form">{% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Submit">
+    </form>
+{% endblock %}

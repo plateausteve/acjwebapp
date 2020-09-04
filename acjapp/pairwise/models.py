@@ -13,6 +13,7 @@ class Set(models.Model):
     name = models.CharField(max_length=100)
     published_date = models.DateTimeField(blank=True, null=True)
     cor_est_to_actual = models.FloatField(default=0)
+    greater_statement = models.TextField(default="more", verbose_name="the question posed for assessors about the items")
 
     def publish(self):
         self.published_date = timezone.now()
@@ -26,7 +27,7 @@ class Script(models.Model):
     set = models.ForeignKey(Set, on_delete=models.CASCADE, blank=True, null=True, verbose_name="the one set to which the script belongs")
     pdf = models.FileField(upload_to="scripts/pdfs", null=True, blank=True) #how do you deal with PDFs? Not working now.
     image = models.FileField(upload_to="scripts/images", null=True, blank=True)
-    parameter_value = models.PositiveSmallIntegerField(verbose_name="the hidden parameter value to be compared by the user in development")
+    parameter_value = models.PositiveSmallIntegerField(verbose_name="the hidden parameter value to be compared in development")
     wins_in_set = models.PositiveSmallIntegerField(editable = False, default=0, verbose_name="count of all comparisons in which this script wins")
     comps_in_set = models.PositiveSmallIntegerField(editable = False, default=0, verbose_name="count of all comparisons with this script")
     prob_of_win_in_set = models.FloatField(editable = False, default=0, verbose_name="ratio of wins to comparisons for this script")
@@ -42,6 +43,16 @@ class Script(models.Model):
 
     def __str__(self):
         return str(self.pk)
+
+class ScriptForm(forms.ModelForm):
+    class Meta:
+        model = Script
+        fields = [
+            'user', 'set', 'pdf', 'parameter_value']
+        widgets = {
+            'user': forms.HiddenInput(),
+        }
+
 
 
 class Comparison(models.Model):

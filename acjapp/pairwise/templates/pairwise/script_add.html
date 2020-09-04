@@ -1,0 +1,10 @@
+{% extends "pairwise/base.html" %}
+
+{% block content %}
+    <h1>Upload a New Item</h1>
+    <p>Add a new item to a set of items for comparison.</p>
+    <form method="POST" class="script-form">{% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Submit">
+    </form>
+{% endblock %}

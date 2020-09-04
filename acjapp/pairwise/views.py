@@ -3,7 +3,7 @@ from datetime import datetime
 from django.utils import timezone
 from django.urls import reverse
 from django.http import HttpResponseRedirect, HttpResponse
-from .models import Script, Comparison, ComparisonForm, Set, AutoComparisonForm, WinForm
+from .models import Script, ScriptForm, Comparison, ComparisonForm, Set, AutoComparisonForm, WinForm
 from random import sample
 from django.views import generic
 from .utils import compute_scripts_and_save, script_selection, compute_diffs, build_btl_array, get_scriptchart
@@ -16,6 +16,38 @@ def index(request):
 
 def compared(request):
     return render(request, 'pairwise/compared.html', {})
+
+def script_detail(request, pk):
+    script=get_object_or_404(Script, pk=pk)
+    return render(request, 'pairwise/script_detail.html', {'script': script})
+
+
+def script_add(request):
+    if request.method == "POST":
+        form = ScriptForm(request.POST)
+        if form.is_valid():
+            script = form.save(commit=False)
+            script.user = request.user
+            script.save()
+            return redirect('script_detail', pk=script.pk)
+    else:
+        form = ScriptForm()
+    return render(request, 'pairwise/script_edit.html', {'form': form})
+
+def script_edit(request, pk):
+    script = get_object_or_404(Script, pk=pk)
+    if request.method == "POST":
+        form = ScriptForm(request.POST, instance=script)
+        if form.is_valid():
+            script = form.save(commit=False)
+            script.user = request.user
+            script.save()
+            return redirect('script_detail', pk=script.pk)
+    else:
+        form = ScriptForm(instance=script)
+    return render(request, 'pairwise/script_edit.html', {'form': form, 'script': script})
+
+    
 
 def script_list(request):
     script_table = Script.objects.all().order_by('-lo_of_win_in_set')
