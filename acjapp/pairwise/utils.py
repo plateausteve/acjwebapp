@@ -2,6 +2,7 @@ from .models import Script, Comparison, Set
 import numpy as np 
 import pandas as pd
 from numpy import log, sqrt, corrcoef
+from scipy.stats import spearmanr
 import operator
 from operator import itemgetter
 from chartit import DataPool, Chart
@@ -27,17 +28,17 @@ def order_scripts(compslist, orderby, scriptcount):
     ordered_scriptsj = []
     scriptcount -= 1
     if orderby == "rmse":
-        scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount, se__lt=10).order_by('-rmse_in_set', 'comps_in_set', '?'), start=0)
-        # enumerate all instances of Script not maxed out already, not SE of 10 (all wins or all losses), ordered by lowest SE, then lowest comps so far, then random
+        scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount, se__lt=7).order_by('-rmse_in_set', '-count_same_p','comps_in_set', '?'), start=0)
+        secondsortkey = 1 # enumerate all instances of Script not maxed out already, not SE of 7 (all wins or all losses), ordered by lowest SE, then lowest comps so far, then random
     elif orderby == "comps":
         scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('comps_in_set', '?'), start=0)
-        # enumerate all instances of Script not maxed out already, ordered by lowest comps so far, then random
+        secondsortkey = 1 # enumerate all instances of Script not maxed out already, ordered by lowest comps so far, then random
     elif orderby == "samep":
         scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('-count_same_p', '-rmse_in_set', '?'), start=0)
-        # enumerate all instances of Script not maxed out already, ordered by lowest comps so far, then random
+        secondsortkey = 4 # enumerate all instances of Script not maxed out already, ordered by lowest comps so far, then random
     else:
         scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('?'), start=0)
-        # enumerate all instances of Script not maxed out already, ordered by random
+        secondsortkey = 1 # enumerate all instances of Script not maxed out already, ordered by random
     for index, script in scripts: 
         fisher_info = script.fisher_info
         se = script.se
@@ -53,7 +54,7 @@ def order_scripts(compslist, orderby, scriptcount):
             loi = script.lo_of_win_in_set # use this to compute differences in subsequent iterations
             lodiff = 0
         #now resort the scriptj list by least lo diff that's the second row in the array
-        j=sorted(ordered_scriptsj, key = operator.itemgetter(1))
+        j=sorted(ordered_scriptsj, key = operator.itemgetter(secondsortkey))
         #j is an array of script.id, each script's LO difference between it and other data that only be useful in development
     return scripti, j 
 
@@ -64,7 +65,7 @@ def script_selection():
     compcount = len(compslist)
     if compcount < (scriptcount * 2): # at first, select scripti by choosing from among those with least number of comparisons
         orderby = "comps" 
-    elif compcount < (scriptcount * 5):# later select scripti by choosing from among those with highest SE
+    elif compcount < (scriptcount * 8):
         orderby = "samep"   
     else:
         orderby = "rmse" 
@@ -72,10 +73,10 @@ def script_selection():
     if len(j) > 0:
         scriptjselector = j[0][0] # select from the first row, first column, this is the id of the scriptj candidate matching criteria
         scriptj = Script.objects.get(pk=scriptjselector) #set the scriptj candidate object
-        return compslist, j, scripti, scriptj
+        return compslist, j, scripti, scriptj, orderby
     else:
         scriptj = None # FIX: better check to see if a different scripti is available with unpaired scriptjs to compare before returning this function.
-        return compslist, j, scripti, scriptj
+        return compslist, j, scripti, scriptj, orderby
 
 def compute_scripts_and_save():
     scripts = Script.objects.all()
@@ -85,7 +86,7 @@ def compute_scripts_and_save():
         #count all the comparisons each script has been involved in, including the most recent, set this attribute
         comparisons_as_i_count = Comparison.objects.filter(scripti=script).count()
         comparisons_as_j_count = Comparison.objects.filter(scriptj=script).count()
-        comps = comparisons_as_i_count + comparisons_as_j_count + .001
+        comps = comparisons_as_i_count + comparisons_as_j_count + .01
         setattr(script, 'comps_in_set', comps)
 
         #count all the comparisons each script has won, set this attribute
@@ -95,7 +96,7 @@ def compute_scripts_and_save():
         setattr(script, 'wins_in_set', wins)
         
         #compute the logodds and probability for each script, set these attributes
-        odds = (wins/(comps - wins)) + .001
+        odds = (wins/(comps - wins)) + .01
         logodds = round(log(odds), 3)
         probability = round((wins/comps), 3)
         setattr(script, 'prob_of_win_in_set', probability) 
@@ -109,8 +110,9 @@ def compute_scripts_and_save():
         setattr(script, 'rmse_in_set', rmse)
         setattr(script, 'stdev', stdev)
         
-        #compute the Fisher information and standard error for MLE parameter value 
+        #compute the Fisher information for probability estimate 
         fisher_info = round(comps * probability * (1 - probability) + .01, 2)
+        # possible for SE of probability estimate: se = round(stdev / sqrt(comps),3)
         se = round(1 / sqrt(fisher_info), 3)
         setattr(script, 'fisher_info', fisher_info)
         setattr(script, 'se', se)
@@ -119,11 +121,11 @@ def compute_scripts_and_save():
         ep = round(57.689 + (logodds * 11.826),3) 
         #modeled the actual correlation between phi and theta at 300 comps using the 7n switchcount 
         #y intercept=57.689 and slope is 11.826
-        lo95ci = round(logodds - (1.96 * sqrt(1 / fisher_info)), 3)
-        hi95ci = round(logodds + (1.96 * sqrt(1 / fisher_info)), 3)
+        lo95ci = round(ep - (1.96 * se), 3)
+        hi95ci = round(ep + (1.96 * se), 3)
         setattr(script, 'estimated_parameter_in_set', ep)
-        setattr(script, 'lo_lo95ci', lo95ci)
-        setattr(script, 'lo_hi95ci', hi95ci)
+        setattr(script, 'lo95ci', lo95ci)
+        setattr(script, 'hi95ci', hi95ci)
 
         #append to the array for correlation of development-only assigned parameter values--only for development testing
         a.append(script.parameter_value)
@@ -132,14 +134,15 @@ def compute_scripts_and_save():
         script.save()
 
 
-    #compute all scripts' count of same probability
+    #compute all scripts' count of others with same probability
     compute_same_p()
     #compute new set correlation of actual and estimated parameter values
-    r = round(np.corrcoef(a,e)[0][1],5)
+    r = round(np.corrcoef(a,e)[0][1],3)
+    #r, p = spearmanr(a,e) the rank correlation coefficient seems too inflated to be helpful
     set = Set.objects.get(pk=1) #for now, there is only one Set object to get
     setattr(set, 'cor_est_to_actual', r)
     set.save()
-    return()
+    return(r)
 
 def compute_diffs():
     scripts = Script.objects.all()
@@ -167,41 +170,84 @@ def build_btl_array():
     df = pd.DataFrame(btl_array)
     return btl_array, df
 
+def get_resultschart():
+    resultsdata = DataPool(
+        series=[{
+            'options': {
+                'source': Script.objects.filter(se__lt=7)             
+            },
+            'terms': [
+                'id',
+                'estimated_parameter_in_set',
+                #'lo95ci',
+                #'hi95ci',
+                'parameter_value',
+            ]
+        }]
+    )
+    cht2= Chart(
+        datasource=resultsdata,
+        series_options=[{
+            'options': {
+                'type': 'scatter',
+                'linewidth': '1',
+            },
+            'terms': {
+                'id': [ 
+                    'parameter_value',
+                    'estimated_parameter_in_set',
+                    #'lo95ci',
+                    #'hi95ci',
+                ],
+            }
+        }],
+        chart_options={
+            'title': {'text': 'Results'},
+            'xAxis': {'title':{'text': 'Item Number'}},
+            'yAxis': {'title': {'text': 'Estimated & Actual Parameter Value'}},
+            'legend': {'enabled': True},
+            'credits': {'enabled': True}
+            }
+    )
+    return cht2
+
 def get_scriptchart():
     scriptdata = DataPool(
         series=[{
             'options': {
-                'source': Script.objects.filter(se__lt=10)
+                'source': Script.objects.filter(se__lt=7)
             },
             'terms': [
-                'lo_of_win_in_set',
-                'fisher_info',
+                'id',
                 'se',
                 'stdev',
-                'rmse_in_set'
+                'rmse_in_set',
+                'count_same_p',
             ]
         }]
-)
+    )
     cht = Chart(
         datasource=scriptdata,
         series_options=[{
             'options': {
                 'type': 'scatter', 
                 'lineWidth': '1',
-            }, 
+            },
             'terms': {
-                'lo_of_win_in_set': [
-                    'fisher_info', 
+                'id': [ 
                     'se', 
                     'stdev', 
-                    'rmse_in_set'
+                    'rmse_in_set',
+                    'count_same_p',
                 ]
             }}
             ],
         chart_options={
             'title': {'text': 'Script Data'}, 
-            'xAxis': {'title': {'text': 'Logodds'}}, 
-            'yAxis': {'title': {'text': 'Value'}}, 
-            'legend': {'enabled': True}, 'credits': {'enabled': True}}
-)
+            'xAxis': {'title': {'text': 'Item Number'}}, 
+            'yAxis': {'title': {'text': 'Computed SE, RMSE & SD for Development'}}, 
+            'legend': {'enabled': True}, 
+            'credits': {'enabled': True}
+        }
+    )
     return cht

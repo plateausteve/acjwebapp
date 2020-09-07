@@ -3,26 +3,35 @@
 {% block content %}
     <script src="https://code.highcharts.com/highcharts.src.js"></script>
     <script src="https://code.jquery.com/jquery-1.12.4.js"   integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU="   crossorigin="anonymous"></script>
-    
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+
     {% load chartit %}
-    {{ scriptchart|load_charts:"cht" }}
+    {{ chart_list|load_charts:"cht, cht2" }}
     <body>
         <h1>Script List with Current Computations:</h1>
         <p>Set {{ set.pk }} correlation estimated to actual: {{ set.cor_est_to_actual }}          Comparisons: {{ listcount }}    Average diff from actual: {{ diffs }}</p>
-        <div id='cht'> Chart will be rendered here </div>
+        <p>Order by "{{ orderby }}."</p>
+        <div id='cht'> First chart will be rendered here </div>
+        <div id='cht2'> Second chart will be rendered here </div>
         {% if user.is_superuser %}
             {% if jcount > 0 %}
-                <form method="POST" class="autocomparisonform">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <input type="hidden" name="scripti" value="{{ scripti }}">
-                    <input type="hidden" name="scriptj" value="{{ scriptj }}">
-                    <input type="submit" value="Click this button to autocompare Script #{{ scripti.id }} and Script #{{ scriptj.id }}">
-                </form>
-                {% else %}<h1>Ran out of scripts to pair.</h1>
+            <table>
+                <tr>
+                    <td>
+                        <form method="POST" class="autocomparisonform">
+                            {% csrf_token %}
+                            {{ form.as_p }}
+                            <input type="hidden" name="scripti" value="{{ scripti }}">
+                            <input type="hidden" name="scriptj" value="{{ scriptj }}">
+                            <input type="submit" value="Autocompare {{ scripti.id }} & {{ scriptj.id }}">
+                        </form>
+                    </td>
+                </tr>
+            </table>
+            {% else %}<h1>Ran out of scripts to pair.</h1>
             {% endif %}
         {% endif %}
-        {% if script_table %} 
+        {% if script_table %}
                 <table border="1" style="font-size:x-small">
                     <tr>
                         <th>User</th>
@@ -30,16 +39,16 @@
                         <th>Comps</th>
                         <th>Wins</th>
                         <th>Prob</th>
-                        <th>Same P Count</th>
-                        <th>SD</th>
-                        <th>low 95% CI</th>
+                        <th>RMSE(p)</th>
+                        <th>Same P</th>
+                        <th>SD(p)</th>
                         <th>LO &phi;</th>
-                        <th>high 95% CI</th>
-                        <th>MLE &theta;</th>
-                        <th>Actual</th>
                         <th>I(&phi;)</th>
                         <th>SE(&phi;)</th>
-                        <th>RMSE</th>
+                        <th>&theta; low 95%CI</th>
+                        <th>MLE &theta;</th>
+                        <th>&theta; high 95% CI</th>
+                        <th>Actual</th>
                     </tr>
                     {% for script in script_table %}
                     <tr>
@@ -48,16 +57,16 @@
                         <td>{{ script.comps_in_set }}</td>
                         <td>{{ script.wins_in_set }}</td>
                         <td>{{ script.prob_of_win_in_set }}</td>
+                        <td>{{ script.rmse_in_set }}</td>
                         <td>{{ script.count_same_p }}</td>
                         <td>{{ script.stdev }}</td>
-                        <td>{{ script.lo_lo95ci }}</td>
                         <td>{{ script.lo_of_win_in_set }}</td>
-                        <td>{{ script.lo_hi95ci }}</td>
-                        <td>{{ script.estimated_parameter_in_set }}</td>
-                        <td>{{ script.parameter_value }}</td>
                         <td>{{ script.fisher_info }}</td>
                         <td>{{ script.se }}</td>
-                        <td>{{ script.rmse_in_set }}</td>
+                        <td>{{ script.lo95ci }}</td>
+                        <td>{{ script.estimated_parameter_in_set }}</td>
+                        <td>{{ script.hi95ci }}</td>
+                        <td>{{ script.parameter_value }}</td>
                     </tr>
                     {% endfor %}
                 </table>

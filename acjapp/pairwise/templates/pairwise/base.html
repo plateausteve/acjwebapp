@@ -31,12 +31,15 @@
                     {% if user.is_superuser %}
                     <td><a href="/compare_auto">Autocompare</a></td>
                     {% endif %}
-                    <td><a href="/script_chart">Chart</a></td>
+                    <td><a href="/script_chart">Charts</a></td>
+                </tr>
+                {% if user.is_authenticated %}
+                <tr>
+                Welcome, {% if user.first_name %}{{ user.first_name }}{% else %}{{ user }}{% endif %}.
+                {% endif %}
                 </tr>
             </table>
-            {% if user.is_authenticated %}
-            Welcome, {% if user.first_name %}{{ user.first_name }}{% else %}{{ user }}{% endif %}.
-            {% endif %}
+
         </div>
         <div class="content container">
             {% block content %}
@@ -52,7 +55,7 @@
                     {% if user.is_superuser %}
                     <td><a href="/compare_auto">Autocompare</a></td>
                     {% endif %}
-                    <td><a href="/script_chart">Chart</a></td>
+                    <td><a href="/script_chart">Charts</a></td>
                 </tr>
             </table>
         </div>  

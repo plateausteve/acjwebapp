@@ -12,12 +12,12 @@
                 <th>Left Win</th>
                 <th>Right Script</th>
                 <th>Right Win</th>
-                <th>Set Correl</th>
+                <th>Resulting Set Correl</th>
                 <!--<th>Uninterrupted</th>
                 <th>Interest</th>
-                <th>Difficulty</th>-->
+                <th>Difficulty</th>
                 <th>Start</th>
-                <th>End</th>
+                <th>End</th>-->
                 <th>Duration</th>
             </tr>
             {% for comparison in comparison_list %}
@@ -32,9 +32,9 @@
                 <td>{{ comparison.resulting_set_corr }}</td>
                 <!--<td>{{ comparison.uninterrupted }}</td>
                 <td>{{ comparison.interest_rating }}</td>
-                <td>{{ comparison.difficulty_rating }}</td>-->
+                <td>{{ comparison.difficulty_rating }}</td>
                 <td>{{ comparison.decision_start }}</td>
-                <td>{{ comparison.decision_end }}</td>
+                <td>{{ comparison.decision_end }}</td>-->
                 <td>{{ comparison.duration }}</td>
             </tr>
             {% endfor %}

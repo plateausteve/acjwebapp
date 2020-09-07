@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from .models import Script, ScriptForm, Comparison, ComparisonForm, Set, AutoComparisonForm, WinForm
 from random import sample
 from django.views import generic
-from .utils import compute_scripts_and_save, script_selection, compute_diffs, build_btl_array, get_scriptchart
+from .utils import compute_scripts_and_save, script_selection, compute_diffs, build_btl_array, get_scriptchart, get_resultschart
 import operator
 from operator import itemgetter
 import numpy as np
@@ -79,11 +79,12 @@ def script_list(request):
         return redirect('/script_list')
 
     else: #if the form is being generated for the first time send the template what it needs, i.e. which two scripts to compare
-        compslist, j, scripti, scriptj = script_selection()
+        compslist, j, scripti, scriptj, orderby = script_selection()
         listcount = len(compslist)
         jcount = len(j)
         diffs = compute_diffs()
         cht = get_scriptchart()
+        cht2 = get_resultschart()
         form = AutoComparisonForm()
         
         return render(request, 'pairwise/script_list.html', {
@@ -96,7 +97,8 @@ def script_list(request):
                 'script_table': script_table, 
                 'set': set,
                 'diffs': diffs,
-                'scriptchart': cht
+                'chart_list': [cht, cht2],
+                'orderby': orderby,
                 } 
                 )
 
@@ -127,11 +129,13 @@ def compare(request):
             else:
                 comparison.winj=1
             comparison.save()
-            compute_scripts_and_save()
+            r=compute_scripts_and_save()
+            setattr(comparison, 'resulting_set_corr', r)
+            comparison.save()
         return redirect('/compare')
 
     else: #if the form is being generated for the first time send the template what it needs
-        compslist, j, scripti, scriptj = script_selection() 
+        compslist, j, scripti, scriptj, orderby = script_selection() 
         listcount = len(compslist)
         jcount = len(j)
         diffs = compute_diffs()
@@ -151,6 +155,7 @@ def compare(request):
                     'set': set,
                     'diffs': diffs,
                     'starttime': starttime,
+                    'orderby': orderby
                     } 
                 )
         else: # when no more comparisons are available, stop and send to Script List page
@@ -174,7 +179,7 @@ def compare_auto(request):
     set = Set.objects.get(pk=1)
     #do all the comparisons determined
     for x in range(comparisons_to_do):
-        compslist, j, scripti, scriptj = script_selection()
+        compslist, j, scripti, scriptj, orderby = script_selection()
         jcount = len(j)
         listcount = len(compslist)
         # now both scripti and scriptj objects are selected, time to assign wins and losses
@@ -191,11 +196,15 @@ def compare_auto(request):
             end = timezone.now()
             duration = end - start
             Comparison.objects.create(set=set, scripti=scripti, scriptj=scriptj, judge=judge, wini=wini, winj=winj, resulting_set_corr=resulting_set_corr, decision_end=end, decision_start=start, duration=duration)
-            compute_scripts_and_save()
+            r=compute_scripts_and_save()
+            comparison=Comparison.objects.last()
+            setattr(comparison, 'resulting_set_corr', r)
+            comparison.save()
     diffs = compute_diffs()
     script_table = Script.objects.all().order_by('-lo_of_win_in_set')
     form = AutoComparisonForm()
     cht = get_scriptchart()
+    cht2 = get_resultschart()
 
     return render(request, 'pairwise/script_list.html', {
         'j': j,
@@ -208,7 +217,8 @@ def compare_auto(request):
         'script_table': script_table, 
         'set': set,
         'diffs': diffs,
-        'scriptchart': cht,
+        'chart_list': [cht, cht2],
+        'orderby': orderby,
         } 
         )
 
@@ -216,11 +226,17 @@ class ComparisonListView(generic.ListView):
     model = Comparison
 
 def update(request):
-    compute_scripts_and_save()
-    return render(request, 'pairwise/update.html', {})
+    r=compute_scripts_and_save()
+    return render(request, 'pairwise/update.html', {'r': r})
 
 def script_chart_view(request):
+    cht2 = get_resultschart()
     cht = get_scriptchart()
-    return render(request, 'pairwise/script_chart.html', {'scriptchart': cht})
+    return render(request, 'pairwise/script_chart.html', {'chart_list': [cht, cht2]})
+
+#def results_chart_view(request):
+    #cht = get_resultschart()
+    #return render(request, 'pairwise/results.html', {'resultschart': cht})
+
 
 
