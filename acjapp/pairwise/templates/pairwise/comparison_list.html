@@ -12,13 +12,15 @@
                 <th>Left Win</th>
                 <th>Right Script</th>
                 <th>Right Win</th>
-                <th>Resulting Set Correl</th>
+                <th>Set Cor</th>
+                <th>Ave Diff</th>
+                <th>Select Method</th>
                 <!--<th>Uninterrupted</th>
                 <th>Interest</th>
                 <th>Difficulty</th>
                 <th>Start</th>
-                <th>End</th>-->
-                <th>Duration</th>
+                <th>End</th>
+                <th>Duration</th>-->
             </tr>
             {% for comparison in comparison_list %}
             <tr>
@@ -30,12 +32,14 @@
                 <td>{{ comparison.scriptj.pk }}</td>
                 <td>{{ comparison.winj }}</td>
                 <td>{{ comparison.resulting_set_corr }}</td>
+                <td>{{ comparison.average_diff_est_act }}</td>
+                <td>{{ comparison.select_method }}</td>
                 <!--<td>{{ comparison.uninterrupted }}</td>
                 <td>{{ comparison.interest_rating }}</td>
                 <td>{{ comparison.difficulty_rating }}</td>
                 <td>{{ comparison.decision_start }}</td>
-                <td>{{ comparison.decision_end }}</td>-->
-                <td>{{ comparison.duration }}</td>
+                <td>{{ comparison.decision_end }}</td>
+                <td>{{ comparison.duration }}</td>-->
             </tr>
             {% endfor %}
         </table>

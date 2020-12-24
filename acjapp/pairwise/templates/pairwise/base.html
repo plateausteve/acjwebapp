@@ -30,12 +30,15 @@
                     <td><a href="/update">Update</a></td>
                     {% if user.is_superuser %}
                     <td><a href="/compare_auto">Autocompare</a></td>
+                    <td><a href="/compare_all">Autocompare All</a></td>
                     {% endif %}
                     <td><a href="/script_chart">Charts</a></td>
                 </tr>
                 {% if user.is_authenticated %}
                 <tr>
-                Welcome, {% if user.first_name %}{{ user.first_name }}{% else %}{{ user }}{% endif %}.
+                    <h3 style="color:#ffffff; text-align: center;font-size: 12pt;">Welcome, {% if user.first_name %}{{ user.first_name }}{% else %}{{ user }}{% endif %}.</h3>
+                {% else %}
+                    <h3 style="color:#ffffff; text-align: center;font-size: 12pt;">Please <a href="http://127.0.0.1:8000/admin/login/?next=/admin/">log in</a>.</h3>    
                 {% endif %}
                 </tr>
             </table>
