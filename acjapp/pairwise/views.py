@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from .models import Script, ScriptForm, Comparison, ComparisonForm, Set, AutoComparisonForm, WinForm
 from random import sample
 from django.views import generic
-from .utils import compute_scripts_and_save, script_selection, compute_diffs, build_btl_array, get_scriptchart, get_resultschart
+from .utils import compute_scripts_and_save, script_selection, compute_diffs, compute_corr, compute_last_comparison_after_calcs, build_btl_array, get_scriptchart, get_resultschart
 import operator
 from operator import itemgetter
 import numpy as np
@@ -73,14 +73,15 @@ def script_list(request):
             else:
                 comparison.winj=1
                 comparison.wini=0
-            ave_diffs=compute_diffs()
-            setattr(comparison, 'average_diff_est_act', ave_diffs)
-            comparison.save()
-            compute_scripts_and_save()#after the comparison above, update all scripts' computed fields with computations based on latest comparison
+            #after the comparison above, update all scripts' computed fields with computations based on latest comparison, also set correlation
+            compute_scripts_and_save()
+            diffs, r = compute_last_comparison_after_calcs()      
         return redirect('/script_list')
 
     else: #if the form is being generated for the first time send the template what it needs, i.e. which two scripts to compare
         compslist, j, scripti, scriptj, orderby = script_selection()
+        if len(j) == 0: #give script selection another try if this time it comes up empty. not the tidiest solution
+            compslist, j, scripti, scriptj, orderby = script_selection()
         listcount = len(compslist)
         jcount = len(j)
         diffs = compute_diffs()
@@ -130,15 +131,11 @@ def compare(request):
                 comparison.winj=0 
             else:
                 comparison.winj=1
-            r=compute_scripts_and_save()
-            setattr(comparison, 'resulting_set_corr', r)
-            ave_diffs=compute_diffs()
-            setattr(comparison, 'average_diff_est_act', ave_diffs)
-            comparison.save()
+            diffs, r = compute_last_comparison_after_calcs() 
         return redirect('/compare')
 
     else: #if the form is being generated for the first time send the template what it needs
-        list, j, scripti, scriptj, orderby = script_selection() 
+        compslist, j, scripti, scriptj, orderby = script_selection() 
         listcount = len(compslist)
         jcount = len(j)
         diffs = compute_diffs()
@@ -195,31 +192,25 @@ def compare_all(request):
                 wini = 0
                 winj = 1
             judge = request.user
-            resulting_set_corr = set.cor_est_to_actual
-            diffs=compute_diffs()
             start = timezone.now()
             end = timezone.now()
             duration = end - start
-            r = compute_scripts_and_save()
-            Comparison.objects.create(set=set, 
+            #create a new comparison with all variables that can be set before computing other variables
+            Comparison.objects.create(
+                set=set, 
                 scripti=scripti, 
                 scriptj=scriptj, 
                 judge=judge, 
                 wini=wini, 
                 winj=winj, 
-                #resulting_set_corr=resulting_set_corr, 
                 decision_end=end, 
                 decision_start=start, 
                 duration=duration,
-                resulting_set_corr=r,
-                average_diff_est_act=diffs,
                 select_method=orderby)
+            #calculate remaining variables for the newly created comparison record, now that the needed info is stored there.
+            compute_scripts_and_save()
+            diffs, r = compute_last_comparison_after_calcs()
             
-            #comparison=Comparison.objects.last()
-            #setattr(comparison, 'resulting_set_corr', r)
-            #setattr(comparison, 'average_diff_est_act', diffs)
-            #setattr(comparison, 'select_method', orderby)
-            #comparison.save()
     script_table = Script.objects.all().order_by('-lo_of_win_in_set')
     form = AutoComparisonForm()
     cht = get_scriptchart()
@@ -258,18 +249,24 @@ def compare_auto(request):
                 wini = 0
                 winj = 1
             judge = request.user
-            resulting_set_corr = set.cor_est_to_actual
-            ave_diffs=compute_diffs()
+            diffs=compute_diffs()
             start = timezone.now()
             end = timezone.now()
             duration = end - start
-            Comparison.objects.create(set=set, scripti=scripti, scriptj=scriptj, judge=judge, wini=wini, winj=winj, resulting_set_corr=resulting_set_corr, decision_end=end, decision_start=start, duration=duration)
-            r=compute_scripts_and_save()
-            comparison=Comparison.objects.last()
-            setattr(comparison, 'resulting_set_corr', r)
-            setattr(comparison, 'average_diff_est_act', ave_diffs)
-            setattr(comparison, 'select_method', orderby)
-            comparison.save()
+            Comparison.objects.create(
+                set=set, 
+                scripti=scripti, 
+                scriptj=scriptj, 
+                judge=judge, 
+                wini=wini, 
+                winj=winj, 
+                decision_end=end, 
+                decision_start=start, 
+                duration=duration,
+                select_method=orderby
+                )
+            compute_scripts_and_save()
+            diffs, r = compute_last_comparison_after_calcs()        
     diffs = compute_diffs()
     script_table = Script.objects.all().order_by('-lo_of_win_in_set')
     form = AutoComparisonForm()

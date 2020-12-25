@@ -7,6 +7,15 @@ import operator
 from operator import itemgetter
 from chartit import DataPool, Chart
 
+def compute_last_comparison_after_calcs():
+    diffs = compute_diffs()
+    r = compute_corr()
+    comparison=Comparison.objects.last()
+    setattr(comparison, 'resulting_set_corr', r)
+    setattr(comparison, 'average_diff_est_act', diffs)
+    comparison.save()
+    return diffs, r
+
 def compute_same_p():
     scriptsp=Script.objects.all()
     for script in scriptsp:
@@ -24,40 +33,62 @@ def build_compslist():
         compslist.append([i, j])
     return compslist
 
-def compute_lodiff(index, loi, script):
-    scriptj = script 
-    loj = script.lo_of_win_in_set    
-    lodiff = abs(loi - loj) # compute the difference in LO between scripti and scriptj candidate
-    return(lodiff, scriptj)
+def compute_corr():
+    scripts = Script.objects.all()
+    a = [] #we'll build a as one vector for actual parameter value in a corr computation -- only for development
+    e = [] #we'll build e as the other vector, the estimated parameter value for the correlation
+    for script in scripts:
+        a.append(script.parameter_value)
+        e.append(script.estimated_parameter_in_set)
+    #compute new set correlation of actual and estimated parameter values
+    # r = round(np.corrcoef(a,e)[0][1],3) disabled momentarily to try the kendalltau rank correlation
+    #r, p = spearmanr(a,e) the rank correlation coefficient seems too inflated to be helpful
+    r = round(kendalltau(a, e) [0],3)
+    set = Set.objects.get(pk=1) #for now, there is only one Set object to get
+    setattr(set, 'cor_est_to_actual', r)
+    set.save()
+    return(r)
+
+def compute_diffs():
+    scripts = Script.objects.all()
+    count = Script.objects.count()
+    diffs = 0
+    for script in scripts:
+        diffs += abs(script.parameter_value - script.estimated_parameter_in_set)
+    diffs = round(diffs/count*100, 3)
+    return(diffs)
 
 def order_scripts(compslist, orderby, scriptcount):
     #select scripti as the first in a query with filter and order_by
-    if orderby == .1: # select scripti as one with fewest comparisons so far, then random
-        scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('comps_in_set'), start=0)
-    elif orderby == .2: # select scripti as one with lowest fisher info
-        scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('fisher_info', '?'), start=0) #use se_lt=7 to filter out top and bottom if needed
-    elif orderby == .3: # select scripti as one with greatest standard error of parameter estimate
+    if orderby == 1: # select scripti as one with fewest comparisons so far, then random PROMISING
+        scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('comps_in_set', '?'), start=0)
+    elif orderby == 2: 
+        scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('fisher_info', '?'), start=0)
+    elif orderby == 3: 
         scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('-se', '?'), start=0)
-    elif orderby == .4: # select scripti as one with greatest rmse of parameter estimate
+    elif orderby == 4: 
         scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('-rmse_in_set', '?'), start=0)
-    else: #orderby .5 select scripti as the one with the greatest count of same p
+    elif orderby == 5: # promising
         scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('-count_same_p', '?'), start=0)
+    
+    ordered_scriptsj = []
     for index, script in scripts: 
-        ordered_scriptsj = []
         if index == 0: # first iteration set selected scripti as first in ordered scripts list
             scripti = script
-            loi = script.lo_of_win_in_set # set loi as first script's loi
-            lodiff = 0 # set difference in loi as 0 (self)
+            loi = script.lo_of_win_in_set
         else: # create an array of ordered scripts for scriptj selection
-            lodiff, scriptj = compute_lodiff(index, loi, script) #other iterations select scriptj's as next in ordered list.
+            scriptj = script 
+            loj = script.lo_of_win_in_set    
+            lodiff = abs(loi - loj) # compute the difference in LO between scripti and scriptj candidate
             fisher_info = script.fisher_info
             se = script.se
             rmse = script.rmse_in_set
             samep = script.count_same_p
             if [scripti.id, scriptj.id] not in compslist and [scriptj.id, scripti.id] not in compslist: #no replacement after selection of a pair
                 ordered_scriptsj.append([script.id, lodiff, fisher_info, se, rmse, samep])
-        #now resort the scriptj list by least of designated column in the array, the column determined by orderby .1:lodiff, .2:fisher_info, .3: se, .4:rmse
-        j=sorted(ordered_scriptsj, key = itemgetter(int(orderby*10))) #j is an array of script.id, LO diff, fisher info, se & rmse all possible pairs for scripti
+        #now resort the scriptj list by least of designated column in the array, the column determined by orderby 1:lodiff; 2:fisher_info; 3: se; 4:rmse; 5:samep
+        #j=sorted(ordered_scriptsj, key = itemgetter(orderby)) 
+        j=sorted(ordered_scriptsj, key = itemgetter(1)) #j is an array of script.id, LO diff, fisher info, se & rmse all possible pairs for scripti
     return scripti, j 
 
 def script_selection():
@@ -65,17 +96,7 @@ def script_selection():
     scriptcount = Script.objects.count()
     compslist = build_compslist()
     compcount = len(compslist)
-    orderby = .1
-    #if compcount < (scriptcount * 2): # at first, select scripti by choosing from among those with least number of comparisons
-    #    orderby = .1 
-    #elif compcount < (scriptcount * 3):
-    #    orderby = .2  
-    #elif compcount < (scriptcount * 4):
-    #    orderby = .3
-    #elif compcount < (scriptcount * 5):
-    #    orderby = .4
-    #else:
-    #    orderby = .5 
+    orderby = 5
     scripti, j = order_scripts(compslist, orderby, scriptcount)
     if len(j) > 0:
         scriptjselector = j[0][0] # select from the first row, first column, this is the id of the scriptj candidate matching criteria
@@ -134,32 +155,11 @@ def compute_scripts_and_save():
         setattr(script, 'lo95ci', lo95ci)
         setattr(script, 'hi95ci', hi95ci)
 
-        #append to the array for correlation of development-only assigned parameter values--only for development testing
-        a.append(script.parameter_value)
-        e.append(ep)
-    
         script.save()
-
-
-    #compute all scripts' count of others with same probability
-    compute_same_p()
-    #compute new set correlation of actual and estimated parameter values
-    # r = round(np.corrcoef(a,e)[0][1],3) disabled momentarily to try the kendalltau rank correlation
-    r = round(kendalltau(a, e) [0],3)
-    #r, p = spearmanr(a,e) the rank correlation coefficient seems too inflated to be helpful
-    set = Set.objects.get(pk=1) #for now, there is only one Set object to get
-    setattr(set, 'cor_est_to_actual', r)
-    set.save()
-    return(r)
-
-def compute_diffs():
-    scripts = Script.objects.all()
-    count = Script.objects.count()
-    diffs = 0
-    for script in scripts:
-        diffs += abs(script.parameter_value - script.estimated_parameter_in_set)
-    diffs = round(diffs/count*100, 3)
-    return(diffs)
+    #compute, set, and save attributes for all scripts that depend on above calculations
+    compute_same_p() #this saves all scripts with newly computed same p count
+    r = compute_corr() #this saves the new resulting set correlation
+    return
 
 def build_btl_array():
     scriptsx = Script.objects.all()

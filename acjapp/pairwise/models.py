@@ -67,7 +67,7 @@ class Comparison(models.Model):
         Greater = 1
     wini = models.PositiveSmallIntegerField(choices=Win.choices, verbose_name="is left lesser or greater?")
     winj = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name="is right lesser or greater?")
-    resulting_set_corr = models.FloatField(default=0, editable = False, verbose_name="computing the resulting correlation of set est param to actual")
+    resulting_set_corr = models.FloatField(default=0, editable = False, blank=True, null=True, verbose_name="computing the resulting correlation of set est param to actual")
     average_diff_est_act = models.FloatField(default=0, editable = False, verbose_name="computing the resulting difference of set est param to actual")
     select_method = models.FloatField(default=.1, verbose_name="method of selecting next comparison")
     class Interruption(models.IntegerChoices):
