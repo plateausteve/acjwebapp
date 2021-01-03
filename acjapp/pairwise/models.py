@@ -91,6 +91,7 @@ class Comparison(models.Model):
     decision_start = models.DateTimeField(editable = False, blank=True, null=True)
     decision_end = models.DateTimeField(editable = False, blank=True, null=True)
     duration = models.DurationField(editable = False, blank=True, null=True)
+    epchangeratio = models.FloatField(default = 0, null=True, blank=True, verbose_name="ratio of change in estimated parameter value of both scripts due to this comparison")
 
     def __str__(self):
         return str(self.pk)

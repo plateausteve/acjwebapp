@@ -13,7 +13,7 @@
         <div id='cht'> First chart will be rendered here </div>
         <div id='cht2'> Second chart will be rendered here </div>
         {% if user.is_superuser %}
-            {% if jcount > 0 %}
+            {% if scriptj is not None %}
             <table>
                 <tr>
                     <td>
@@ -74,7 +74,5 @@
         {% else %}
             <p>There are no scripts in the database. Head to the <a href="/admin">admin</a> section to upload a set of them.</p>
         {% endif %}   
-        <h3>Debug information:</h3>
-        <small>Script J Selection Array: Length: {{ jcount }} Elements: j[id, lodiff, fisher_info, se, rmse, samep] {{ j }}</small>
     </body>
 {% endblock %}

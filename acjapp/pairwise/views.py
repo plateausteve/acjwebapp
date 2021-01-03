@@ -79,20 +79,15 @@ def script_list(request):
         return redirect('/script_list')
 
     else: #if the form is being generated for the first time send the template what it needs, i.e. which two scripts to compare
-        compslist, j, scripti, scriptj, orderby = script_selection()
-        if len(j) == 0: #give script selection another try if this time it comes up empty. not the tidiest solution
-            compslist, j, scripti, scriptj, orderby = script_selection()
+        compslist, scripti, scriptj, orderby, epchangeratio = script_selection()
         listcount = len(compslist)
-        jcount = len(j)
         diffs = compute_diffs()
         cht = get_scriptchart()
         cht2 = get_resultschart()
         form = AutoComparisonForm()
         
         return render(request, 'pairwise/script_list.html', {
-                'j': j,
                 'listcount': listcount,
-                'jcount': jcount,
                 'scripti': scripti,
                 'scriptj': scriptj,
                 'form': form,
@@ -135,9 +130,8 @@ def compare(request):
         return redirect('/compare')
 
     else: #if the form is being generated for the first time send the template what it needs
-        compslist, j, scripti, scriptj, orderby = script_selection() 
+        compslist, scripti, scriptj, orderby, epchangeratio = script_selection() 
         listcount = len(compslist)
-        jcount = len(j)
         diffs = compute_diffs()
         set = Set.objects.get(pk=1)
         now = datetime.now() # use datetime not timezone in order to keep it the same through to other side of form 
@@ -146,9 +140,7 @@ def compare(request):
         if len(j) > 0: #as long as there are pairings available keep comparing
             form = WinForm()
             return render(request, 'pairwise/compare.html', {
-                    'j': j,
                     'listcount': listcount,
-                    'jcount': jcount,
                     'scripti': scripti,
                     'scriptj': scriptj,
                     'form': form,
@@ -162,9 +154,7 @@ def compare(request):
             script_table = Script.objects.all().order_by('-lo_of_win_in_set')
             form = AutoComparisonForm()
             return render(request, 'pairwise/script_list.html', {
-                'j': j,
                 'listcount': listcount,
-                'jcount': jcount,
                 'scripti': scripti,
                 'scriptj': scriptj,
                 'form': form,
@@ -180,11 +170,10 @@ def compare_all(request):
     set = Set.objects.get(pk=1)
     #do all the comparisons determined
     for x in range(comparisons_to_do):
-        compslist, j, scripti, scriptj, orderby = script_selection()
-        jcount = len(j)
+        compslist, scripti, scriptj, orderby, epchangeratio = script_selection()
         listcount = len(compslist)
         # now both scripti and scriptj objects are selected, time to assign wins and losses
-        if len(j) > 0: #only move ahead if j isn't an empty list
+        if scriptj is not None: #only move ahead if j isn't an empty list
             if scripti.parameter_value > scriptj.parameter_value: #compare scripts using development mode param value
                 wini = 1
                 winj = 0
@@ -206,7 +195,9 @@ def compare_all(request):
                 decision_end=end, 
                 decision_start=start, 
                 duration=duration,
-                select_method=orderby)
+                select_method=orderby,
+                epchangeratio=epchangeratio,
+                )
             #calculate remaining variables for the newly created comparison record, now that the needed info is stored there.
             compute_scripts_and_save()
             diffs, r = compute_last_comparison_after_calcs()
@@ -217,9 +208,7 @@ def compare_all(request):
     cht2 = get_resultschart()
 
     return render(request, 'pairwise/script_list.html', {
-        'j': j,
         'listcount': listcount,
-        'jcount': jcount,
         'compslist': compslist,
         'scripti': scripti,
         'scriptj': scriptj,
@@ -237,11 +226,10 @@ def compare_auto(request):
     set = Set.objects.get(pk=1)
     #do all the comparisons determined
     for x in range(comparisons_to_do):
-        compslist, j, scripti, scriptj, orderby = script_selection()
-        jcount = len(j)
+        compslist, scripti, scriptj, orderby, epchangeratio = script_selection()
         listcount = len(compslist)
         # now both scripti and scriptj objects are selected, time to assign wins and losses
-        if len(j) > 0: #only move ahead if j isn't an empty list
+        if scriptj is not None: #only move ahead ther is a j script
             if scripti.parameter_value > scriptj.parameter_value: #compare scripts using development mode param value
                 wini = 1
                 winj = 0
@@ -263,7 +251,8 @@ def compare_auto(request):
                 decision_end=end, 
                 decision_start=start, 
                 duration=duration,
-                select_method=orderby
+                select_method=orderby,
+                epchangeratio = epchangeratio
                 )
             compute_scripts_and_save()
             diffs, r = compute_last_comparison_after_calcs()        
@@ -274,9 +263,7 @@ def compare_auto(request):
     cht2 = get_resultschart()
 
     return render(request, 'pairwise/script_list.html', {
-        'j': j,
         'listcount': listcount,
-        'jcount': jcount,
         'compslist': compslist,
         'scripti': scripti,
         'scriptj': scriptj,
