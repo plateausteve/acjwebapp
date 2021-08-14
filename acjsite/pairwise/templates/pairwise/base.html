@@ -1,0 +1,48 @@
+{% load static %}
+<html>
+    <head>
+        <title>Comparative Judgment Webapp</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css"/>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans+Condensed:wght@300;700&display=swap">        
+        <link rel="stylesheet" href="{% static 'css/pairwise.css' %}">
+    
+        <style>
+            table {
+              text-align: center;
+              width: 100%;
+            }
+            th, tr, td {
+              padding: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="page-header">
+            <h1><a href="/">Comparative Judgment Webapp</a></h1>
+            <table>
+                <tr>
+                    <td><a href="/index">Home</a></td>
+                    <td><a href="/compare">Compare</a></td>
+                    <td><a href="/script_list">Scripts</a></td>
+                    <td><a href="/comparisons">Comparisons</a></td>
+                </tr>
+            </table>
+        </div>
+        <div class="content container">
+            {% block content %}
+            {% endblock %}
+        </div>
+        <div class="page-header">
+            <table>
+                <tr>
+                    <td><a href="/index">Home</a></td>
+                    <td><a href="/compare">Compare</a></td>
+                    <td><a href="/script_list">Scripts</a></td>
+                    <td><a href="/comparisons">Comparisons</a></td>
+                </tr>
+            </table>
+        </div>  
+    </body>
+</html>
