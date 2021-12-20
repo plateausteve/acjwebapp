@@ -46,6 +46,8 @@ class Script(models.Model):
         odds = (wins/(comps - wins))
         logodds = round(log(odds), 3)
         self.lo_of_win_in_set = logodds
+        self.estimated_parameter_in_set = 0 #set me
+        self.rmse_in_set = 1 # also set me
         self.save()
 
 

@@ -19,7 +19,7 @@ def compared(request):
 def compare(request):
     if request.method == 'POST':
         form = ComparisonForm(request.POST)
-        if form.is_valid():
+        if form.is_valid(): #of form is posted
             comparison = form.save(commit=False)
             comparison.judge = request.user
             comparison.scripti = Script.objects.get(pk=request.POST.get('scripti'))
@@ -101,24 +101,24 @@ def script_list(request):
 def update(request):
     scripts = Script.objects.all()
     for script in scripts:
-                #count all the comparisons each script has been involved in
-                script_comparisons_as_i_count = Comparison.objects.filter(scripti=script.pk).count()
-                script_comparisons_as_j_count = Comparison.objects.filter(scriptj=script.pk).count()
-                comps = script_comparisons_as_i_count + script_comparisons_as_j_count
-                setattr(script, 'comps_in_set', comps)
+        #count all the comparisons each script has been involved in
+        script_comparisons_as_i_count = Comparison.objects.filter(scripti=script.pk).count()
+        script_comparisons_as_j_count = Comparison.objects.filter(scriptj=script.pk).count()
+        comps = script_comparisons_as_i_count + script_comparisons_as_j_count
+        setattr(script, 'comps_in_set', comps)
 
-                #count all the comparisons each script has won
-                script_wins_as_i_count = Comparison.objects.filter(wini=1, scripti=script.pk).count()
-                script_wins_as_j_count = Comparison.objects.filter(winj=1, scriptj=script.pk).count()
-                wins = script_wins_as_i_count + script_wins_as_j_count
-                setattr(script, 'wins_in_set', wins)
-                
-                #compute the probability, odds, and logodds for each script
-                odds = (wins/(comps - wins + .001))
-                logodds = log(odds)
-                notzerocomps = comps + .001
-                setattr(script, 'prob_of_win_in_set', round(wins/notzerocomps,3)) 
-                setattr(script, 'lo_of_win_in_set', round(logodds,3))
-                script.save()
+        #count all the comparisons each script has won
+        script_wins_as_i_count = Comparison.objects.filter(wini=1, scripti=script.pk).count()
+        script_wins_as_j_count = Comparison.objects.filter(winj=1, scriptj=script.pk).count()
+        wins = script_wins_as_i_count + script_wins_as_j_count
+        setattr(script, 'wins_in_set', wins)
+        
+        #compute the probability, odds, and logodds for each script
+        odds = (wins/(comps - wins + .001))
+        logodds = log(odds)
+        notzerocomps = comps + .001
+        setattr(script, 'prob_of_win_in_set', round(wins/notzerocomps,3)) 
+        setattr(script, 'lo_of_win_in_set', round(logodds,3))
+        script.save()
     return render(request, 'pairwise/update.html', {})
 
