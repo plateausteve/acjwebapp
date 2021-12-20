@@ -10,6 +10,11 @@ django = "*"
 numpy = "*"
 python-decouple = "*"
 scipy = "*"
+datetime = "*"
+django-import-export = "*"
+pandas = "*"
+django-chartit = "*"
+django-utils-six = "*"
 
 [requires]
 python_version = "3.8"
