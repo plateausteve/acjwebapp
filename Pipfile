@@ -8,6 +8,7 @@ verify_ssl = true
 [packages]
 django = "*"
 numpy = "*"
+python-decouple = "*"
 scipy = "*"
 
 [requires]

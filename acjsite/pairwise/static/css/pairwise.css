@@ -1,0 +1,46 @@
+.page-header {
+    background-color: #24457e;
+    margin-top: 0;
+    padding: 20px 20px 20px 40px;
+}
+
+.page-header h1, .page-header h1 a, .page-header h1 a:visited, .page-header h1 a:active {
+    color: #ffffff;
+    font-size: 36pt;
+    text-decoration: none;
+    text-align: center;
+    padding-bottom: 0px;
+}
+
+.important {
+    font-size: 11pt;
+}
+
+.content {
+    margin-left: 40px;
+    font-size: 10pt;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: "Open Sans Condensed", sans;
+    padding-bottom: 10px;
+}
+
+p a {
+    color: #5975a7;
+}
+
+div.sidenav {
+    position: absolute;
+    right: -5;
+    top: 120;
+}
+
+div.sidenav table {
+    table-layout: auto;
+    width: 50%;
+}
+
+div.sidenav table th, div.sidenav table td {
+    padding: 2px;
+}
