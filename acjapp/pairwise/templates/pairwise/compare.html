@@ -1,0 +1,52 @@
+{% extends 'pairwise/base.html' %}
+
+{% block content %}
+{% if scriptj %}
+    <table style="align-self:center; width:100%">
+        <thead>
+            <th>Left Item</th>
+            <th>Right Item</th>
+        </thead>
+        <tr>
+            <!--Image:
+            <td>{% if scripti.image %}<img src="{{ scripti.image.url }}" alt="Image for {{ scripti.id }}" style="width:425px;height:550px;">{% endif %}</td>
+            <td>{% if scriptj.image %}<img src="{{ scriptj.image.url }}" alt="Image for {{ scriptj.id }}" style="width:425px;height:550px;">{% endif %}</td>
+        </tr>
+        <tr>-->
+            <!--PDF:-->
+            <td>{% if scripti.pdf %}<embed src="{{ scripti.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="425px" height="550px" >{% endif %}</td>
+            <td>{% if scriptj.pdf %}<embed src="{{ scriptj.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="425px" height="550px" >{% endif %}</td>
+        </tr>
+        <tr>
+            <td>
+                <form method="POST" class="comparison-form">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input type="hidden" name="wini" value="1">
+                    <input type="hidden" name="scripti" value="{{ scripti }}">
+                    <input type="hidden" name="scriptj" value="{{ scriptj }}">
+                    <input type="hidden" name="form_start_variable" value="{{ starttime }}">
+                    <input type="submit" value="Left is Greater"><!--replace is Greater with the relative statement for greater for the Set-->
+                </form>
+            </td>
+            <td>
+                <form method="POST" class="comparison-form">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input type="hidden" name="wini" value="0">
+                    <input type="hidden" name="scripti" value="{{ scripti }}">
+                    <input type="hidden" name="scriptj" value="{{ scriptj }}">
+                    <input type="hidden" name="form_start_variable" value="{{ starttime }}">
+                    <input type="submit" value="Right is Greater"><!--replace is Greater with the relative statement for greater for the Set-->
+                </form>
+            </td>
+        </tr>
+    </table>
+    <!-- how to add a comment or other info to this comparison? Have a checkbox that, if checked, will go to an intermediate comment and rating scale form, then come back to this-->
+
+{% else %}
+    <h3>Ran out of comparisons to do</h3>
+{% endif %}
+    <p>Debug information:</p>
+    <p>Start time: {{ starttime }}</p>
+{% endblock %}

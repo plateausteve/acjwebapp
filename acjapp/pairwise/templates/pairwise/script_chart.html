@@ -1,0 +1,13 @@
+{% extends 'pairwise/base.html' %}
+{% block content %}
+    <script src="https://code.highcharts.com/highcharts.src.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"   integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU="   crossorigin="anonymous"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+
+    {% load chartit %}
+    {{ chart_list|load_charts:"cht, cht2" }}
+    <body>
+        <div id='cht'> Chart 1 will be rendered here </div>
+        <div id='cht2'> Chart 2 will be rendered here </div>
+    </body>
+{% endblock %}

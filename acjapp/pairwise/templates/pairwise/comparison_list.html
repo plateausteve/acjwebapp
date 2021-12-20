@@ -1,0 +1,55 @@
+{% extends 'pairwise/base.html' %}
+{% block content %}
+    <body>
+        <h1>Comparison List:</h1>
+        {% if comparison_list %}
+        <table border="1" style="font-size:x-small; align-self: center;">
+            <tr>
+                <th>Key</th>
+                <th>Set</th>
+                <th>Judge</th>
+                <th>Left Script</th>
+                <th>Left Win</th>
+                <th>Right Script</th>
+                <th>Right Win</th>
+                <th>Set Cor</th>
+                <th>Ave Diff</th>
+                <th>EP Change Ratio</th>
+                <th>Select Method</th>
+                <!--<th>Uninterrupted</th>
+                <th>Interest</th>
+                <th>Difficulty</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Duration</th>-->
+            </tr>
+            {% for comparison in comparison_list %}
+            <tr>
+                <td>{{ comparison.pk }}</td>
+                <td>{{ comparison.set.pk }}</td>
+                <td>{{ comparison.judge.pk }}</td>
+                <td>{{ comparison.scripti.pk }}</td>
+                <td>{{ comparison.wini }}</td>
+                <td>{{ comparison.scriptj.pk }}</td>
+                <td>{{ comparison.winj }}</td>
+                <td>{{ comparison.resulting_set_corr }}</td>
+                <td>{{ comparison.average_diff_est_act }}</td>
+                <td>{{ comparison.epchangeratio  }}</td>
+                <td>{{ comparison.select_method }}</td>
+                <!--<td>{{ comparison.uninterrupted }}</td>
+                <td>{{ comparison.interest_rating }}</td>
+                <td>{{ comparison.difficulty_rating }}</td>
+                <td>{{ comparison.decision_start }}</td>
+                <td>{{ comparison.decision_end }}</td>
+                <td>{{ comparison.duration }}</td>-->
+            </tr>
+            {% endfor %}
+        </table>
+          {% else %}
+            <p>There are no comparisons in the database.</p>
+            <p>Click <a href="/compare">here</a> to do the first comparison of the set.</p>
+
+          {% endif %}       
+        <br>
+    </body>
+{% endblock %}
