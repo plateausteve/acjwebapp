@@ -15,6 +15,7 @@ django-import-export = "*"
 pandas = "*"
 django-chartit = "*"
 django-utils-six = "*"
+mysqlclient = "*"
 
 [requires]
 python_version = "3.8"
