@@ -79,7 +79,7 @@ def script_list(request):
         return redirect('/script_list')
 
     else: #if the form is being generated for the first time send the template what it needs, i.e. which two scripts to compare
-        compslist, scripti, scriptj, orderby, epchangeratio = script_selection()
+        compslist, scripti, scriptj, orderby, epchangeratio, j = script_selection()
         listcount = len(compslist)
         diffs = compute_diffs()
         cht = get_scriptchart()
@@ -130,7 +130,7 @@ def compare(request):
         return redirect('/compare')
 
     else: #if the form is being generated for the first time send the template what it needs
-        compslist, scripti, scriptj, orderby, epchangeratio = script_selection() 
+        compslist, scripti, scriptj, orderby, epchangeratio, j = script_selection() 
         listcount = len(compslist)
         diffs = compute_diffs()
         set = Set.objects.get(pk=1)

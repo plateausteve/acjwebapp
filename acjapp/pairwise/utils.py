@@ -160,7 +160,7 @@ def script_selection():
         #after all selection methods x have been tried, return the function    
         print("len(compslist):", len(compslist)," i id: ", scripti, "j id: ", scriptj, "sel method: ", orderby)
         print("got to the end of loop testing 5 sel methods")
-    return compslist, scripti, scriptj, orderby, epchangeratio
+    return compslist, scripti, scriptj, orderby, epchangeratio, j
 
 def compute_scripts_and_save():
     scripts = Script.objects.all()
