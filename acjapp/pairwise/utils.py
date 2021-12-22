@@ -64,8 +64,6 @@ def script_selection():
 
 def compute_scripts_and_save():
     scripts = Script.objects.all()
-    a = [] #we'll build a as one vector for actual parameter value in a corr computation -- only for development
-    e = [] #we'll build e as the other vector, the estimated parameter value for the correlation
     for script in scripts:
         #count all the comparisons each script has been involved in, including the most recent, set this attribute
         comparisons_as_i_count = Comparison.objects.filter(scripti=script).count()
