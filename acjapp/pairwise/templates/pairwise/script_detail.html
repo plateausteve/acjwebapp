@@ -6,7 +6,6 @@
             <td>
                 <p>Set: {{ script.set }}</p>
                 <p>ID: {{ script.pk }}</p>
-                <p>Parameter Value (dev only):{{ script.parameter_value }}</p>
                 <p>
                 {% if script.pdf %}
                     <embed src="{{ script.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="425px" height="550px" >

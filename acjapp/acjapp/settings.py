@@ -27,7 +27,7 @@ SECRET_KEY = config("SECRET_KEY")
 DEBUG = True
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['drawingtest.pythonanywhere.com',]
 
 
 # Application definition
@@ -84,11 +84,13 @@ WSGI_APPLICATION = 'acjapp.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'pairwise',
-        'USER': 'root',
+        'NAME': 'drawingtest$pairwise',
+        'USER': 'drawingtest',
         'PASSWORD': config('DB_PASSWORD'),
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'HOST': 'drawingtest.mysql.pythonanywhere-services.com',
+	'TEST': {
+		'NAME': 'drawingtest$test_pairwise',
+	}
     }
 }
 
@@ -134,3 +136,4 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
+X_FRAME_OPTIONS = 'SAMEORIGIN'

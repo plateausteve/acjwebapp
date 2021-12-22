@@ -2,22 +2,9 @@
 
 {% block content %}
 {% if scriptj %}
-    <table style="align-self:center; width:100%">
-        <thead>
-            <th>Left Item</th>
-            <th>Right Item</th>
-        </thead>
-        <tr>
-            <!--Image:
-            <td>{% if scripti.image %}<img src="{{ scripti.image.url }}" alt="Image for {{ scripti.id }}" style="width:425px;height:550px;">{% endif %}</td>
-            <td>{% if scriptj.image %}<img src="{{ scriptj.image.url }}" alt="Image for {{ scriptj.id }}" style="width:425px;height:550px;">{% endif %}</td>
-        </tr>
-        <tr>-->
-            <!--PDF:-->
-            <td>{% if scripti.pdf %}<embed src="{{ scripti.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="425px" height="550px" >{% endif %}</td>
-            <td>{% if scriptj.pdf %}<embed src="{{ scriptj.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="425px" height="550px" >{% endif %}</td>
-        </tr>
-        <tr>
+<div class="compare">
+    <table style="height: 100%">
+        <tr style="height: 5%">
             <td>
                 <form method="POST" class="comparison-form">
                     {% csrf_token %}
@@ -41,12 +28,20 @@
                 </form>
             </td>
         </tr>
+        <tr style="height: 90%">
+            <td>{% if scripti.pdf %}<embed src="{{ scripti.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="80%" height="100%">{% endif %}</td>
+            <td>{% if scriptj.pdf %}<embed src="{{ scriptj.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="80%" height="100%">{% endif %}</td>
+        </tr>
+        
     </table>
+</div>
     <!-- how to add a comment or other info to this comparison? Have a checkbox that, if checked, will go to an intermediate comment and rating scale form, then come back to this-->
 
 {% else %}
     <h3>Ran out of comparisons to do</h3>
 {% endif %}
     <p>Debug information:</p>
-    <p>Start time: {{ starttime }}</p>
+    <p>Script i: {{ scripti }}</p>
+    <p>Script j: {{ scriptj }}</p>
+    <p>List of Js: {{ j }}</p>
 {% endblock %}
