@@ -79,7 +79,7 @@ def script_list(request):
         return redirect('/script_list')
 
     else: #if the form is being generated for the first time send the template what it needs, i.e. which two scripts to compare
-        compslist, scripti, scriptj, orderby, epchangeratio, j = script_selection()
+        compslist, scripti, scriptj, j = script_selection()
         listcount = len(compslist)
         diffs = compute_diffs()
         cht = get_scriptchart()
@@ -95,7 +95,6 @@ def script_list(request):
                 'set': set,
                 'diffs': diffs,
                 'chart_list': [cht, cht2],
-                'orderby': orderby,
                 } 
                 )
 
@@ -130,7 +129,7 @@ def compare(request):
         return redirect('/compare')
 
     else: #if the form is being generated for the first time send the template what it needs
-        compslist, scripti, scriptj, orderby, epchangeratio, j = script_selection() 
+        compslist, scripti, scriptj, j = script_selection() 
         listcount = len(compslist)
         diffs = compute_diffs()
         set = Set.objects.get(pk=1)
@@ -147,7 +146,6 @@ def compare(request):
                     'set': set,
                     'diffs': diffs,
                     'starttime': starttime,
-                    'orderby': orderby,
                     } 
                 )
         else: # when no more comparisons are available, stop and send to Script List page
@@ -170,7 +168,7 @@ def compare_all(request):
     set = Set.objects.get(pk=1)
     #do all the comparisons determined
     for x in range(comparisons_to_do):
-        compslist, scripti, scriptj, orderby, epchangeratio = script_selection()
+        compslist, scripti, scriptj, j = script_selection()
         listcount = len(compslist)
         # now both scripti and scriptj objects are selected, time to assign wins and losses
         if scriptj is not None: #only move ahead if j isn't an empty list
@@ -195,8 +193,8 @@ def compare_all(request):
                 decision_end=end, 
                 decision_start=start, 
                 duration=duration,
-                select_method=orderby,
-                epchangeratio=epchangeratio,
+                select_method=0,
+                epchangeratio=0,
                 )
             #calculate remaining variables for the newly created comparison record, now that the needed info is stored there.
             compute_scripts_and_save()
@@ -217,7 +215,6 @@ def compare_all(request):
         'set': set,
         'diffs': diffs,
         'chart_list': [cht, cht2],
-        'orderby': orderby,
         } 
         )
 
@@ -226,7 +223,7 @@ def compare_auto(request):
     set = Set.objects.get(pk=1)
     #do all the comparisons determined
     for x in range(comparisons_to_do):
-        compslist, scripti, scriptj, orderby, epchangeratio = script_selection()
+        compslist, scripti, scriptj, j = script_selection()
         listcount = len(compslist)
         # now both scripti and scriptj objects are selected, time to assign wins and losses
         if scriptj is not None: #only move ahead ther is a j script
@@ -251,8 +248,8 @@ def compare_auto(request):
                 decision_end=end, 
                 decision_start=start, 
                 duration=duration,
-                select_method=orderby,
-                epchangeratio = epchangeratio
+                select_method=0,
+                epchangeratio = 0
                 )
             compute_scripts_and_save()
             diffs, r = compute_last_comparison_after_calcs()        
@@ -272,7 +269,6 @@ def compare_auto(request):
         'set': set,
         'diffs': diffs,
         'chart_list': [cht, cht2],
-        'orderby': orderby,
         } 
         )
 
