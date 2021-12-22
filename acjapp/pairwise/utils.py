@@ -8,7 +8,7 @@ from operator import itemgetter
 from chartit import DataPool, Chart
 
 def compute_script_ep(logodds):
-    ep = round(57.689 + (logodds * 11.826), 3)
+    ep = round(57.689 + (logodds * 11.826), 3) #this formula is based on previous testing with greys estimated to actual value
     #modeled the actual correlation between phi and theta at 300 comps using the 7n switchcount 
     #y intercept=57.689 and slope is 11.826
     return ep

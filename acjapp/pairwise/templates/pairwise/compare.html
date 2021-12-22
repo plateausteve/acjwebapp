@@ -4,14 +4,6 @@
 {% if scriptj %}
 <div class="compare">
     <table style="height: 100%">
-        <thead style="height: 5%">
-            <th>Left Item</th>
-            <th>Right Item</th>
-        </thead>
-        <tr style="height: 90%">
-            <td>{% if scripti.pdf %}<embed src="{{ scripti.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="80%" height="100%">{% endif %}</td>
-            <td>{% if scriptj.pdf %}<embed src="{{ scriptj.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="80%" height="100%">{% endif %}</td>
-        </tr>
         <tr style="height: 5%">
             <td>
                 <form method="POST" class="comparison-form">
@@ -36,6 +28,11 @@
                 </form>
             </td>
         </tr>
+        <tr style="height: 90%">
+            <td>{% if scripti.pdf %}<embed src="{{ scripti.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="80%" height="100%">{% endif %}</td>
+            <td>{% if scriptj.pdf %}<embed src="{{ scriptj.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="80%" height="100%">{% endif %}</td>
+        </tr>
+        
     </table>
 </div>
     <!-- how to add a comment or other info to this comparison? Have a checkbox that, if checked, will go to an intermediate comment and rating scale form, then come back to this-->

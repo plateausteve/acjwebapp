@@ -23,12 +23,15 @@
             <h1><a href="/">Comparative Judgment Webapp</a></h1>
             <table>
                 <tr>
+                    {% if user.is_authenticated %}
                     <td><a href="/index">Home</a></td>
+                    <td><a href="/admin">Admin</a></td>
                     <td><a href="/compare">Compare</a></td>
                     <td><a href="/script_list">Scripts</a></td>
                     <td><a href="/comparisons">Comparisons</a></td>
                     <td><a href="/update">Update</a></td>
                     <td><a href="/script_chart">Charts</a></td>
+                    {% endif %}
                 </tr>
                 {% if user.is_authenticated %}
                 <tr>
@@ -47,14 +50,15 @@
         <div class="page-header">
             <table>
                 <tr>
+                    {% if user.is_authenticated %}
                     <td><a href="/index">Home</a></td>
+                    <td><a href="/admin">Admin</a></td>
                     <td><a href="/compare">Compare</a></td>
                     <td><a href="/script_list">Scripts</a></td>
                     <td><a href="/comparisons">Comparisons</a></td>
-                    {% if user.is_superuser %}
-                    <td><a href="/compare_auto">Autocompare</a></td>
-                    {% endif %}
+                    <td><a href="/update">Update</a></td>
                     <td><a href="/script_chart">Charts</a></td>
+                    {% endif %}
                 </tr>
             </table>
         </div>  

@@ -43,7 +43,7 @@ class Script(models.Model):
     def __str__(self):
         return str(self.pk)
 
-class ScriptForm(forms.ModelForm):
+class ScriptForm(forms.ModelForm): # not currently in use--front end add & edit
     class Meta:
         model = Script
         fields = [
@@ -51,7 +51,6 @@ class ScriptForm(forms.ModelForm):
         widgets = {
             'user': forms.HiddenInput(),
         }
-
 
 
 class Comparison(models.Model):
@@ -97,7 +96,7 @@ class ComparisonForm(forms.ModelForm):
             'scriptj': forms.HiddenInput(),
             'form_start_variable': forms.HiddenInput(),
         }
-        
+
 class WinForm(forms.ModelForm):
         class Meta:
             model = Comparison
