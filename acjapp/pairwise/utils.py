@@ -13,15 +13,6 @@ def compute_script_ep(logodds):
     #y intercept=57.689 and slope is 11.826
     return ep
 
-def compute_last_comparison_after_calcs():
-    diffs = compute_diffs()
-    r = compute_corr()
-    comparison=Comparison.objects.last()
-    setattr(comparison, 'resulting_set_corr', r)
-    setattr(comparison, 'average_diff_est_act', diffs)
-    comparison.save()
-    return diffs, r
-
 def compute_same_p():
     scriptsp=Script.objects.all()
     for script in scriptsp:
@@ -39,30 +30,6 @@ def build_compslist():
         compslist.append([i, j])
     return compslist
 
-def compute_corr():
-    scripts = Script.objects.all()
-    a = [] #we'll build a as one vector for actual parameter value in a corr computation -- only for development
-    e = [] #we'll build e as the other vector, the estimated parameter value for the correlation
-    for script in scripts:
-        a.append(script.parameter_value)
-        e.append(script.estimated_parameter_in_set)
-    #compute new set correlation of actual and estimated parameter values
-    # r = round(np.corrcoef(a,e)[0][1],3) disabled momentarily to try the kendalltau rank correlation
-    #r, p = spearmanr(a,e) the rank correlation coefficient seems too inflated to be helpful
-    r = round(kendalltau(a, e) [0],3)
-    set = Set.objects.get(pk=1) #for now, there is only one Set object to get
-    setattr(set, 'cor_est_to_actual', r)
-    set.save()
-    return(r)
-
-def compute_diffs():
-    scripts = Script.objects.all()
-    count = Script.objects.count()
-    diffs = 0
-    for script in scripts:
-        diffs += abs(script.parameter_value - script.estimated_parameter_in_set)
-    diffs = round(diffs/count*100, 3)
-    return(diffs)
 
 def script_selection():
     #select scripti, scriptj, get j list for display in debug info
@@ -148,7 +115,6 @@ def compute_scripts_and_save():
         script.save()
     #compute, set, and save attributes for all scripts that depend on above calculations
     compute_same_p() #this saves all scripts with newly computed same p count
-    r = compute_corr() #this saves the new resulting set correlation
     return
 
 def build_btl_array():
@@ -179,7 +145,6 @@ def get_resultschart():
                 'estimated_parameter_in_set',
                 #'lo95ci',
                 #'hi95ci',
-                'parameter_value',
             ]
         }]
     )
@@ -192,7 +157,6 @@ def get_resultschart():
             },
             'terms': {
                 'id': [ 
-                    'parameter_value',
                     'estimated_parameter_in_set',
                     #'lo95ci',
                     #'hi95ci',

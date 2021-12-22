@@ -1,13 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from datetime import datetime
 from django.utils import timezone
 from django.urls import reverse
 from django.http import HttpResponseRedirect, HttpResponse
-from .models import Script, ScriptForm, Comparison, ComparisonForm, Set, AutoComparisonForm, WinForm
+from .models import Script, ScriptForm, Comparison, ComparisonForm, Set, WinForm
 from random import sample
 from django.views import generic
 from django.views.decorators.clickjacking import xframe_options_exempt
-from .utils import compute_scripts_and_save, script_selection, compute_diffs, compute_corr, compute_last_comparison_after_calcs, build_btl_array, get_scriptchart, get_resultschart
+from .utils import compute_scripts_and_save, script_selection, build_btl_array, get_scriptchart, get_resultschart
 import operator
 from operator import itemgetter
 import numpy as np
@@ -51,55 +52,21 @@ def script_edit(request, pk):
 def script_list(request):
     script_table = Script.objects.all().order_by('-lo_of_win_in_set')
     set = Set.objects.get(pk=1)
-    if request.method == 'POST': #if the auto-compare button has been clicked to get us here
-        form = AutoComparisonForm(request.POST)
-        if form.is_valid():
-            comparison = form.save(commit=False)
-            comparison.judge = request.user
-            comparison.scripti = Script.objects.get(pk=request.POST.get('scripti'))
-            comparison.scriptj = Script.objects.get(pk=request.POST.get('scriptj'))
-            comparison.set = Set.objects.get(pk=1) #for now there is only one set object
-            comparison.resulting_set_corr = comparison.set.cor_est_to_actual
-            comparison.select_method = request.POST.get('select_method')
-            start = timezone.now()
-            end = timezone.now() #use datetime instead of timezone because of conversion from timestamp
-            comparison.decision_end = end
-            comparison.decision_start = start
-            duration = end - start
-            comparison.duration = duration
-            #set winj value to the opposite of wini
-            if comparison.scripti.parameter_value > comparison.scriptj.parameter_value:
-                comparison.winj=0 
-                comparison.wini=1
-            else:
-                comparison.winj=1
-                comparison.wini=0
-            #after the comparison above, update all scripts' computed fields with computations based on latest comparison, also set correlation
-            compute_scripts_and_save()
-            diffs, r = compute_last_comparison_after_calcs()      
-        return redirect('/script_list')
+    compslist, scripti, scriptj, j = script_selection()
+    listcount = len(compslist)
+    cht = get_scriptchart()
+    cht2 = get_resultschart()
+    
+    return render(request, 'pairwise/script_list.html', {
+        'listcount': listcount,
+        'scripti': scripti,
+        'scriptj': scriptj,
+        'script_table': script_table, 
+        'set': set,
+        'chart_list': [cht, cht2],
+        } 
+        )
 
-    else: #if the form is being generated for the first time send the template what it needs, i.e. which two scripts to compare
-        compslist, scripti, scriptj, j = script_selection()
-        listcount = len(compslist)
-        diffs = compute_diffs()
-        cht = get_scriptchart()
-        cht2 = get_resultschart()
-        form = AutoComparisonForm()
-        
-        return render(request, 'pairwise/script_list.html', {
-                'listcount': listcount,
-                'scripti': scripti,
-                'scriptj': scriptj,
-                'form': form,
-                'script_table': script_table, 
-                'set': set,
-                'diffs': diffs,
-                'chart_list': [cht, cht2],
-                } 
-                )
-
-#@xframe_options_exempt
 def compare(request): 
     if request.method == 'POST': #if submitting comparison form in order to arrive here 
         form = ComparisonForm(request.POST)
@@ -109,9 +76,7 @@ def compare(request):
             comparison.judge = request.user
             comparison.scripti = Script.objects.get(pk=request.POST.get('scripti'))
             comparison.scriptj = Script.objects.get(pk=request.POST.get('scriptj'))
-            comparison.set = Set.objects.get(pk=1) #for now there is only one set object
-            comparison.resulting_set_corr = comparison.set.cor_est_to_actual
-            comparison.select_method = request.POST.get('select_method')
+            comparison.set = Set.objects.get(pk=1)
             comparison.difficulty_rating = comparison.difficulty_rating
             comparison.interest_rating = comparison.interest_rating
             comparison.uninterrupted = comparison.uninterrupted
@@ -129,13 +94,13 @@ def compare(request):
                 comparison.winj=0 
             else:
                 comparison.winj=1
-            diffs, r = compute_last_comparison_after_calcs() 
+        else: 
+            messages.error(request, "Error")
         return redirect('/compare')
 
     else: #if the form is being generated for the first time send the template what it needs
         compslist, scripti, scriptj, j = script_selection() # keep j so it can be used to end comparisons when list is empty
         listcount = len(compslist)
-        diffs = compute_diffs()
         set = Set.objects.get(pk=1)
         now = datetime.now() # use datetime not timezone in order to keep it the same through to other side of form 
         starttime = now.timestamp
@@ -148,7 +113,6 @@ def compare(request):
                     'scriptj': scriptj,
                     'form': form,
                     'set': set,
-                    'diffs': diffs,
                     'starttime': starttime,
                     'j': j,
                     #'Content-Security-Policy': "frame-ancestors 'self' http://127.0.0.1:8000",    
@@ -156,128 +120,14 @@ def compare(request):
                 )
         else: # when no more comparisons are available, stop and send to Script List page
             script_table = Script.objects.all().order_by('-lo_of_win_in_set')
-            form = AutoComparisonForm()
             return render(request, 'pairwise/script_list.html', {
                 'listcount': listcount,
                 'scripti': scripti,
                 'scriptj': scriptj,
-                'form': form,
                 'script_table': script_table, 
                 'set': set,
-                'diffs': diffs,
                 } 
             )
-
-def compare_all(request):
-    Comparison.objects.all().delete()
-    comparisons_to_do = Script.objects.count() * 10 #save for later int((Script.objects.all().count() * (Script.objects.all().count()-1)/2) - Comparison.objects.all().count())
-    set = Set.objects.get(pk=1)
-    #do all the comparisons determined
-    for x in range(comparisons_to_do):
-        compslist, scripti, scriptj, j = script_selection()
-        listcount = len(compslist)
-        # now both scripti and scriptj objects are selected, time to assign wins and losses
-        if scriptj is not None: #only move ahead if j isn't an empty list
-            if scripti.parameter_value > scriptj.parameter_value: #compare scripts using development mode param value
-                wini = 1
-                winj = 0
-            else:
-                wini = 0
-                winj = 1
-            judge = request.user
-            start = timezone.now()
-            end = timezone.now()
-            duration = end - start
-            #create a new comparison with all variables that can be set before computing other variables
-            Comparison.objects.create(
-                set=set, 
-                scripti=scripti, 
-                scriptj=scriptj, 
-                judge=judge, 
-                wini=wini, 
-                winj=winj, 
-                decision_end=end, 
-                decision_start=start, 
-                duration=duration,
-                select_method=0,
-                epchangeratio=0,
-                )
-            #calculate remaining variables for the newly created comparison record, now that the needed info is stored there.
-            compute_scripts_and_save()
-            diffs, r = compute_last_comparison_after_calcs()
-            
-    script_table = Script.objects.all().order_by('-lo_of_win_in_set')
-    form = AutoComparisonForm()
-    cht = get_scriptchart()
-    cht2 = get_resultschart()
-
-    return render(request, 'pairwise/script_list.html', {
-        'listcount': listcount,
-        'compslist': compslist,
-        'scripti': scripti,
-        'scriptj': scriptj,
-        'form': form,
-        'script_table': script_table, 
-        'set': set,
-        'diffs': diffs,
-        'chart_list': [cht, cht2],
-        } 
-        )
-
-def compare_auto(request):
-    comparisons_to_do = Script.objects.count() # save for later int((Script.objects.all().count() * (Script.objects.all().count()-1)/2) - Comparison.objects.all().count())
-    set = Set.objects.get(pk=1)
-    #do all the comparisons determined
-    for x in range(comparisons_to_do):
-        compslist, scripti, scriptj, j = script_selection()
-        listcount = len(compslist)
-        # now both scripti and scriptj objects are selected, time to assign wins and losses
-        if scriptj is not None: #only move ahead ther is a j script
-            if scripti.parameter_value > scriptj.parameter_value: #compare scripts using development mode param value
-                wini = 1
-                winj = 0
-            else:
-                wini = 0
-                winj = 1
-            judge = request.user
-            diffs=compute_diffs()
-            start = timezone.now()
-            end = timezone.now()
-            duration = end - start
-            Comparison.objects.create(
-                set=set, 
-                scripti=scripti, 
-                scriptj=scriptj, 
-                judge=judge, 
-                wini=wini, 
-                winj=winj, 
-                decision_end=end, 
-                decision_start=start, 
-                duration=duration,
-                select_method=0,
-                epchangeratio = 0
-                )
-            compute_scripts_and_save()
-            diffs, r = compute_last_comparison_after_calcs()        
-    diffs = compute_diffs()
-    script_table = Script.objects.all().order_by('-lo_of_win_in_set')
-    form = AutoComparisonForm()
-    cht = get_scriptchart()
-    cht2 = get_resultschart()
-
-    return render(request, 'pairwise/script_list.html', {
-        'listcount': listcount,
-        'compslist': compslist,
-        'scripti': scripti,
-        'scriptj': scriptj,
-        'form': form,
-        'script_table': script_table, 
-        'set': set,
-        'diffs': diffs,
-        'chart_list': [cht, cht2],
-        } 
-        )
-
 
 
 class ComparisonListView(generic.ListView):

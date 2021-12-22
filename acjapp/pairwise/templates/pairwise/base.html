@@ -28,10 +28,6 @@
                     <td><a href="/script_list">Scripts</a></td>
                     <td><a href="/comparisons">Comparisons</a></td>
                     <td><a href="/update">Update</a></td>
-                    {% if user.is_superuser %}
-                    <td><a href="/compare_auto">Autocompare</a></td>
-                    <td><a href="/compare_all">Autocompare All</a></td>
-                    {% endif %}
                     <td><a href="/script_chart">Charts</a></td>
                 </tr>
                 {% if user.is_authenticated %}

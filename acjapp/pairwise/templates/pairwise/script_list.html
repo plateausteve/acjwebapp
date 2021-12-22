@@ -9,28 +9,9 @@
     {{ chart_list|load_charts:"cht, cht2" }}
     <body>
         <h1>Script List with Current Computations:</h1>
-        <p>Set {{ set.pk }}; Correlation estimated to actual: {{ set.cor_est_to_actual }}; Comparisons: {{ listcount }}; Average diff from actual: {{ diffs }}.</p>
+        <p>Set {{ set.pk }}; Comparisons: {{ listcount }}.</p>
         <div id='cht'> First chart will be rendered here </div>
         <div id='cht2'> Second chart will be rendered here </div>
-        {% if user.is_superuser %}
-            {% if scriptj is not None %}
-            <table>
-                <tr>
-                    <td>
-                        <form method="POST" class="autocomparisonform">
-                            {% csrf_token %}
-                            {{ form.as_p }}
-                            <input type="hidden" name="scripti" value="{{ scripti }}">
-                            <input type="hidden" name="scriptj" value="{{ scriptj }}">
-                            <!--<input type="hidden" name="select_method" value="{{ orderby }}">-->
-                            <input type="submit" value="Autocompare {{ scripti.id }} & {{ scriptj.id }}">
-                        </form>
-                    </td>
-                </tr>
-            </table>
-            {% else %}<h1>Ran out of scripts to pair.</h1>
-            {% endif %}
-        {% endif %}
         {% if script_table %}
                 <table border="1" style="font-size:x-small">
                     <tr>
@@ -66,7 +47,6 @@
                         <td>{{ script.lo95ci }}</td>
                         <td>{{ script.estimated_parameter_in_set }}</td>
                         <td>{{ script.hi95ci }}</td>
-                        <td>{{ script.parameter_value }}</td>
                     </tr>
                     {% endfor %}
                 </table>
