@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from .models import Script, ScriptForm, Comparison, ComparisonForm, Set, AutoComparisonForm, WinForm
 from random import sample
 from django.views import generic
+from django.views.decorators.clickjacking import xframe_options_exempt
 from .utils import compute_scripts_and_save, script_selection, compute_diffs, compute_corr, compute_last_comparison_after_calcs, build_btl_array, get_scriptchart, get_resultschart
 import operator
 from operator import itemgetter
@@ -98,9 +99,11 @@ def script_list(request):
                 } 
                 )
 
-def compare(request):
+#@xframe_options_exempt
+def compare(request): 
     if request.method == 'POST': #if submitting comparison form in order to arrive here 
         form = ComparisonForm(request.POST)
+        print (form)
         if form.is_valid():
             comparison = form.save(commit=False)
             comparison.judge = request.user
@@ -119,6 +122,7 @@ def compare(request):
             comparison.decision_start = starttime
             duration = end - starttime
             comparison.duration = duration
+            print (comparison.judge, comparison.duration)
 
             #set winj value to the opposite of wini
             if comparison.wini==1:
@@ -129,7 +133,7 @@ def compare(request):
         return redirect('/compare')
 
     else: #if the form is being generated for the first time send the template what it needs
-        compslist, scripti, scriptj, j = script_selection() 
+        compslist, scripti, scriptj, j = script_selection() # keep j so it can be used to end comparisons when list is empty
         listcount = len(compslist)
         diffs = compute_diffs()
         set = Set.objects.get(pk=1)
@@ -146,6 +150,8 @@ def compare(request):
                     'set': set,
                     'diffs': diffs,
                     'starttime': starttime,
+                    'j': j,
+                    #'Content-Security-Policy': "frame-ancestors 'self' http://127.0.0.1:8000",    
                     } 
                 )
         else: # when no more comparisons are available, stop and send to Script List page
