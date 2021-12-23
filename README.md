@@ -29,31 +29,71 @@ Then, create a virtual environment using Python 3.8 and use it to
 install the required packages. Here, we use python's venv.
 
 ```
-python -m venv venv
+python3.8 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Still in the virtual environment, change to the folder containing
-``settings_local.py`` and ``settings_pa.py``.
+## Secret keys
+
+Change to the folder ``acjapp`` and create a file called ``.env``.
 
 ```
-cd acjapp/acjapp
+cd acjapp
+touch .env
 ```
 
-Each of these files contains the settings required to host the webapp
-a) locally (through 127.0.0.1) or b) on PythonAnywhere. In order to
-host the app online, you will likely need to create your own settings
-file or customize the existing PythonAnywhere file to fit your account
-and MySQL database.
-
-In order to host the site locally, create a symlink.
+Then, use your preferred text editor to edit the file. You should
+create two entries in the file. Django uses ``SECRET_KEY`` to run
+the server, and will use ``DB_PASSWORD`` to connect to your mySQL
+database once we set it up.
 
 ```
-ln -s settings_local.py settings.py
+SECRET_KEY = "your secret key"
+DB_PASSWORD = "your database password"
 ```
 
-Then, change to the directory above and use manage.py to run the server.
+## Setting up mySQL
+
+From this point, we assume that you will be hosting the site locally
+on your computer. If this is not true, and you are using a hosting
+service, you should set up a mySQL database as the service reccommends.
+
+If you do not already have mySQL installed, do so. This can vary
+greatly based on your operating system, so a good place to start is
+[https://dev.mysql.com/doc/mysql-installation-excerpt/8.0/en/](https://dev.mysql.com/doc/mysql-installation-excerpt/8.0/en/).
+
+Use your mySQL installation to create a new database for use with this
+project. Then, create a new user for it identified by the database
+password you entered in ``.env``.
+
+```
+mysql> CREATE DATABASE pairwise;
+mysql> CREATE USER 'django'@'localhost' IDENTIFIED BY "your database password";
+mysql> GRANT ALL PRIVILEGES ON pairwise.* TO django@localhost;
+mysql> quit
+```
+
+You don't need to do any further setup on the database, as Django will
+create the correct tables.
+
+## Selecting or creating a settings file
+
+Inside the acjapp folder, there are two settings files. They
+separately contain the settings required to host the webapp a) locally
+(through 127.0.0.1) or b) on PythonAnywhere. In order to host the app
+online, you will likely need to create your own settings file or
+customize the existing PythonAnywhere file to match your account.
+
+In order to host the site locally, create a symlink to the local
+settings file.
+
+```
+ln -s acjapp/settings_local.py acjapp/settings.py
+```
+
+With the settings symlinked, you can finally run the server using
+``manage.py``.
 
 ```
 cd ..
