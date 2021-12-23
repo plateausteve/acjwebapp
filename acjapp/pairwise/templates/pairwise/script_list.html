@@ -9,7 +9,7 @@
     {{ chart_list|load_charts:"cht, cht2" }}
     <body>
         <h1>Script List with Current Computations:</h1>
-        <p>Set {{ set.pk }}; Comparisons: {{ listcount }}.</p>
+        <p>Set {{ set.pk }}; Comparisons: {{ compslist }}.</p>
         <div id='cht'> First chart will be rendered here </div>
         <div id='cht2'> Second chart will be rendered here </div>
         {% if script_table %}

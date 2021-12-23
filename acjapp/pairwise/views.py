@@ -38,27 +38,25 @@ def script_detail(request, pk):
 def script_list(request):
     script_table = Script.objects.all().order_by('-lo_of_win_in_set')
     set = Set.objects.get(pk=1)
-    compslist, scripti, scriptj, j = script_selection()
-    listcount = len(compslist)
+    compslist, scripti, scriptj, j_list = script_selection()
+    compscount = len(compslist)
     cht = get_scriptchart()
     cht2 = get_resultschart()
     
     return render(request, 'pairwise/script_list.html', {
-        'listcount': listcount,
+        'compscount': compscount,
         'scripti': scripti,
         'scriptj': scriptj,
         'script_table': script_table, 
         'set': set,
         'chart_list': [cht, cht2],
-        'j': j,
+        'j_list': j_list,
         } 
         )
 
 def compare(request): 
     if request.method == 'POST': #if submitting comparison form in order to arrive here 
         form = ComparisonForm(request.POST)
-        #print (form)
-        print(form.is_valid())
         if form.is_valid():
             comparison = form.save(commit=False)
             comparison.judge = request.user
@@ -82,37 +80,39 @@ def compare(request):
             else:
                 comparison.winj=1
         comparison.save()
+        compute_scripts_and_save()
+
         return redirect('/compare')
 
 
     else: #if the form is being generated for the first time send the template what it needs
-        compslist, scripti, scriptj, j = script_selection() # keep j so it can be used to end comparisons when list is empty
-        listcount = len(compslist)
+        compslist, scripti, scriptj, j_list = script_selection() #  j_list can be used to end comparisons when list is empty
+        compscount = len(compslist)
         set = Set.objects.get(pk=1)
         now = datetime.now() # use datetime not timezone in order to keep it the same through to other side of form 
         starttime = now.timestamp
-        #figure out how to check that there are no more pairings for others either to prevent early abort
-        if len(j) > 0: #as long as there are pairings available keep comparing
+        #I think I figured out how to check that there are no more pairings for others either to prevent early abort
+        # If this breaks down the line you know where to look
+        if len(j_list) > 0: #as long as there are pairings available keep comparing
             form = WinForm()
-            response = render(request, 'pairwise/compare.html', {
-                    'listcount': listcount,
+            return render(request, 'pairwise/compare.html', {
+                    'compscount': compscount,
                     'scripti': scripti,
                     'scriptj': scriptj,
                     'form': form,
                     'set': set,
                     'starttime': starttime,
-                    'j': j,
+                    'j_list': j_list,
                     } 
                 )
-            print("RESPONSE: ", response)
-            return response
+
         else: # when no more comparisons are available, stop and send to Script List page
             script_table = Script.objects.all().order_by('-lo_of_win_in_set')
             return render(request, 'pairwise/script_list.html', {
-                'listcount': listcount,
+                'compscount': compscount,
                 'scripti': scripti,
                 'scriptj': scriptj,
-                'script_table': script_table, 
+                #'script_table': script_table, 
                 'set': set,
                 } 
             )
@@ -121,8 +121,8 @@ class ComparisonListView(generic.ListView):
     model = Comparison
 
 def update(request):
-    r=compute_scripts_and_save()
-    return render(request, 'pairwise/update.html', {'r': r})
+    compute_scripts_and_save()
+    return render(request, 'pairwise/update.html')
 
 def script_chart_view(request):
     cht2 = get_resultschart()

@@ -48,14 +48,15 @@ def build_compslist():
 
 
 def script_selection():
-    #select scripti, scriptj, get j list for display in debug info
+    #select scripti, scriptj, get j_list list for display in debug info
     scriptcount = Script.objects.count()
     compslist = build_compslist()
-    scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('comps_in_set', '?'), start=0) #this orders by least comps so far
-    scriptsj = [] #set an empty scriptsj list for this iteration of x
+    scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount-1).order_by('comps_in_set', '?'), start=0) #this orders by least comps so far
+    scriptj_possibilities = []
     start = 0 #this start variable allows loop to continue if the first starting point results in no pairable scriptj 
     while start < Script.objects.count(): # when scriptj list is empty, loop through scripts to assign scripti, sortable scriptj ids, 
         for index, script in scripts: # iterate through all scripts, assigning scripti to the one at the starting point, list of others' ids as scriptj
+            print (index, script, script.comps_in_set ) 
             if index > start: #for all possible matches after scripti is set
                 if [scripti.id, script.id] not in compslist and [script.id, scripti.id] not in compslist:  # if neither scripti not script has already been compared
                     loj = script.lo_of_win_in_set #loj is compared to loi to select the closest pair for script i   
@@ -64,20 +65,20 @@ def script_selection():
                     se = script.se
                     rmse = script.rmse_in_set
                     samep = script.count_same_p
-                    scriptsj.append([script.id, lodiff, fisher_info, se, rmse, samep]) #scrtiptsj is an array of all possible scripts j and their important variables
+                    scriptj_possibilities.append([script.id, lodiff, fisher_info, se, rmse, samep]) #scrtiptsj is an array of all possible scripts j and their important variables
             else: # set scripti as first in ordered scripts list
                 scripti = script # this works because it overrides previous times scripti has been assigned as start variable increases
                 loi = script.lo_of_win_in_set #this variable loi helps to pick the script J with the most similar log odds
         start += 1 
-    # now the while loop is done, scriptsj is a list.
-    if len(scriptsj) > 0:
-        j=sorted(scriptsj, key = itemgetter(1)) # sort scriptsj by least lodiff
-        scriptjselector = j[0][0] # select from the first row, first column, this is the id of the scriptj candidate matching criteria
+    # now the while loop is done, scriptj_possibilities is a list.
+    if len(scriptj_possibilities) > 0:
+        j_list = sorted(scriptj_possibilities, key = itemgetter(1)) # sort scriptj_possibilities by least lodiff
+        scriptjselector = j_list[0][0] # select from the first row, first column, this is the id of the scriptj candidate matching criteria
         scriptj = Script.objects.get(pk = scriptjselector) #set the scriptj candidate object
     else:
-        j=[]
+        j_list = []
         scriptj = None
-    return compslist, scripti, scriptj, j
+    return compslist, scripti, scriptj, j_list
 
 def compute_scripts_and_save():
     scripts = Script.objects.all()
