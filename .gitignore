@@ -8,3 +8,8 @@ db.sqlite3
 acjapp/.env
 *.code-workspace
 venv
+
+# specific to pythonanywhere
+.env                                                                                                                              
+acjapp/pairwise/migrations/0031_remove_script_image.py                                                                            
+acjapp/static/css/
