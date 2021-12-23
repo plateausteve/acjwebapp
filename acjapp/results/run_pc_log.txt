@@ -1,5 +1,0 @@
-2020-08-23 20:53:03 root INFO: *** Running PairedCompCalc version 1.0.1
-2020-08-23 20:53:03 root INFO: Analysing paired-comparison data in /Users/stevenheil/Dropbox/djangodev3-1/acjapp/data
-2020-08-23 20:53:03 PairedCompCalc.pc_data INFO: Collected group 'K', attribute 'Value', with 0 subjects, mean nan items per subject
-2020-08-23 20:53:03 PairedCompCalc.pc_data INFO: Collected group 'Group0', attribute 'Value', with 0 subjects, mean nan items per subject
-2020-08-23 20:53:03 root INFO: Learning Results with model <class 'PairedCompCalc.pc_model.Thurstone'>

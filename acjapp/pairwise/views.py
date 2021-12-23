@@ -1,3 +1,19 @@
+# Drawing Test - Django-based comparative judgement for art assessment
+# Copyright (C) 2021  Steve and Ray Heil
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from datetime import datetime
@@ -34,6 +50,7 @@ def script_list(request):
         'script_table': script_table, 
         'set': set,
         'chart_list': [cht, cht2],
+        'j': j,
         } 
         )
 
@@ -77,7 +94,7 @@ def compare(request):
         #figure out how to check that there are no more pairings for others either to prevent early abort
         if len(j) > 0: #as long as there are pairings available keep comparing
             form = WinForm()
-            return render(request, 'pairwise/compare.html', {
+            response = render(request, 'pairwise/compare.html', {
                     'listcount': listcount,
                     'scripti': scripti,
                     'scriptj': scriptj,
@@ -87,6 +104,8 @@ def compare(request):
                     'j': j,
                     } 
                 )
+            print("RESPONSE: ", response)
+            return response
         else: # when no more comparisons are available, stop and send to Script List page
             script_table = Script.objects.all().order_by('-lo_of_win_in_set')
             return render(request, 'pairwise/script_list.html', {
