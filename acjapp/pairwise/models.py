@@ -19,8 +19,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 from django import forms
-from numpy import log 
-import numpy as np 
+from numpy import log
+import numpy as np
 import datetime
 
 class Set(models.Model):
@@ -33,7 +33,7 @@ class Set(models.Model):
     def publish(self):
         self.published_date = timezone.now()
         self.save()
-    
+
     def __str__(self):
         return self.name
 
@@ -41,7 +41,6 @@ class Script(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="the user who uploaded the script")
     set = models.ForeignKey(Set, on_delete=models.CASCADE, blank=True, null=True, verbose_name="the one set to which the script belongs")
     pdf = models.FileField(upload_to="scripts/pdfs", null=True, blank=True)
-    image = models.FileField(upload_to="scripts/images", null=True, blank=True)
     wins_in_set = models.PositiveSmallIntegerField(editable = False, default=0, verbose_name="count of all comparisons in which this script wins")
     comps_in_set = models.PositiveSmallIntegerField(editable = False, default=0, verbose_name="count of all comparisons with this script")
     comps_display = models.FloatField(editable = False, default=0, verbose_name="1/10th count of all comparisons with this script")
@@ -106,9 +105,9 @@ class Comparison(models.Model):
 class ComparisonForm(forms.ModelForm):
     class Meta:
         model = Comparison
-        fields = ['wini','scripti','scriptj', 'form_start_variable']#  'uninterrupted', 'interest_rating', 'difficulty_rating', 
+        fields = ['wini','scripti','scriptj', 'form_start_variable']#  'uninterrupted', 'interest_rating', 'difficulty_rating',
         widgets = {
-            'scripti': forms.HiddenInput(), 
+            'scripti': forms.HiddenInput(),
             'scriptj': forms.HiddenInput(),
             'form_start_variable': forms.HiddenInput(),
         }
@@ -119,7 +118,7 @@ class WinForm(forms.ModelForm):
             fields = ['wini','scripti','scriptj', 'form_start_variable']
             widgets = {
                 'wini':forms.HiddenInput(),
-                'scripti': forms.HiddenInput(), 
+                'scripti': forms.HiddenInput(),
                 'scriptj': forms.HiddenInput(),
                 'form_start_variable': forms.HiddenInput(),
             }

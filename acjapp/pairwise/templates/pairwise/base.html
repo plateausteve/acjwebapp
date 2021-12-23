@@ -5,9 +5,9 @@
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css"/>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans+Condensed:wght@300;700&display=swap">        
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans+Condensed:wght@300;700&display=swap">
         <link rel="stylesheet" href="{% static 'css/pairwise.css' %}">
-    
+
         <style>
             table {
               text-align: center;
@@ -37,7 +37,7 @@
                 <tr>
                     <h3 style="color:#ffffff; text-align: center;font-size: 12pt;">Welcome, {% if user.first_name %}{{ user.first_name }}{% else %}{{ user }}{% endif %}.</h3>
                 {% else %}
-                    <h3 style="color:#ffffff; text-align: center;font-size: 12pt;">Please <a href="http://127.0.0.1:8000/admin/login/?next=/admin/">log in</a>.</h3>    
+                    <h3 style="color:#ffffff; text-align: center;font-size: 12pt;">Please <a href="/admin/">log in</a>.</h3>
                 {% endif %}
                 </tr>
             </table>
@@ -61,6 +61,6 @@
                     {% endif %}
                 </tr>
             </table>
-        </div>  
+        </div>
     </body>
 </html>
