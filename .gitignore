@@ -8,11 +8,12 @@ db.sqlite3
 acjapp/.env
 *.code-workspace
 venv
+settings.py
 
 # specific to pythonanywhere
 .env                                                                                                                              
 acjapp/pairwise/migrations/0031_remove_script_image.py                                                                            
 acjapp/static/css/
 
-# symlink setting testing
-settings.py
+# do not back up the media we upload
+acjapp/media
