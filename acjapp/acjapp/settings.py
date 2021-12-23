@@ -40,7 +40,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 
 ALLOWED_HOSTS = ['drawingtest.pythonanywhere.com',]
@@ -153,3 +153,10 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+# Security-related settings from manage.py check --runserver
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+SECURE_HSTS_SECONDS = 3600
+SECURE_SSL_REDIRECT = True
+
