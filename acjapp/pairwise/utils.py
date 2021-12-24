@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .models import Script, Comparison, Set
-import numpy as np 
+import numpy as np
 import pandas as pd
 from numpy import log, sqrt, corrcoef
 from scipy.stats import spearmanr, kendalltau
@@ -51,12 +51,11 @@ def script_selection():
     #select scripti, scriptj, get j_list list for display in debug info
     scriptcount = Script.objects.count()
     compslist = build_compslist()
-    scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount-1).order_by('comps_in_set', '?'), start=0) #this orders by least comps so far
+    scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('comps_in_set'), start=0) #this orders by least comps so far
     scriptj_possibilities = []
     start = 0 #this start variable allows loop to continue if the first starting point results in no pairable scriptj 
     while start < Script.objects.count(): # when scriptj list is empty, loop through scripts to assign scripti, sortable scriptj ids, 
         for index, script in scripts: # iterate through all scripts, assigning scripti to the one at the starting point, list of others' ids as scriptj
-            print (index, script, script.comps_in_set ) 
             if index > start: #for all possible matches after scripti is set
                 if [scripti.id, script.id] not in compslist and [script.id, scripti.id] not in compslist:  # if neither scripti not script has already been compared
                     loj = script.lo_of_win_in_set #loj is compared to loi to select the closest pair for script i   
@@ -154,7 +153,7 @@ def get_resultschart():
     resultsdata = DataPool(
         series=[{
             'options': {
-                'source': Script.objects.filter(se__lt=7)             
+                'source': Script.objects.filter(se__lt=7).order_by('estimated_parameter_in_set')#can't get order by to affect chart x axis yet             
             },
             'terms': [
                 'id',
@@ -193,7 +192,7 @@ def get_scriptchart():
     scriptdata = DataPool(
         series=[{
             'options': {
-                'source': Script.objects.filter(se__lt=7)
+                'source': Script.objects.filter(se__lt=7).order_by('estimated_parameter_in_set')#can't get order by to affect chart x axis yet
             },
             'terms': [
                 'id',
