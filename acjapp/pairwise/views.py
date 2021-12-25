@@ -38,19 +38,13 @@ def script_detail(request, pk):
 def script_list(request):
     script_table = Script.objects.all().order_by('-lo_of_win_in_set')
     set = Set.objects.get(pk=3)
-    compslist, scripti, scriptj, j_list = script_selection()
-    compscount = len(compslist)
     cht = get_scriptchart()
     cht2 = get_resultschart()
     
     return render(request, 'pairwise/script_list.html', {
-        'compscount': compscount,
-        'scripti': scripti,
-        'scriptj': scriptj,
         'script_table': script_table, 
         'set': set,
         'chart_list': [cht, cht2],
-        'j_list': j_list,
         } 
         )
 
@@ -96,9 +90,6 @@ def compare(request):
         if len(j_list) > 0: #as long as there are pairings available keep comparing
             form = WinForm()
             return render(request, 'pairwise/compare.html', {
-                    'compscount': compscount,
-                    'scripti': scripti,
-                    'scriptj': scriptj,
                     'form': form,
                     'set': set,
                     'starttime': starttime,
@@ -108,12 +99,13 @@ def compare(request):
 
         else: # when no more comparisons are available, stop and send to Script List page
             script_table = Script.objects.all().order_by('-lo_of_win_in_set')
+            set = Set.objects.get(pk=3)
+            cht = get_scriptchart()
+            cht2 = get_resultschart()
             return render(request, 'pairwise/script_list.html', { # TODO: this shouldn't be happening. can we call it differently?
-                'compscount': compscount,
-                'scripti': scripti,
-                'scriptj': scriptj,
                 'script_table': script_table, 
                 'set': set,
+                'chart_list': [cht, cht2],
                 } 
             )
 
