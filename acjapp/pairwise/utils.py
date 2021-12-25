@@ -48,33 +48,29 @@ def build_compslist():
 
 
 def script_selection():
-    #select scripti, scriptj, get j_list list for display in debug info
     scriptcount = Script.objects.count()
     compslist = build_compslist()
-    scripts = enumerate(Script.objects.filter(comps_in_set__lt=scriptcount).order_by('comps_in_set'), start=0) #this orders by least comps so far
+    comparable_scripts = Script.objects.order_by('comps_in_set')
     scriptj_possibilities = []
-    start = 0 #this start variable allows loop to continue if the first starting point results in no pairable scriptj 
-    while start < Script.objects.count(): # when scriptj list is empty, loop through scripts to assign scripti, sortable scriptj ids, 
-        for index, script in scripts: # iterate through all scripts, assigning scripti to the one at the starting point, list of others' ids as scriptj
-            if index > start: #for all possible matches after scripti is set
-                if [scripti.id, script.id] not in compslist and [script.id, scripti.id] not in compslist:  # if neither scripti not script has already been compared
-                    loj = script.lo_of_win_in_set #loj is compared to loi to select the closest pair for script i   
-                    lodiff = abs(loi - loj) # compute the difference in LO between scripti and scriptj candidate
-                    fisher_info = script.fisher_info
-                    se = script.se
-                    rmse = script.rmse_in_set
-                    samep = script.count_same_p
-                    scriptj_possibilities.append([script.id, lodiff, fisher_info, se, rmse, samep]) #scrtiptsj is an array of all possible scripts j and their important variables
-            else: # set scripti as first in ordered scripts list
-                scripti = script # this works because it overrides previous times scripti has been assigned as start variable increases
-                loi = script.lo_of_win_in_set #this variable loi helps to pick the script J with the most similar log odds
-        start += 1 
-    # now the while loop is done, scriptj_possibilities is a list.
-    if len(scriptj_possibilities) > 0:
-        j_list = sorted(scriptj_possibilities, key = itemgetter(1)) # sort scriptj_possibilities by least lodiff
-        scriptjselector = j_list[0][0] # select from the first row, first column, this is the id of the scriptj candidate matching criteria
-        scriptj = Script.objects.get(pk = scriptjselector) #set the scriptj candidate object
-    else:
+
+    # Go through all comparable scripts, and choose the first as scripti. 
+    # Calculate the difference in log odds between scripti and every following script
+    for i, script in enumerate(comparable_scripts, start=0):
+        if i == 0:
+            if script.comps_in_set == scriptcount-1:
+                return compslist, None, None, [] # everything is empty
+            scripti = script
+            loi = script.lo_of_win_in_set
+        elif [scripti.id, script.id] not in compslist and [script.id, scripti.id] not in compslist: # don't consider this scriptj if it's already been compared
+            loj = script.lo_of_win_in_set
+            lodiff = abs(loi-loj)
+            scriptj_possibilities.append([script.id, lodiff])
+    
+    # Based on the calculated log odds difference, choose the most similar script and display it on the page.
+    if scriptj_possibilities: # if there are possibilities, we choose the most similar
+        j_list = sorted(scriptj_possibilities, key=itemgetter(1))
+        scriptj = Script.objects.get(pk = j_list[0][0]) # the item that has the smallest log odds difference (lodiff)
+    else: # if there are no possibilities, we can't choose a scriptj at all. whatever recieves the request will have to deal with a NoneType
         j_list = []
         scriptj = None
     return compslist, scripti, scriptj, j_list

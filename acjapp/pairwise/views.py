@@ -37,7 +37,7 @@ def script_detail(request, pk):
 
 def script_list(request):
     script_table = Script.objects.all().order_by('-lo_of_win_in_set')
-    set = Set.objects.get(pk=1)
+    set = Set.objects.get(pk=3)
     compslist, scripti, scriptj, j_list = script_selection()
     compscount = len(compslist)
     cht = get_scriptchart()
@@ -62,7 +62,7 @@ def compare(request):
             comparison.judge = request.user
             comparison.scripti = Script.objects.get(pk=request.POST.get('scripti'))
             comparison.scriptj = Script.objects.get(pk=request.POST.get('scriptj'))
-            comparison.set = Set.objects.get(pk=1)
+            comparison.set = Set.objects.get(pk=3)
             comparison.difficulty_rating = comparison.difficulty_rating
             comparison.interest_rating = comparison.interest_rating
             comparison.uninterrupted = comparison.uninterrupted
@@ -88,7 +88,7 @@ def compare(request):
     else: #if the form is being generated for the first time send the template what it needs
         compslist, scripti, scriptj, j_list = script_selection() #  j_list can be used to end comparisons when list is empty
         compscount = len(compslist)
-        set = Set.objects.get(pk=1)
+        set = Set.objects.get(pk=3)
         now = datetime.now() # use datetime not timezone in order to keep it the same through to other side of form 
         starttime = now.timestamp
         #I think I figured out how to check that there are no more pairings for others either to prevent early abort
@@ -108,11 +108,11 @@ def compare(request):
 
         else: # when no more comparisons are available, stop and send to Script List page
             script_table = Script.objects.all().order_by('-lo_of_win_in_set')
-            return render(request, 'pairwise/script_list.html', {
+            return render(request, 'pairwise/script_list.html', { # TODO: this shouldn't be happening. can we call it differently?
                 'compscount': compscount,
                 'scripti': scripti,
                 'scriptj': scriptj,
-                #'script_table': script_table, 
+                'script_table': script_table, 
                 'set': set,
                 } 
             )
