@@ -23,7 +23,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from .models import Script, ScriptForm, Comparison, ComparisonForm, Set, WinForm
 from random import sample
 from django.views import generic
-from .utils import compute_scripts_and_save, script_selection, build_btl_array, get_scriptchart, get_resultschart
+from .utils import compute_scripts_and_save, script_selection, get_scriptchart, get_resultschart
 import operator
 from operator import itemgetter
 import numpy as np
@@ -37,7 +37,7 @@ def script_detail(request, pk):
 
 def script_list(request):
     script_table = Script.objects.all().order_by('-lo_of_win_in_set')
-    set = Set.objects.get(pk=3)
+    set = Set.objects.get(pk=1)
     cht = get_scriptchart()
     cht2 = get_resultschart()
     
@@ -120,10 +120,6 @@ def script_chart_view(request):
     cht2 = get_resultschart()
     cht = get_scriptchart()
     return render(request, 'pairwise/script_chart.html', {'chart_list': [cht, cht2]})
-
-#def results_chart_view(request):
-    #cht = get_resultschart()
-    #return render(request, 'pairwise/results.html', {'resultschart': cht})
 
 def script_add(request): # not currently in use--front end add
     if request.method == "POST":

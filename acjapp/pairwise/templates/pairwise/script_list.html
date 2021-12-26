@@ -10,7 +10,6 @@
     <body>
         <h1>Script List with Current Computations:</h1>
         <p>Set {{ set.pk }}; Comparisons: {{ compslist }}.</p>
-        <div id='cht'> First chart will be rendered here </div>
         <div id='cht2'> Second chart will be rendered here </div>
         {% if script_table %}
                 <table border="1" style="font-size:x-small">
@@ -49,7 +48,7 @@
                     </tr>
                     {% endfor %}
                 </table>
-            <!--</div>-->
+            <div id='cht'> First chart will be rendered here </div>
         {% else %}
             <p>There are no scripts in the database. Head to the <a href="/admin">admin</a> section to upload a set of them.</p>
         {% endif %}   

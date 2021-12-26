@@ -128,59 +128,45 @@ def compute_scripts_and_save():
     compute_same_p() #this saves all scripts with newly computed same p count
     return
 
-def build_btl_array():
-    scriptsx = Script.objects.all()
-    scriptsy = Script.objects.all()
-    btl_array = []
-    for scripti in scriptsx:
-        row = []
-        loi = scripti.lo_of_win_in_set
-        for scriptj in scriptsy:
-            loj = scriptj.lo_of_win_in_set
-            lodiff = round(loi - loj,3)
-            btl = round(np.exp(lodiff)/(1 + np.exp(lodiff)), 2) #probability that scripti will beat scriptj according to BTL Model
-            row.append(btl)
-        row = pd.Series(row)
-        btl_array.append(row)
-    df = pd.DataFrame(btl_array)
-    return btl_array, df
-
 def get_resultschart():
     resultsdata = DataPool(
         series=[{
             'options': {
-                'source': Script.objects.filter(se__lt=7).order_by('estimated_parameter_in_set')#can't get order by to affect chart x axis yet             
+                'source': Script.objects.filter(se__lt=7)            
             },
             'terms': [
                 'id',
                 'estimated_parameter_in_set',
-                #'lo95ci',
-                #'hi95ci',
+                'lo95ci',
+                'hi95ci',
             ]
         }]
     )
     cht2= Chart(
         datasource=resultsdata,
-        series_options=[{
-            'options': {
-                'type': 'scatter',
-                'linewidth': '1',
+        series_options=[
+            {'name': 'Estimate',
+            'options': 
+                {'type': 'column'}, 
+            'terms': 
+                {'id': ['estimated_parameter_in_set']},
             },
-            'terms': {
-                'id': [ 
-                    'estimated_parameter_in_set',
-                    #'lo95ci',
-                    #'hi95ci',
-                ],
+            {'name': 'Error',
+            'options': 
+                {'type': 'errorbar'}, 
+            'terms': 
+                {'id': ['lo95ci','hi95ci']},
             }
-        }],
+        ],
         chart_options={
-            'title': {'text': 'Results'},
-            'xAxis': {'title':{'text': 'Item Number'}},
-            'yAxis': {'title': {'text': 'Estimated & Actual Parameter Value'}},
-            'legend': {'enabled': True},
-            'credits': {'enabled': True}
+            'title': {'text': 'Estimated Value'},
+            'xAxis': {'title':{'text': 'Item'}},
+            'yAxis': {'title': {'text': 'Estimated Value'}},
+            'legend': {'enabled': False},
+            'credits': {'enabled': False},
+            'plotOptions': {}
             }
+
     )
     return cht2
 
@@ -188,7 +174,7 @@ def get_scriptchart():
     scriptdata = DataPool(
         series=[{
             'options': {
-                'source': Script.objects.filter(se__lt=7).order_by('estimated_parameter_in_set')#can't get order by to affect chart x axis yet
+                'source': Script.objects.filter(se__lt=7)
             },
             'terms': [
                 'id',
