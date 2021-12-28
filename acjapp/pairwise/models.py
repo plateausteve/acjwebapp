@@ -24,11 +24,11 @@ import numpy as np
 import datetime
 
 class Set(models.Model):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="the user who uploaded the scripts of this set")
-    #assessors = models.ManyToManyField(User, related_name=???, verbose_name="the users with comparing capabilities", blank=True)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="The user who uploaded the scripts of this set")
+    judges = models.ManyToManyField(User, related_name="judges", related_query_name="judge", verbose_name="the users who may compare this set", blank=True)
     name = models.CharField(max_length=100)
     published_date = models.DateTimeField(blank=True, null=True)
-    greater_statement = models.TextField(default="more", verbose_name="the question posed for assessors about the items")
+    greater_statement = models.TextField(default="Greater", verbose_name="the question posed in a comparison")
 
     def publish(self):
         self.published_date = timezone.now()
@@ -105,7 +105,7 @@ class Comparison(models.Model):
 class ComparisonForm(forms.ModelForm):
     class Meta:
         model = Comparison
-        fields = ['wini','scripti','scriptj', 'form_start_variable']#  'uninterrupted', 'interest_rating', 'difficulty_rating',
+        fields = ['set','wini','scripti','scriptj', 'form_start_variable']#  'uninterrupted', 'interest_rating', 'difficulty_rating',
         widgets = {
             'scripti': forms.HiddenInput(),
             'scriptj': forms.HiddenInput(),
@@ -115,8 +115,9 @@ class ComparisonForm(forms.ModelForm):
 class WinForm(forms.ModelForm):
         class Meta:
             model = Comparison
-            fields = ['wini','scripti','scriptj', 'form_start_variable']
+            fields = ['set','wini','scripti','scriptj','form_start_variable']
             widgets = {
+                'set':forms.HiddenInput(),
                 'wini':forms.HiddenInput(),
                 'scripti': forms.HiddenInput(),
                 'scriptj': forms.HiddenInput(),
