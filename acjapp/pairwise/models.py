@@ -24,7 +24,7 @@ import numpy as np
 import datetime
 
 class Set(models.Model):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="The user who uploaded the scripts of this set")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="the user who uploaded the scripts of this set")
     judges = models.ManyToManyField(User, related_name="judges", related_query_name="judge", verbose_name="the users who may compare this set", blank=True)
     name = models.CharField(max_length=100)
     published_date = models.DateTimeField(blank=True, null=True)
