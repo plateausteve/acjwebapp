@@ -56,7 +56,7 @@ def get_allowed_sets(userid):
 def script_selection(set):
     scriptcount = Script.objects.filter(set=set).count()
     compslist = build_compslist(set)
-    comparable_scripts = Script.objects.order_by('comps_in_set','?').filter(set=set)
+    comparable_scripts = Script.objects.order_by('comps_in_set','-count_same_p','?').filter(set=set)
     scriptj_possibilities = []
 
     # Go through all comparable scripts, and choose the first as scripti. 

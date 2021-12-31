@@ -1,6 +1,6 @@
 <div class="page-header">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="#">Comparative Judgment Webapp Sets: {% if request.session.sets %} {{ request.session.sets }} {% endif %}</a>
+        <a class="navbar-brand" href="#">Comparative Judgment Webapp</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -15,7 +15,7 @@
                     </li>
                     
                     <li class="nav-item">
-                        <a class="nav-link" href="/admin">Admin</a>
+                        <a class="nav-link" href="/admin">Dashboard</a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -29,21 +29,21 @@
                             {% endif %}
                         </div>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/comparisons/1/">Comparisons</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/script_list/1/">All Scripts</a>
-                    </li>
-                    <li class="nav-item">
-                    <a class="nav-link" href="/script_chart">Charts</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/update">Update</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Comparisons
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            {% if request.session.sets %}
+                                {% for set in request.session.sets %}
+                                <a class="dropdown-item" href="{% url 'comparison_list.html' set %}">Set {{ set }}</a>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Set
+                        Results
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                             {% if request.session.sets %}
@@ -53,6 +53,22 @@
                             {% endif %}
                         </div>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Scripts
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            {% if request.session.sets %}
+                                {% for set in request.session.sets %}
+                                <a class="dropdown-item" href="{% url 'scripts' set %}">Set {{ set }}</a>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    {% if user.is_superuser %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/update">Update</a>
+                        </li>
+                    {% endif %}
                 {% else %}
                     <li class = "nav-item"> 
                         Please <a href="/admin/">log in</a>.
@@ -61,24 +77,4 @@
             </ul>
         </div>
     </nav>
-    
-    <!--<table>
-        <tr>
-            <td><a href="/index">Home</a></td>
-            <td><a href="/admin">Admin</a></td>
-            <td><a href="/compare">Compare</a></td>
-            <td><a href="/script_list">Scripts</a></td>
-            <td><a href="/comparisons">Comparisons</a></td>
-            <td><a href="/update">Update</a></td>
-            <td><a href="/script_chart">Charts</a></td>
-        </tr>
-        {% if user.is_authenticated %}
-        <tr>
-            <h3 style="color:#ffffff; text-align: center;font-size: 12pt;">Welcome, {% if user.first_name %}{{ user.first_name }}{% else %}{{ user }}{% endif %}.</h3>
-        {% else %}
-            <h3 style="color:#ffffff; text-align: center;font-size: 12pt;">Please <a href="/admin/">log in</a>.</h3>
-        {% endif %}
-        </tr>
-    </table>-->
-
 </div>

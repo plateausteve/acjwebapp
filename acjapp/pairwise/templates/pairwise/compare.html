@@ -3,51 +3,61 @@
 {% block content %}
 {% if scriptj and scripti %}
     {% if user.is_authenticated %}
-    <div class="compare">
+    <div class="container-fluid">
         <p style="text-align: center">You are comparing items from Set {{ set }}.</p>
-        <table style="height: 100%">
-            <tr style="height: 5%">
-                <td>
-                    <form method="POST" class="comparison-form">
-                        {% csrf_token %}
-                        {{ winform }}
-                        <input type="hidden" name="set" value={{set}}>
-                        <input type="hidden" name="wini" value="1">
-                        <input type="hidden" name="scripti" value="{{ scripti }}">
-                        <input type="hidden" name="scriptj" value="{{ scriptj }}">
-                        <input type="hidden" name="form_start_variable" value="{{ starttime }}">
-                        <input type="submit" value="Left is Greater">
-                    </form>
-                </td>
-                <td>
-                    <form method="POST" class="comparison-form">
-                        {% csrf_token %}
-                        {{ winform }}
-                        <input type="hidden" name="set" value={{set}}>
-                        <input type="hidden" name="wini" value="0">
-                        <input type="hidden" name="scripti" value="{{ scripti }}">
-                        <input type="hidden" name="scriptj" value="{{ scriptj }}">
-                        <input type="hidden" name="form_start_variable" value="{{ starttime }}">
-                        <input type="submit" value="Right is Greater">
-                    </form>
-                </td>
-            </tr>
-            <tr style="height: 90%">
-                <td>{% if scripti.pdf %}<embed src="{{ scripti.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="80%" height="100%">{% endif %}</td>
-                <td>{% if scriptj.pdf %}<embed src="{{ scriptj.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="80%" height="100%">{% endif %}</td>
-            </tr>
-            
-        </table>
+        <div class="row justify-content-around">
+            <div class="col justify-content-around">
+                <form method="POST" style="text-align: center">
+                    {% csrf_token %}
+                    {{ winform }}
+                    <input type="hidden" name="set" value={{set}}>
+                    <input type="hidden" name="wini" value="1">
+                    <input type="hidden" name="scripti" value="{{ scripti }}">
+                    <input type="hidden" name="scriptj" value="{{ scriptj }}">
+                    <input type="hidden" name="form_start_variable" value="{{ starttime }}">
+                    <input type="submit" value="Left is Greater">
+                </form>
+            </div>
+            <div class="col justify-content-around">
+                <form method="POST" style="text-align: center">
+                    {% csrf_token %}
+                    {{ winform }}
+                    <input type="hidden" name="set" value={{set}}>
+                    <input type="hidden" name="wini" value="0">
+                    <input type="hidden" name="scripti" value="{{ scripti }}">
+                    <input type="hidden" name="scriptj" value="{{ scriptj }}">
+                    <input type="hidden" name="form_start_variable" value="{{ starttime }}">
+                    <input type="submit" value="Right is Greater">
+                </form>
+            </div>
+        </div>
+        <div class="row justify-content-around">
+            <div class="col align-self-center">
+                {% if scripti.pdf %}
+                    <embed src="{{ scripti.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="1000px">
+                {% endif %}
+            </div>
+            <div class="col">
+                {% if scriptj.pdf %}
+                    <embed src="{{ scriptj.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="1000px%">
+                {% endif %}
+            </div>
+        </div>
     </div>
-        <!-- how to add a comment or other info to this comparison? Have a checkbox that, if checked, will go to an intermediate comment and rating scale form, then come back to this-->
-    <p>Debug information:</p>
-    <p>Script i: {{ scripti }}</p>
-    <p>Script j: {{ scriptj }}</p>
-    <p>List of Js: {{ j_list }}</p>
+    <div>
+    {%if user.is_superuser %}
+        <p>Debug information:</p>
+        <p>Script i: {{ scripti }} {{ scripti.idcode }}</p>
+        <p>Script j: {{ scriptj }} {{ scriptj.idcode }}</p>
+        <p>List of Js: {{ j_list }}</p>
+    {% endif %}
     {% else %}
         <h3>You must be authenticated to make comparisons.</h3>
     {% endif %}
+    </div>  
 {% else %}
+    <div>
     <h4>There are no scripts to compare.</h4>
+    </div>
 {% endif %}
 {% endblock %}
