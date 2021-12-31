@@ -2,7 +2,7 @@
 {% block content %}
     <body>
         <h1>Comparison List:</h1>
-        {% if comparison_list %}
+        {% if comparisons %}
         <table border="1" style="font-size:x-small; align-self: center;">
             <tr>
                 <th>Key</th>
@@ -19,7 +19,7 @@
                 <th>Start</th>
                 <th>End</th>-->
             </tr>
-            {% for comparison in comparison_list %}
+            {% for comparison in comparisons %}
             <tr>
                 <td>{{ comparison.pk }}</td>
                 <td>{{ comparison.set.pk }}</td>
@@ -38,9 +38,7 @@
             {% endfor %}
         </table>
           {% else %}
-            <p>There are no comparisons in the database.</p>
-            <p>Click <a href="/compare">here</a> to do the first comparison of the set.</p>
-
+            <p>There are no comparisons for set {{ set }} in the database.</p>
           {% endif %}       
         <br>
     </body>

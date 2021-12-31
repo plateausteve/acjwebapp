@@ -4,28 +4,31 @@
 {% if scriptj and scripti %}
     {% if user.is_authenticated %}
     <div class="compare">
+        <p style="text-align: center">You are comparing items from Set {{ set }}.</p>
         <table style="height: 100%">
             <tr style="height: 5%">
                 <td>
                     <form method="POST" class="comparison-form">
                         {% csrf_token %}
-                        {{ form.as_p }}
+                        {{ winform }}
+                        <input type="hidden" name="set" value={{set}}>
                         <input type="hidden" name="wini" value="1">
                         <input type="hidden" name="scripti" value="{{ scripti }}">
                         <input type="hidden" name="scriptj" value="{{ scriptj }}">
                         <input type="hidden" name="form_start_variable" value="{{ starttime }}">
-                        <input type="submit" value="Left is Greater"><!--replace is Greater with the relative statement for greater for the Set-->
+                        <input type="submit" value="Left is Greater">
                     </form>
                 </td>
                 <td>
                     <form method="POST" class="comparison-form">
                         {% csrf_token %}
-                        {{ form.as_p }}
+                        {{ winform }}
+                        <input type="hidden" name="set" value={{set}}>
                         <input type="hidden" name="wini" value="0">
                         <input type="hidden" name="scripti" value="{{ scripti }}">
                         <input type="hidden" name="scriptj" value="{{ scriptj }}">
                         <input type="hidden" name="form_start_variable" value="{{ starttime }}">
-                        <input type="submit" value="Right is Greater"><!--replace is Greater with the relative statement for greater for the Set-->
+                        <input type="submit" value="Right is Greater">
                     </form>
                 </td>
             </tr>
@@ -41,11 +44,10 @@
     <p>Script i: {{ scripti }}</p>
     <p>Script j: {{ scriptj }}</p>
     <p>List of Js: {{ j_list }}</p>
-    <p>Scripts: {{ scripts }}</p>
     {% else %}
-        <h3>You must be authenticated to make comaparisons.</h3>
+        <h3>You must be authenticated to make comparisons.</h3>
     {% endif %}
 {% else %}
-    <h3>Ran out of comparisons to do.</h3>
+    <h4>There are no scripts to compare.</h4>
 {% endif %}
 {% endblock %}

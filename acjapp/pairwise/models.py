@@ -25,17 +25,12 @@ import datetime
 
 class Set(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="the user who uploaded the scripts of this set")
-    #assessors = models.ManyToManyField(User, related_name=???, verbose_name="the users with comparing capabilities", blank=True)
+    judges = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='judges', verbose_name="the users with comparing capabilities for this set", blank=True)
     name = models.CharField(max_length=100)
-    published_date = models.DateTimeField(blank=True, null=True)
-    greater_statement = models.TextField(default="more", verbose_name="the question posed for assessors about the items")
-
-    def publish(self):
-        self.published_date = timezone.now()
-        self.save()
-
+    greater_statement = models.CharField(default="Greater", max_length=50, verbose_name="the comparative adjective posed as question for judges about the items")
+    
     def __str__(self):
-        return self.name
+        return str(self.pk)
 
 class Script(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="the user who uploaded the script")
@@ -58,16 +53,6 @@ class Script(models.Model):
     def __str__(self):
         return str(self.pk)
 
-class ScriptForm(forms.ModelForm): # not currently in use--front end add & edit
-    class Meta:
-        model = Script
-        fields = [
-            'user', 'set', 'pdf']
-        widgets = {
-            'user': forms.HiddenInput(),
-        }
-
-
 class Comparison(models.Model):
     set = models.ForeignKey(Set, on_delete=models.CASCADE, verbose_name="the set to which this comparison belongs")
     judge = models.ForeignKey(settings.AUTH_USER_MODEL, editable = False, on_delete=models.CASCADE, verbose_name="the user judging the pair")
@@ -78,47 +63,22 @@ class Comparison(models.Model):
         Greater = 1
     wini = models.PositiveSmallIntegerField(choices=Win.choices, verbose_name="is left lesser or greater?")
     winj = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name="is right lesser or greater?")
-    class Interruption(models.IntegerChoices):
-        Uninterrupted = 1
-        Interrupted = 0
-    uninterrupted = models.IntegerField(choices=Interruption.choices, editable = False, default=1, blank=False, verbose_name="is the comparison interrupted or uninterrupted allowing valid duration computation")
-    class Interest(models.IntegerChoices):
-        Not_at_all_interesting = 1
-        Not_interesting = 2
-        Neutral = 3
-        Interesting = 4
-        Very_interesting = 5
-    interest_rating = models.IntegerField(choices=Interest.choices, editable = False, default=3, blank=False, verbose_name="how interesting is this comparison")
-    class Difficulty(models.IntegerChoices):
-        Not_at_all_difficult = 0
-        Not_too_difficult = 1
-        Difficult = 2
-        Very_difficult = 3
-    difficulty_rating = models.IntegerField(choices=Difficulty.choices, editable = False, default=0, blank=False, verbose_name="how difficult is the comparison to judge?")
     form_start_variable = models.FloatField(blank=True, null=True)
     decision_start = models.DateTimeField(editable = False, blank=True, null=True)
     decision_end = models.DateTimeField(editable = False, blank=True, null=True)
     duration = models.DurationField(editable = False, blank=True, null=True)
+    
     def __str__(self):
         return str(self.pk)
 
-class ComparisonForm(forms.ModelForm):
+class WinForm(forms.ModelForm):
     class Meta:
         model = Comparison
-        fields = ['wini','scripti','scriptj', 'form_start_variable']#  'uninterrupted', 'interest_rating', 'difficulty_rating',
+        fields = ['set','wini','scripti','scriptj', 'form_start_variable']
         widgets = {
+            'set': forms.HiddenInput(),
+            'wini': forms.HiddenInput(),
             'scripti': forms.HiddenInput(),
             'scriptj': forms.HiddenInput(),
             'form_start_variable': forms.HiddenInput(),
         }
-
-class WinForm(forms.ModelForm):
-        class Meta:
-            model = Comparison
-            fields = ['wini','scripti','scriptj', 'form_start_variable']
-            widgets = {
-                'wini':forms.HiddenInput(),
-                'scripti': forms.HiddenInput(),
-                'scriptj': forms.HiddenInput(),
-                'form_start_variable': forms.HiddenInput(),
-            }

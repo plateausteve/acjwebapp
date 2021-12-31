@@ -29,16 +29,16 @@ def compute_script_ep(logodds):
     #y intercept=57.689 and slope is 11.826
     return ep
 
-def compute_same_p():
-    scriptsp=Script.objects.all()
+def compute_same_p(set):
+    scriptsp=Script.objects.filter(set=set)
     for script in scriptsp:
         count=Script.objects.filter(prob_of_win_in_set=script.prob_of_win_in_set).count()
         setattr(script, 'count_same_p', count)
         script.save()
     return()
 
-def build_compslist():
-    comps = Comparison.objects.all()
+def build_compslist(set):
+    comps = Comparison.objects.filter(set=set)
     compslist = []
     for comp in comps:
         i = comp.scripti.id
@@ -46,15 +46,21 @@ def build_compslist():
         compslist.append([i, j])
     return compslist
 
+def get_allowed_sets(userid):
+    list = Set.objects.filter(judges__id__icontains=userid)
+    allowed_sets_ids = []
+    for set in list:
+        allowed_sets_ids.append(set.id)
+    return allowed_sets_ids
 
-def script_selection():
-    scriptcount = Script.objects.count()
-    compslist = build_compslist()
-    comparable_scripts = Script.objects.order_by('comps_in_set')
+def script_selection(set):
+    scriptcount = Script.objects.filter(set=set).count()
+    compslist = build_compslist(set)
+    comparable_scripts = Script.objects.order_by('comps_in_set','?').filter(set=set)
     scriptj_possibilities = []
 
     # Go through all comparable scripts, and choose the first as scripti. 
-    # Calculate the difference in log odds between scripti and every following script
+    # Calculate the difference in log odds between scripti and every other script after
     for i, script in enumerate(comparable_scripts, start=0):
         if i == 0:
             if script.comps_in_set == scriptcount-1:
@@ -75,8 +81,8 @@ def script_selection():
         scriptj = None
     return compslist, scripti, scriptj, j_list
 
-def compute_scripts_and_save():
-    scripts = Script.objects.all()
+def compute_scripts_and_save(set):
+    scripts = Script.objects.filter(set=set)
     for script in scripts:
         #count all the comparisons each script has been involved in, including the most recent, set this attribute
         comparisons_as_i_count = Comparison.objects.filter(scripti=script).count()
@@ -125,25 +131,8 @@ def compute_scripts_and_save():
 
         script.save()
     #compute, set, and save attributes for all scripts that depend on above calculations
-    compute_same_p() #this saves all scripts with newly computed same p count
+    compute_same_p(set) #this saves all scripts with newly computed same p count
     return
-
-def build_btl_array():
-    scriptsx = Script.objects.all()
-    scriptsy = Script.objects.all()
-    btl_array = []
-    for scripti in scriptsx:
-        row = []
-        loi = scripti.lo_of_win_in_set
-        for scriptj in scriptsy:
-            loj = scriptj.lo_of_win_in_set
-            lodiff = round(loi - loj,3)
-            btl = round(np.exp(lodiff)/(1 + np.exp(lodiff)), 2) #probability that scripti will beat scriptj according to BTL Model
-            row.append(btl)
-        row = pd.Series(row)
-        btl_array.append(row)
-    df = pd.DataFrame(btl_array)
-    return btl_array, df
 
 def get_resultschart():
     resultsdata = DataPool(

@@ -143,6 +143,9 @@ USE_L10N = True
 
 USE_TZ = True
 
+# settings for cookie-based session engine as per https://docs.djangoproject.com/en/4.0/topics/http/sessions/
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/

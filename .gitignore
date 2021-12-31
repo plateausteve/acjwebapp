@@ -9,11 +9,12 @@ acjapp/.env
 *.code-workspace
 venv
 settings.py
+acjapp/pairwise/migrations/
 
 # specific to pythonanywhere
-.env                                                                                                                              
-acjapp/pairwise/migrations/0031_remove_script_image.py                                                                            
+.env                                                                                                                                                                                                     
 acjapp/static/css/
 
 # do not back up the media we upload
 acjapp/media
+

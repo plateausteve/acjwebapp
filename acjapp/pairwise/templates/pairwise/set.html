@@ -1,0 +1,46 @@
+{% extends "pairwise/base.html" %}
+
+{% block content %}
+    {% if set_scripts %}
+        <h1>Set View</h1>
+        <p>A table of all scripts in set {{ pk }}.</p>
+        <table border="1" style="font-size:x-small">
+            <tr>
+                <th>User</th>
+                <th>Script</th>
+                <th>Comps</th>
+                <th>Wins</th>
+                <th>Prob</th>
+                <th>RMSE(p)</th>
+                <th>Same P</th>
+                <th>SD(p)</th>
+                <th>LO &phi;</th>
+                <th>I(&phi;)</th>
+                <th>SE(&phi;)</th>
+                <th>&theta; low 95%CI</th>
+                <th>MLE &theta;</th>
+                <th>&theta; high 95% CI</th>
+            </tr>
+            {% for script in set_scripts %}
+            <tr>
+                <td>{{ script.user.pk }}</td>
+                <td><a href="{% url 'script_detail' pk=script.pk %}">{{ script.pk }}</a></td>
+                <td>{{ script.comps_in_set }}</td>
+                <td>{{ script.wins_in_set }}</td>
+                <td>{{ script.prob_of_win_in_set }}</td>
+                <td>{{ script.rmse_in_set }}</td>
+                <td>{{ script.count_same_p }}</td>
+                <td>{{ script.stdev }}</td>
+                <td>{{ script.lo_of_win_in_set }}</td>
+                <td>{{ script.fisher_info }}</td>
+                <td>{{ script.se }}</td>
+                <td>{{ script.lo95ci }}</td>
+                <td>{{ script.estimated_parameter_in_set }}</td>
+                <td>{{ script.hi95ci }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>There are no scripts in set {{ pk }}.</p>
+    {% endif %}
+{% endblock %}
