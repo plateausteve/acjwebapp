@@ -6,7 +6,7 @@
     <div class="container-fluid">
         <p style="text-align: center">You are comparing items from Set {{ set }}.</p>
         <div class="row justify-content-around">
-            <div class="col justify-content-around">
+            <div class="col justify-content-start">
                 <form method="POST" style="text-align: center">
                     {% csrf_token %}
                     {{ winform }}
@@ -17,8 +17,9 @@
                     <input type="hidden" name="form_start_variable" value="{{ starttime }}">
                     <input type="submit" value="Left is Greater">
                 </form>
+                <br>
             </div>
-            <div class="col justify-content-around">
+            <div class="col justify-content-start">
                 <form method="POST" style="text-align: center">
                     {% csrf_token %}
                     {{ winform }}
@@ -29,6 +30,7 @@
                     <input type="hidden" name="form_start_variable" value="{{ starttime }}">
                     <input type="submit" value="Right is Greater">
                 </form>
+                <br>
             </div>
         </div>
         <div class="row justify-content-around">
