@@ -33,14 +33,18 @@
         </div>
         <div class="row justify-content-around">
             <div class="col align-self-center">
-                {% if scripti.pdf %}
-                    <embed src="{{ scripti.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="1000px">
-                {% endif %}
+                <div class="ratio" style="--bs-aspect-ratio: 150%;">
+                    {% if scripti.pdf %}
+                        <embed src="{{ scripti.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="100%">
+                    {% endif %}
+                 </div>
             </div>
             <div class="col">
-                {% if scriptj.pdf %}
-                    <embed src="{{ scriptj.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="1000px%">
-                {% endif %}
+                <div class="ratio" style="--bs-aspect-ratio: 150%;">
+                    {% if scriptj.pdf %}
+                        <embed src="{{ scriptj.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="100%">
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
