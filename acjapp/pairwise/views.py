@@ -66,9 +66,6 @@ def compare(request, set):
     userid=request.user.id
     allowed_sets_ids = get_allowed_sets(userid)
     request.session['sets']= allowed_sets_ids
-    sets = request.session['sets']
-    print(request.session['sets'])
-    print(type(set))
     if int(set) not in allowed_sets_ids:    
         html="<p>Set not available.</p>"
         return HttpResponse(html)
@@ -100,31 +97,24 @@ def compare(request, set):
     now = datetime.now() # must use datetime not timezone in order to keep it the same through to other side of form 
     starttime = now.timestamp
     set_object = Set.objects.get(pk=int(set))
-    if len(j_list) > 0: 
-        winform = WinForm()
-        return render(request, 'pairwise/compare.html', {
-                'scripti': scripti,
-                'scriptj': scriptj,
-                'winform': winform,
-                'set': set,
-                'starttime': starttime,
-                'j_list': j_list,
-                'allowed_sets_ids': allowed_sets_ids,
-                'compscount': compscount,
-                'set_object': set_object,
-                } 
-            )
-    else: # when no more comparisons are available, stop and send to Script List page
-        script_table = Script.objects.all().order_by('-lo_of_win_in_set')
-        cht = get_scriptchart()
-        cht2 = get_resultschart()
-        return render(request, 'pairwise/script_list.html', { # TODO: this shouldn't be happening. can we call it differently?
-            'script_table': script_table, 
+    if len(j_list)==0:
+        scripti=None
+        scriptj=None
+    
+    winform = WinForm()
+    return render(request, 'pairwise/compare.html', {
+            'scripti': scripti,
+            'scriptj': scriptj,
+            'winform': winform,
             'set': set,
-            'chart_list': [cht, cht2],
+            'starttime': starttime,
+            'j_list': j_list,
+            'allowed_sets_ids': allowed_sets_ids,
+            'compscount': compscount,
+            'set_object': set_object,
             } 
         )
-       
+
 
 def comparisons(request, set):
     comparisons = Comparison.objects.filter(set=set)

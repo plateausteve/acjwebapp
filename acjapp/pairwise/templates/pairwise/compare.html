@@ -5,6 +5,7 @@
     {% if user.is_authenticated %}
     <div class="container-fluid">
         <p style="text-align: center">You are comparing items from Set {{ set_object.pk }}: {{ set_object.name }}.</p>
+        <p style="text-align: center">You have completed {{ compscount }} comparisions in this set so far.</p>
         <div class="row justify-content-around">
             <div class="col justify-content-start">
                 <form method="POST" style="text-align: center">
@@ -63,7 +64,7 @@
     </div>  
 {% else %}
     <div>
-    <h4>There are no scripts to compare.</h4>
+    <h4>There are no scripts for you to compare in this set.</h4>
     </div>
 {% endif %}
 {% endblock %}
