@@ -68,6 +68,7 @@ def compare(request, set):
     request.session['sets']= allowed_sets_ids
     sets = request.session['sets']
     print(request.session['sets'])
+    print(type(set))
     if int(set) not in allowed_sets_ids:    
         html="<p>Set not available.</p>"
         return HttpResponse(html)
@@ -94,53 +95,35 @@ def compare(request, set):
             comparison.save()
             compute_scripts_and_save(set)
 
-            #so much for DRY--had to generate all of these after POST to go right back into next selection
-            compslist, scripti, scriptj, j_list = script_selection(set)
-            print("regenerate as part of POST")
-            compscount = len(compslist) #save this for later so it ends after a large portion of possible comparisons are made.
-            now = datetime.now() # must use datetime not timezone in order to keep it the same through to other side of form 
-            starttime = now.timestamp
-            if len(j_list) > 0: 
-                winform = WinForm()
-                return render(request, 'pairwise/compare.html', {
-                    'scripti': scripti,
-                    'scriptj': scriptj,
-                    'winform': winform,
-                    'set': set,
-                    'starttime': starttime,
-                    'j_list': j_list,
-                    'allowed_sets_ids': allowed_sets_ids
-                    } 
-                )
-
-    else: #if the form is being generated with GET, send template what it needs
-        compslist, scripti, scriptj, j_list = script_selection(set)
-        print("generate as part of GET")
-        compscount = len(compslist) #save this for later so it ends after a large portion of possible comparisons are made.
-        now = datetime.now() # must use datetime not timezone in order to keep it the same through to other side of form 
-        starttime = now.timestamp
-        if len(j_list) > 0: 
-            winform = WinForm()
-            return render(request, 'pairwise/compare.html', {
-                    'scripti': scripti,
-                    'scriptj': scriptj,
-                    'winform': winform,
-                    'set': set,
-                    'starttime': starttime,
-                    'j_list': j_list,
-                    'allowed_sets_ids': allowed_sets_ids
-                    } 
-                )
-        else: # when no more comparisons are available, stop and send to Script List page
-            script_table = Script.objects.all().order_by('-lo_of_win_in_set')
-            cht = get_scriptchart()
-            cht2 = get_resultschart()
-            return render(request, 'pairwise/script_list.html', { # TODO: this shouldn't be happening. can we call it differently?
-                'script_table': script_table, 
+    compslist, scripti, scriptj, j_list = script_selection(set)
+    compscount = len(compslist) #save this for later so it ends after a large portion of possible comparisons are made.
+    now = datetime.now() # must use datetime not timezone in order to keep it the same through to other side of form 
+    starttime = now.timestamp
+    set_object = Set.objects.get(pk=int(set))
+    if len(j_list) > 0: 
+        winform = WinForm()
+        return render(request, 'pairwise/compare.html', {
+                'scripti': scripti,
+                'scriptj': scriptj,
+                'winform': winform,
                 'set': set,
-                'chart_list': [cht, cht2],
+                'starttime': starttime,
+                'j_list': j_list,
+                'allowed_sets_ids': allowed_sets_ids,
+                'compscount': compscount,
+                'set_object': set_object,
                 } 
             )
+    else: # when no more comparisons are available, stop and send to Script List page
+        script_table = Script.objects.all().order_by('-lo_of_win_in_set')
+        cht = get_scriptchart()
+        cht2 = get_resultschart()
+        return render(request, 'pairwise/script_list.html', { # TODO: this shouldn't be happening. can we call it differently?
+            'script_table': script_table, 
+            'set': set,
+            'chart_list': [cht, cht2],
+            } 
+        )
        
 
 def comparisons(request, set):
