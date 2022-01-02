@@ -50,13 +50,13 @@ def script_selection(set, userid):
     scriptcount = Script.objects.filter(set=set).count()
     compslist = build_compslist(set, userid)
     computed_scripts_for_user_in_set = get_computed_scripts(set, userid)
-    if len(compslist) > scriptcount: #only sort when two rounds of comps has been made
+    if len(compslist) > scriptcount: #only sort them when two rounds of comps has been made
         computed_scripts_for_user_in_set.sort(key = lambda x: (x.comps, x.samep)) # wouldn't random be nice at the beginning?
     else: random.shuffle(computed_scripts_for_user_in_set)
     scriptj_possibilities = []
 
     # Go through all comparable scripts, and choose the first as scripti. 
-    # Calculate the difference in log odds between scripti and every other script after
+    # Calculate the difference in log odds between scripti and every other script
     for i, script in enumerate(computed_scripts_for_user_in_set):
         if i == 0:
             if script.comps == scriptcount-1:
@@ -81,16 +81,18 @@ def script_selection(set, userid):
 def get_computed_scripts(set, userid):
     computed_scripts_for_user_in_set =[]
     scripts = Script.objects.filter(set=set)
+    print(set, type(set), userid, type(userid))
     for script in scripts:
-        #count all the comparisons each script has been involved in
-        comparisons_as_i_for_user_count = Comparison.objects.filter(scripti=script, judge=userid).count()
-        comparisons_as_j_for_user_count = Comparison.objects.filter(scriptj=script, judge=userid).count()
+        #count all the comparisons each script has been involved in for user
+        comparisons_as_i_for_user_count = Comparison.objects.filter(scripti=script, judge__pk=userid).count()
+        comparisons_as_j_for_user_count = Comparison.objects.filter(scriptj=script, judge__pk=userid).count()
+        
         comps = comparisons_as_i_for_user_count + comparisons_as_j_for_user_count + .01
-        comps_display = comps/10
+        #comps_display = comps/10
 
         #count all the comparisons each script has won
-        wins_as_i_for_user_count = Comparison.objects.filter(wini=1, scripti=script, judge=userid).count()
-        wins_as_j_for_user_count = Comparison.objects.filter(winj=1, scriptj=script, judge=userid).count()
+        wins_as_i_for_user_count = Comparison.objects.filter(wini=1, scripti=script, judge__pk=userid).count()
+        wins_as_j_for_user_count = Comparison.objects.filter(winj=1, scriptj=script, judge__pk=userid).count()
         wins = wins_as_i_for_user_count + wins_as_j_for_user_count
         
         #compute the logodds and probability for each script
@@ -122,14 +124,14 @@ def get_computed_scripts(set, userid):
         )
     #now increase samep by one for every script including self with matching probability and set a rank value fo each
     computed_scripts_for_user_in_set.sort(key = lambda x: x.ep, reverse=True)
-    rank=1
+    rank=0
     for script in computed_scripts_for_user_in_set:
         for match in computed_scripts_for_user_in_set:
             if match.probability == script.probability:
                 match.samep -= 1
-        script.rank=rank
         if script.samep == -1: #if there's only one at that value, then increase rank increment 1 for next 
             rank += 1
+        script.rank=rank
 
     return computed_scripts_for_user_in_set
 

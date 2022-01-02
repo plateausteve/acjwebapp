@@ -40,7 +40,7 @@ def script_detail(request, pk):
     return render(request, 'pairwise/script_detail.html', {'script': script})
 
 def script_list(request, set): #make sure template can take this input as list of dictionaries
-    userid = request.user
+    userid = request.user.id
     computed_scripts = get_computed_scripts(set, userid)
     allowed_sets_ids = get_allowed_sets(userid)
     computed_scripts.sort(key = lambda x: x.logodds, reverse=True)
@@ -56,7 +56,7 @@ def script_list(request, set): #make sure template can take this input as list o
     )
 
 def set_view(request, pk):
-    userid = request.user
+    userid = request.user.id
     computed_scripts_for_user_in_set = get_computed_scripts(pk, userid)
     computed_scripts_for_user_in_set.sort(key = lambda x: x.logodds, reverse=True)
     return render(request, 'pairwise/set.html', {
@@ -73,6 +73,7 @@ def comparisons(request, set):
         html="<p>ERROR: Set not available.</p>"
         return HttpResponse(html)
     comparisons = Comparison.objects.filter(set=set, judge=userid)
+    print(userid, type(userid))
     return render(request, 'pairwise/comparison_list.html', {
         'set': set,
         'comparisons': comparisons,
