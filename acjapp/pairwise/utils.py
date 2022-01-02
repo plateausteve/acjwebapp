@@ -15,17 +15,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .models import Script, Comparison, Set
-import numpy as np
-import pandas as pd
-from numpy import log, sqrt, corrcoef
-from scipy.stats import spearmanr, kendalltau
+from numpy import log, sqrt
 import operator
 import random
 from operator import itemgetter
 from chartit import DataPool, Chart
 
 class ComputedScript:
-    def __init__(self, id, idcode, comps, wins, logodds, probability, rmse, stdev, fisher_info, se, ep, lo95ci, hi95ci, samep):
+    def __init__(self, id, idcode, comps, wins, logodds, probability, rmse, stdev, fisher_info, se, ep, lo95ci, hi95ci, samep, rank):
             self.id = id
             self.idcode = idcode
             self.comps = int(comps)
@@ -40,6 +37,7 @@ class ComputedScript:
             self.lo95ci = lo95ci
             self.hi95ci = hi95ci
             self.samep = samep #note that samep will be negative for multiple sorting lambda in script_selection() won't do a regualr and reverse sort
+            self.rank = rank 
 
 def get_allowed_sets(userid):
     list = Set.objects.filter(judges__id__icontains=userid)
@@ -120,13 +118,19 @@ def get_computed_scripts(set, userid):
         hi95ci = round(ep + (1.96 * se), 1)
 
         computed_scripts_for_user_in_set.append(
-            ComputedScript(script.id, script.idcode, comps, wins, logodds, probability, rmse, stdev, fisher_info, se, ep, lo95ci, hi95ci, 0)
+            ComputedScript(script.id, script.idcode, comps, wins, logodds, probability, rmse, stdev, fisher_info, se, ep, lo95ci, hi95ci, 0, 0)
         )
-    #now increase samep by one for every script including self with matching probability
+    #now increase samep by one for every script including self with matching probability and set a rank value fo each
+    computed_scripts_for_user_in_set.sort(key = lambda x: x.ep, reverse=True)
+    rank=1
     for script in computed_scripts_for_user_in_set:
         for match in computed_scripts_for_user_in_set:
             if match.probability == script.probability:
                 match.samep -= 1
+        script.rank=rank
+        if script.samep == -1: #if there's only one at that value, then increase rank increment 1 for next 
+            rank += 1
+
     return computed_scripts_for_user_in_set
 
 def build_compslist(set, userid):
@@ -138,11 +142,12 @@ def build_compslist(set, userid):
         compslist.append([i, j])
     return compslist
 
+# everything below this line is broken until new chart generator can be found or query can be generated possibly create a model just for each chart?
 def get_resultschart(computed_scripts):
     resultsdata = DataPool(
         series=[{
             'options': {
-                'source': Scripts.objects.all() #Script.objects.filter(se__lt=7).order_by('estimated_parameter_in_set')#can't get order by to affect chart x axis yet             
+                'source': Script.objects.all() #Script.objects.filter(se__lt=7).order_by('estimated_parameter_in_set')#can't get order by to affect chart x axis yet             
             },
             'terms': [
                 'id',

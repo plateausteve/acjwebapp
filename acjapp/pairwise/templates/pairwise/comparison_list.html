@@ -13,11 +13,6 @@
                 <th>Right Script</th>
                 <th>Right Win</th>
                 <th>Duration</th>
-                <!--<th>Uninterrupted</th>
-                <th>Interest</th>
-                <th>Difficulty</th>
-                <th>Start</th>
-                <th>End</th>-->
             </tr>
             {% for comparison in comparisons %}
             <tr>
@@ -29,11 +24,6 @@
                 <td>{{ comparison.scriptj.pk }}</td>
                 <td>{{ comparison.winj }}</td>
                 <td>{{ comparison.duration }}</td>
-                <!--<td>{{ comparison.uninterrupted }}</td>
-                <td>{{ comparison.interest_rating }}</td>
-                <td>{{ comparison.difficulty_rating }}</td>
-                <td>{{ comparison.decision_start }}</td>
-                <td>{{ comparison.decision_end }}</td>-->
             </tr>
             {% endfor %}
         </table>
