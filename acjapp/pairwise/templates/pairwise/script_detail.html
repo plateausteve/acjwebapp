@@ -3,7 +3,8 @@
 {% block content %}
     <div class="container-fluid">   
         <p>Set: {{ script.set }}</p>
-        <p>Script ID Code: {{ script.idcode }}</p>
+        <p>Student ID Code: {{ script.idcode }}</p>
+        <p>Uploader: {{ script.user }} ({{ script.user.id }}) </p>
         <div class="ratio" style="--bs-aspect-ratio: 150%;">
             {% if script.pdf %}
                 <embed src="{{ script.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="100%" >

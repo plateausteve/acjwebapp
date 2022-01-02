@@ -24,8 +24,6 @@ urlpatterns = [
     path('compare/', views.compare, name='compare.html'),
     path('comparisons/<set>/', views.comparisons, name='comparison_list.html'),
     path('script_list/<set>/', views.script_list, name='scripts'),
-    path('update/', views.update, name='update'),
-    path('script_chart/', views.script_chart_view, name='script_chart'),
     path('script/<int:pk>/', views.script_detail, name='script_detail'),
-    path('set/<int:pk>/', views.SetView, name='SetView')
+    path('set/<int:pk>/', views.set_view, name='SetView')
 ]

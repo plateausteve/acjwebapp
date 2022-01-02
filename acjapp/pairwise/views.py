@@ -23,7 +23,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from .models import Script, Comparison, Set, WinForm
 from random import sample
 from django.views import generic
-from .utils import compute_scripts_and_save, script_selection, get_scriptchart, get_resultschart, get_allowed_sets
+from .utils import get_computed_scripts, script_selection, get_scriptchart, get_resultschart, get_allowed_sets
 import operator
 from operator import itemgetter
 import numpy as np
@@ -39,26 +39,43 @@ def script_detail(request, pk):
     script=get_object_or_404(Script, pk=pk)
     return render(request, 'pairwise/script_detail.html', {'script': script})
 
-def script_list(request, set):
-    if Set.objects.filter(pk=set).exclude(owner=request.user).count()==0:
-        html="<p>Set does not exist</p>"
-        return HttpResponse(html)
-    script_table = Script.objects.filter(set=set).order_by('-lo_of_win_in_set')
-    cht = get_scriptchart()
-    cht2 = get_resultschart()
+def script_list(request, set): #make sure template can take this input as list of dictionaries
+    userid = request.user
+    computed_scripts = get_computed_scripts(set, userid)
+    allowed_sets_ids = get_allowed_sets(userid)
+    computed_scripts.sort(key = lambda x: x.logodds, reverse=True)
+    script_table = computed_scripts
+    #cht = get_scriptchart(computed_scripts)
+    #cht2 = get_resultschart(computed_scripts)
     
     return render(request, 'pairwise/script_list.html', {
         'script_table': script_table, 
         'set': set,
-        'chart_list': [cht, cht2],
+        #'chart_list': [cht, cht2],
         } 
     )
 
-def SetView(request, pk):
-    set_scripts = Script.objects.filter(set=str(pk)).order_by('-lo_of_win_in_set')
+def set_view(request, pk):
+    userid = request.user
+    computed_scripts_for_user_in_set = get_computed_scripts(pk, userid)
+    computed_scripts_for_user_in_set.sort(key = lambda x: x.logodds, reverse=True)
     return render(request, 'pairwise/set.html', {
         'pk': pk, 
-        'set_scripts': set_scripts
+        'set_scripts': computed_scripts_for_user_in_set
+        }
+    )
+
+def comparisons(request, set):
+    userid=request.user.id
+    allowed_sets_ids = get_allowed_sets(userid)
+    request.session['sets']= allowed_sets_ids
+    if int(set) not in allowed_sets_ids:    
+        html="<p>ERROR: Set not available.</p>"
+        return HttpResponse(html)
+    comparisons = Comparison.objects.filter(set=set, judge=userid)
+    return render(request, 'pairwise/comparison_list.html', {
+        'set': set,
+        'comparisons': comparisons,
         }
     )
 
@@ -67,7 +84,7 @@ def compare(request, set):
     allowed_sets_ids = get_allowed_sets(userid)
     request.session['sets']= allowed_sets_ids
     if int(set) not in allowed_sets_ids:    
-        html="<p>Set not available.</p>"
+        html="<p>ERROR: Set not available.</p>"
         return HttpResponse(html)
     if request.method == 'POST': #if arriving here after submitting comparison form or script form
         winform = WinForm(request.POST)
@@ -90,23 +107,26 @@ def compare(request, set):
             else:
                 comparison.winj=1
             comparison.save()
-            compute_scripts_and_save(set)
+            # compute_scripts_and_save(set) don't need this if no longer saving script values
+        else:
+            now = datetime.now() # must use datetime not timezone in order to keep it the same through to other side of form 
+            starttime = now.timestamp
+            set_object = Set.objects.get(pk=set)
 
-    compslist, scripti, scriptj, j_list = script_selection(set)
+    compslist, scripti, scriptj, j_list = script_selection(set, userid)
     compscount = len(compslist) #save this for later so it ends after a large portion of possible comparisons are made.
-    now = datetime.now() # must use datetime not timezone in order to keep it the same through to other side of form 
+    now=datetime.now()
     starttime = now.timestamp
-    set_object = Set.objects.get(pk=int(set))
+    set_object = Set.objects.get(pk=set)
+    winform = WinForm()
     if len(j_list)==0:
         scripti=None
         scriptj=None
-    
-    winform = WinForm()
     return render(request, 'pairwise/compare.html', {
             'scripti': scripti,
             'scriptj': scriptj,
             'winform': winform,
-            'set': set,
+            'set': set, #this is no longer needed now that set_object is passing to the template
             'starttime': starttime,
             'j_list': j_list,
             'allowed_sets_ids': allowed_sets_ids,
@@ -114,20 +134,3 @@ def compare(request, set):
             'set_object': set_object,
             } 
         )
-
-
-def comparisons(request, set):
-    comparisons = Comparison.objects.filter(set=set)
-    return render(request, 'pairwise/comparison_list.html', {
-        'set': set,
-        'comparisons': comparisons,
-    })
-
-def update(request):
-    compute_scripts_and_save(set)
-    return render(request, 'pairwise/update.html')
-
-def script_chart_view(request):
-    cht2 = get_resultschart()
-    cht = get_scriptchart()
-    return render(request, 'pairwise/script_chart.html', {'chart_list': [cht, cht2]})

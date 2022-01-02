@@ -5,8 +5,7 @@
         <h1>Set {{ pk }} Results</h1>
         <table class="table table-striped table-hover table-bordered">
             <tr>
-                <th>Owner ID</th>
-                <th>Script</th>
+                <th>Student ID Code</th>
                 <th>Comparisons</th>
                 <th>&theta; Estimate low 95%CI</th>
                 <th>Estimate &theta;</th>
@@ -14,11 +13,10 @@
             </tr>
             {% for script in set_scripts %}
             <tr>
-                <td>{{ script.user.pk }}</td>
-                <td><a href="{% url 'script_detail' pk=script.pk %}">{{ script.idcode }}</a></td>
-                <td>{{ script.comps_in_set }}</td>
+                <td><a href="{% url 'script_detail' pk=script.id %}">{{ script.idcode }}</a></td>
+                <td>{{ script.comps }}</td>
                 <td>{{ script.lo95ci }}</td>
-                <td>{{ script.estimated_parameter_in_set }}</td>
+                <td>{{ script.ep }}</td>
                 <td>{{ script.hi95ci }}</td>
             </tr>
             {% endfor %}

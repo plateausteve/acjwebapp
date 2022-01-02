@@ -1,22 +1,20 @@
 {% extends 'pairwise/base.html' %}
 
 {% block content %}
-    <script src="https://code.highcharts.com/highcharts.src.js"></script>
+     <!-- <script src="https://code.highcharts.com/highcharts.src.js"></script>
     <script src="https://code.jquery.com/jquery-1.12.4.js"   integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU="   crossorigin="anonymous"></script>
     <script src="https://code.highcharts.com/highcharts-more.js"></script>
 
-    {% load chartit %}
-    {{ chart_list|load_charts:"cht, cht2" }}
+    [put brackets here] chart_list|load_charts:"cht, cht2" }}-->
     <body>
         <h1>Script List with Current Computations:</h1>
-        <p>Set {{ set.pk }}</p>
-        <div id='cht'> First chart will be rendered here </div>
-        <div id='cht2'> Second chart will be rendered here </div>
+        <p>Set {{ set }}</p>
+        <!--div id='cht'> First chart will be rendered here </div>
+        <div id='cht2'> Second chart will be rendered here </div-->
         {% if script_table %}
             <table border="1" style="font-size:x-small">
                 <tr>
-                    <th>User</th>
-                    <th>Script</th>
+                    <th>Person ID Code</th>
                     <th>Comps</th>
                     <th>Wins</th>
                     <th>Prob</th>
@@ -32,19 +30,18 @@
                 </tr>
                 {% for script in script_table %}
                 <tr>
-                    <td>{{ script.user.pk }}</td>
-                    <td><a href="{% url 'script_detail' pk=script.pk %}">{{ script.pk }}</a></td>
-                    <td>{{ script.comps_in_set }}</td>
-                    <td>{{ script.wins_in_set }}</td>
-                    <td>{{ script.prob_of_win_in_set }}</td>
-                    <td>{{ script.rmse_in_set }}</td>
-                    <td>{{ script.count_same_p }}</td>
+                    <td><a href="{% url 'script_detail' pk=script.id %}">{{ script.idcode }}</a></td>
+                    <td>{{ script.comps }}</td>
+                    <td>{{ script.wins }}</td>
+                    <td>{{ script.probability }}</td>
+                    <td>{{ script.rmse }}</td>
+                    <td>{{ script.samep }}</td>
                     <td>{{ script.stdev }}</td>
-                    <td>{{ script.lo_of_win_in_set }}</td>
+                    <td>{{ script.logodds }}</td>
                     <td>{{ script.fisher_info }}</td>
                     <td>{{ script.se }}</td>
                     <td>{{ script.lo95ci }}</td>
-                    <td>{{ script.estimated_parameter_in_set }}</td>
+                    <td>{{ script.ep }}</td>
                     <td>{{ script.hi95ci }}</td>
                 </tr>
                 {% endfor %}

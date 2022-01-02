@@ -20,31 +20,26 @@ import pandas as pd
 from numpy import log, sqrt, corrcoef
 from scipy.stats import spearmanr, kendalltau
 import operator
+import random
 from operator import itemgetter
 from chartit import DataPool, Chart
 
-def compute_script_ep(logodds):
-    ep = round(57.689 + (logodds * 11.826), 3) #this formula is based on previous testing with greys estimated to actual value
-    #modeled the actual correlation between phi and theta at 300 comps using the 7n switchcount 
-    #y intercept=57.689 and slope is 11.826
-    return ep
-
-def compute_same_p(set):
-    scriptsp=Script.objects.filter(set=set)
-    for script in scriptsp:
-        count=Script.objects.filter(prob_of_win_in_set=script.prob_of_win_in_set).count()
-        setattr(script, 'count_same_p', count)
-        script.save()
-    return()
-
-def build_compslist(set):
-    comps = Comparison.objects.filter(set=set)
-    compslist = []
-    for comp in comps:
-        i = comp.scripti.id
-        j = comp.scriptj.id 
-        compslist.append([i, j])
-    return compslist
+class ComputedScript:
+    def __init__(self, id, idcode, comps, wins, logodds, probability, rmse, stdev, fisher_info, se, ep, lo95ci, hi95ci, samep):
+            self.id = id
+            self.idcode = idcode
+            self.comps = int(comps)
+            self.wins = wins
+            self.logodds = logodds
+            self.probability = probability
+            self.rmse = rmse
+            self.stdev = stdev
+            self.fisher_info = fisher_info
+            self.se = se
+            self.ep = ep
+            self.lo95ci = lo95ci
+            self.hi95ci = hi95ci
+            self.samep = samep #note that samep will be negative for multiple sorting lambda in script_selection() won't do a regualr and reverse sort
 
 def get_allowed_sets(userid):
     list = Set.objects.filter(judges__id__icontains=userid)
@@ -53,22 +48,26 @@ def get_allowed_sets(userid):
         allowed_sets_ids.append(set.id)
     return allowed_sets_ids
 
-def script_selection(set):
+def script_selection(set, userid):
     scriptcount = Script.objects.filter(set=set).count()
-    compslist = build_compslist(set)
-    comparable_scripts = Script.objects.order_by('comps_in_set','-count_same_p','?').filter(set=set)
+    compslist = build_compslist(set, userid)
+    computed_scripts_for_user_in_set = get_computed_scripts(set, userid)
+    if len(compslist) > scriptcount: #only sort when two rounds of comps has been made
+        computed_scripts_for_user_in_set.sort(key = lambda x: (x.comps, x.samep)) # wouldn't random be nice at the beginning?
+    else: random.shuffle(computed_scripts_for_user_in_set)
     scriptj_possibilities = []
 
     # Go through all comparable scripts, and choose the first as scripti. 
     # Calculate the difference in log odds between scripti and every other script after
-    for i, script in enumerate(comparable_scripts, start=0):
+    for i, script in enumerate(computed_scripts_for_user_in_set):
         if i == 0:
-            if script.comps_in_set == scriptcount-1:
+            if script.comps == scriptcount-1:
                 return compslist, None, None, [] # everything is empty
-            scripti = script
-            loi = script.lo_of_win_in_set
+            scripti = Script.objects.get(pk = script.id)
+            loi = script.logodds
+            print(scripti)
         elif [scripti.id, script.id] not in compslist and [script.id, scripti.id] not in compslist: # don't consider this scriptj if it's already been compared
-            loj = script.lo_of_win_in_set
+            loj = script.logodds
             lodiff = abs(loi-loj)
             scriptj_possibilities.append([script.id, lodiff])
     
@@ -81,64 +80,69 @@ def script_selection(set):
         scriptj = None
     return compslist, scripti, scriptj, j_list
 
-def compute_scripts_and_save(set):
+def get_computed_scripts(set, userid):
+    computed_scripts_for_user_in_set =[]
     scripts = Script.objects.filter(set=set)
     for script in scripts:
-        #count all the comparisons each script has been involved in, including the most recent, set this attribute
-        comparisons_as_i_count = Comparison.objects.filter(scripti=script).count()
-        comparisons_as_j_count = Comparison.objects.filter(scriptj=script).count()
-        comps = comparisons_as_i_count + comparisons_as_j_count + .01
-        setattr(script, 'comps_in_set', comps)
-        setattr(script, 'comps_display', comps/10)
+        #count all the comparisons each script has been involved in
+        comparisons_as_i_for_user_count = Comparison.objects.filter(scripti=script, judge=userid).count()
+        comparisons_as_j_for_user_count = Comparison.objects.filter(scriptj=script, judge=userid).count()
+        comps = comparisons_as_i_for_user_count + comparisons_as_j_for_user_count + .01
+        comps_display = comps/10
 
-        #count all the comparisons each script has won, set this attribute
-        wins_as_i_count = Comparison.objects.filter(wini=1, scripti=script).count()
-        wins_as_j_count = Comparison.objects.filter(winj=1, scriptj=script).count()
-        wins = wins_as_i_count + wins_as_j_count
-        setattr(script, 'wins_in_set', wins)
+        #count all the comparisons each script has won
+        wins_as_i_for_user_count = Comparison.objects.filter(wini=1, scripti=script, judge=userid).count()
+        wins_as_j_for_user_count = Comparison.objects.filter(winj=1, scriptj=script, judge=userid).count()
+        wins = wins_as_i_for_user_count + wins_as_j_for_user_count
         
-        #compute the logodds and probability for each script, set these attributes
+        #compute the logodds and probability for each script
         odds = (wins/(comps - wins)) + .01
         logodds = round(log(odds), 3)
         probability = round((wins/comps), 3)
-        setattr(script, 'prob_of_win_in_set', probability) 
-        setattr(script, 'lo_of_win_in_set', logodds)
 
-        #compute the standard deviation of sample, standard error of sample mean and RMSE for script, set this attribute
+        #compute the standard deviation of sample, standard error of sample mean and RMSE for script
         mean = wins/comps #same as probability, but no rounding
         diffs = mean * (1 - mean)/comps # SE of mean of sample (which is all comparisons so far)
         rmse = round(sqrt(wins * diffs / comps),3)
         stdev = round(sqrt(((((1 - mean) ** 2) * wins) + (((0 - mean) ** 2) * (comps - wins))) / comps), 3)
-        setattr(script, 'rmse_in_set', rmse)
-        setattr(script, 'stdev', stdev)
         
         #compute the Fisher information for probability estimate 
         fisher_info = round(comps * probability * (1 - probability) + .01, 2)
         # possible for SE of probability estimate: se = round(stdev / sqrt(comps),3)
         se = round(1 / sqrt(fisher_info), 3)
-        setattr(script, 'fisher_info', fisher_info)
-        setattr(script, 'se', se)
     
         #compute the MLE of parameter value--an arbitrary linear function to closely match known values in dev or other convenient scale
-        ep = compute_script_ep(logodds) 
+        #this formula is based on previous testing with greys estimated to actual value
         #modeled the actual correlation between phi and theta at 300 comps using the 7n switchcount 
-        #y intercept=57.689 and slope is 11.826
-        lo95ci = round(ep - (1.96 * se), 3)
-        hi95ci = round(ep + (1.96 * se), 3)
-        setattr(script, 'estimated_parameter_in_set', ep)
-        setattr(script, 'lo95ci', lo95ci)
-        setattr(script, 'hi95ci', hi95ci)
+        #y intercept=57.689 and slope is 11.826 using old testing development system and greysep = round(57.689 + (logodds * 11.826), 3)
+        ep = round(50 + (logodds * 15), 1)
+        lo95ci = round(ep - (1.96 * se), 1)
+        hi95ci = round(ep + (1.96 * se), 1)
 
-        script.save()
-    #compute, set, and save attributes for all scripts that depend on above calculations
-    compute_same_p(set) #this saves all scripts with newly computed same p count
-    return
+        computed_scripts_for_user_in_set.append(
+            ComputedScript(script.id, script.idcode, comps, wins, logodds, probability, rmse, stdev, fisher_info, se, ep, lo95ci, hi95ci, 0)
+        )
+    #now increase samep by one for every script including self with matching probability
+    for script in computed_scripts_for_user_in_set:
+        for match in computed_scripts_for_user_in_set:
+            if match.probability == script.probability:
+                match.samep -= 1
+    return computed_scripts_for_user_in_set
 
-def get_resultschart():
+def build_compslist(set, userid):
+    comps = Comparison.objects.filter(set=set).filter(judge=userid)
+    compslist = []
+    for comp in comps:
+        i = comp.scripti.id
+        j = comp.scriptj.id 
+        compslist.append([i, j])
+    return compslist
+
+def get_resultschart(computed_scripts):
     resultsdata = DataPool(
         series=[{
             'options': {
-                'source': Script.objects.filter(se__lt=7).order_by('estimated_parameter_in_set')#can't get order by to affect chart x axis yet             
+                'source': Scripts.objects.all() #Script.objects.filter(se__lt=7).order_by('estimated_parameter_in_set')#can't get order by to affect chart x axis yet             
             },
             'terms': [
                 'id',
@@ -173,11 +177,11 @@ def get_resultschart():
     )
     return cht2
 
-def get_scriptchart():
+def get_scriptchart(computed_scripts):
     scriptdata = DataPool(
         series=[{
             'options': {
-                'source': Script.objects.filter(se__lt=7).order_by('estimated_parameter_in_set')#can't get order by to affect chart x axis yet
+                'source':Script.objects.all() #Script.objects.filter(se__lt=7).order_by('estimated_parameter_in_set')#can't get order by to affect chart x axis yet
             },
             'terms': [
                 'id',
@@ -217,3 +221,4 @@ def get_scriptchart():
         }
     )
     return cht
+

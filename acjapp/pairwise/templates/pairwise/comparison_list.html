@@ -38,7 +38,7 @@
             {% endfor %}
         </table>
           {% else %}
-            <p>There are no comparisons for set {{ set }} in the database.</p>
+            <p>You have not made any comparisons for set {{ set }}. Click <a href="{% url 'compare.html' set %}">here</a> to do your first comparison.</p>
           {% endif %}       
         <br>
     </body>
