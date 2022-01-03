@@ -53,6 +53,21 @@ SECRET_KEY = "your secret key"
 DB_PASSWORD = "your database password"
 ```
 
+## Selecting or creating a settings file
+
+Inside the acjapp folder, there are two settings files. They
+separately contain the settings required to host the webapp a) locally
+(through 127.0.0.1) or b) on PythonAnywhere. In order to host the app
+online, you will likely need to create your own settings file or
+customize the existing PythonAnywhere file to match your account.
+
+In order to host the site locally, create a symlink to the local
+settings file.
+
+```
+ln -s acjapp/settings_local.py acjapp/settings.py
+```
+
 ## Setting up mySQL
 
 From this point, we assume that you will be hosting the site locally
@@ -69,33 +84,24 @@ password you entered in ``.env``.
 
 ```
 mysql> CREATE DATABASE pairwise;
-mysql> CREATE USER 'django'@'localhost' IDENTIFIED BY "your database password";
+mysql> CREATE USER 'django'@'localhost' IDENTIFIED BY "your database password (from before)";
 mysql> GRANT ALL PRIVILEGES ON pairwise.* TO django@localhost;
 mysql> quit
 ```
 
-You don't need to do any further setup on the database, as Django will
-create the correct tables.
+Edit the DATABASES section of ``acjapp/acjap/settings.py`` in order to reflect the username you use.
 
-## Selecting or creating a settings file
-
-Inside the acjapp folder, there are two settings files. They
-separately contain the settings required to host the webapp a) locally
-(through 127.0.0.1) or b) on PythonAnywhere. In order to host the app
-online, you will likely need to create your own settings file or
-customize the existing PythonAnywhere file to match your account.
-
-In order to host the site locally, create a symlink to the local
-settings file.
+Now, you should be able to migrate the database and run your server.
 
 ```
-ln -s acjapp/settings_local.py acjapp/settings.py
-```
-
-With the settings symlinked, you can finally run the server using
-``manage.py``.
-
-```
-cd ..
+python manage.py makemigrations
+python manage.py migrate
 python manage.py runserver
+```
+
+In order to edit the database create a superuser and log into the admin 
+page of the site.
+
+```
+python manage.py createsuperuser 
 ```
