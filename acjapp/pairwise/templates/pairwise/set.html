@@ -2,10 +2,11 @@
 
 {% block content %}
     {% if set_scripts %}
-        <h1>Set {{ pk }} Results</h1>
+        <h3>Set {{ pk }} results for {{ user }}:</h3>
         <table class="table table-striped table-hover table-bordered">
             <tr>
                 <th>Student ID Code</th>
+                <th>Rank</th>
                 <th>Comparisons</th>
                 <th>&theta; Estimate low 95%CI</th>
                 <th>Estimate &theta;</th>
@@ -14,6 +15,7 @@
             {% for script in set_scripts %}
             <tr>
                 <td><a href="{% url 'script_detail' pk=script.id %}">{{ script.idcode }}</a></td>
+                <td>{{ script.rank }}</td>
                 <td>{{ script.comps }}</td>
                 <td>{{ script.lo95ci }}</td>
                 <td>{{ script.ep }}</td>

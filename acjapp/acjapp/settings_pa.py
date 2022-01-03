@@ -43,7 +43,7 @@ SECRET_KEY = config("SECRET_KEY")
 DEBUG = False
 
 
-ALLOWED_HOSTS = ['drawingtest.pythonanywhere.com',]
+ALLOWED_HOSTS = ['drawingtest.pythonanywhere.com','compare.drawingtest.org']
 
 
 # Application definition

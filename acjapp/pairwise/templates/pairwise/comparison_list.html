@@ -1,7 +1,7 @@
 {% extends 'pairwise/base.html' %}
 {% block content %}
     <body>
-        <h1>Comparison List:</h1>
+        <h3>Comparisons in Set {{ set }} by {{ user }}:</h3>
         {% if comparisons %}
         <table border="1" style="font-size:x-small; align-self: center;">
             <tr>
@@ -13,11 +13,6 @@
                 <th>Right Script</th>
                 <th>Right Win</th>
                 <th>Duration</th>
-                <!--<th>Uninterrupted</th>
-                <th>Interest</th>
-                <th>Difficulty</th>
-                <th>Start</th>
-                <th>End</th>-->
             </tr>
             {% for comparison in comparisons %}
             <tr>
@@ -29,11 +24,6 @@
                 <td>{{ comparison.scriptj.pk }}</td>
                 <td>{{ comparison.winj }}</td>
                 <td>{{ comparison.duration }}</td>
-                <!--<td>{{ comparison.uninterrupted }}</td>
-                <td>{{ comparison.interest_rating }}</td>
-                <td>{{ comparison.difficulty_rating }}</td>
-                <td>{{ comparison.decision_start }}</td>
-                <td>{{ comparison.decision_end }}</td>-->
             </tr>
             {% endfor %}
         </table>
