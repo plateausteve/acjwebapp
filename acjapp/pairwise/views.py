@@ -29,13 +29,13 @@ from operator import itemgetter
 import numpy as np
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm
 
 def index(request):
     if request.user.is_authenticated:
         userid=request.user.id
         allowed_sets_ids = get_allowed_sets(userid)
-        request.session['sets']= allowed_sets_ids
+        request.session['sets'] = allowed_sets_ids
     return render(request, 'pairwise/index.html', {})
 
 def login_view(request):
@@ -59,67 +59,62 @@ def logout_view(request):
         return redirect('index.html')
 
 
-@login_required(login_url="login.html")
+@login_required(login_url="login")
 def script_detail(request, pk):
-    if request.user.is_authenticated:
-        userid=request.user.id
-        allowed_sets_ids = get_allowed_sets(userid)
-        request.session['sets']= allowed_sets_ids
-        script=get_object_or_404(Script, pk=pk)
-        return render(request, 'pairwise/script_detail.html', {'script': script})
-    return redirect()
+    userid=request.user.id
+    allowed_sets_ids = get_allowed_sets(userid)
+    request.session['sets']= allowed_sets_ids
+    script=get_object_or_404(Script, pk=pk)
+    return render(request, 'pairwise/script_detail.html', {'script': script})
 
-
+@login_required(login_url="login")
 def script_list(request, set): #make sure template can take this input as list of dictionaries
-    if request.user.is_authenticated:
-        userid=request.user.id
-        allowed_sets_ids = get_allowed_sets(userid)
-        request.session['sets']= allowed_sets_ids
-        computed_scripts = get_computed_scripts(set, userid)
-        computed_scripts.sort(key = lambda x: x.logodds, reverse=True)
-        script_table = computed_scripts
-        #cht = get_scriptchart(computed_scripts)
-        #cht2 = get_resultschart(computed_scripts)
-        
-        return render(request, 'pairwise/script_list.html', {
-            'script_table': script_table, 
-            'set': set,
-            #'chart_list': [cht, cht2],
-            } 
-        )
-    #what to do if not logged in
+    userid=request.user.id
+    allowed_sets_ids = get_allowed_sets(userid)
+    request.session['sets']= allowed_sets_ids
+    computed_scripts = get_computed_scripts(set, userid)
+    computed_scripts.sort(key = lambda x: x.logodds, reverse=True)
+    script_table = computed_scripts
+    #cht = get_scriptchart(computed_scripts)
+    #cht2 = get_resultschart(computed_scripts)
+    
+    return render(request, 'pairwise/script_list.html', {
+        'script_table': script_table, 
+        'set': set,
+        #'chart_list': [cht, cht2],
+        } 
+    )
 
+@login_required(login_url="login")
 def set_view(request, pk):
-    if request.user.is_authenticated:
-        userid=request.user.id
-        allowed_sets_ids = get_allowed_sets(userid)
-        request.session['sets']= allowed_sets_ids
-        computed_scripts_for_user_in_set = get_computed_scripts(pk, userid)
-        computed_scripts_for_user_in_set.sort(key = lambda x: x.logodds, reverse=True)
-        return render(request, 'pairwise/set.html', {
-            'pk': pk, 
-            'set_scripts': computed_scripts_for_user_in_set
-            }
-        )
-    #what to do if not logged in
+    userid=request.user.id
+    allowed_sets_ids = get_allowed_sets(userid)
+    request.session['sets']= allowed_sets_ids
+    computed_scripts_for_user_in_set = get_computed_scripts(pk, userid)
+    computed_scripts_for_user_in_set.sort(key = lambda x: x.logodds, reverse=True)
+    return render(request, 'pairwise/set.html', {
+        'pk': pk, 
+        'set_scripts': computed_scripts_for_user_in_set
+        }
+    )
 
+@login_required(login_url="login")
 def comparisons(request, set):
-    if request.user.is_authenticated:
-        userid=request.user.id
-        allowed_sets_ids = get_allowed_sets(userid)
-        request.session['sets']= allowed_sets_ids
-        if int(set) not in allowed_sets_ids:    
-            html="<p>ERROR: Set not available.</p>"
-            return HttpResponse(html)
-        comparisons = Comparison.objects.filter(set=set, judge=userid)
-        print(userid, type(userid))
-        return render(request, 'pairwise/comparison_list.html', {
-            'set': set,
-            'comparisons': comparisons,
-            }
-        )
-    #what to do if not logged in
+    userid=request.user.id
+    allowed_sets_ids = get_allowed_sets(userid)
+    request.session['sets']= allowed_sets_ids
+    if int(set) not in allowed_sets_ids:    
+        html="<p>ERROR: Set not available.</p>"
+        return HttpResponse(html)
+    comparisons = Comparison.objects.filter(set=set, judge=userid)
+    print(userid, type(userid))
+    return render(request, 'pairwise/comparison_list.html', {
+        'set': set,
+        'comparisons': comparisons,
+        }
+    )
 
+@login_required(login_url="login")
 def compare(request, set):
     userid=request.user.id
     allowed_sets_ids = get_allowed_sets(userid)
