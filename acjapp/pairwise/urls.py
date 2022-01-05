@@ -25,5 +25,8 @@ urlpatterns = [
     path('comparisons/<set>/', views.comparisons, name='comparison_list.html'),
     path('script_list/<set>/', views.script_list, name='scripts'),
     path('script/<int:pk>/', views.script_detail, name='script_detail'),
-    path('set/<int:pk>/', views.set_view, name='SetView')
+    path('set/<int:pk>/', views.set_view, name='set_view'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'
+    )
 ]

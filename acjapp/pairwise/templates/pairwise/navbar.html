@@ -1,21 +1,23 @@
 <div class="page-header">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" style="margin-left: 1rem" href="#">Comparative Judgment Webapp</a>
+        <a class="navbar-brand" style="margin-left: 1rem" href="/index">Comparative Judgment Webapp</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 {% if user.is_authenticated %}
-                    <li class = "nav-item">
+                <li class="nav-item">
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button class="btn-secondary" style="margin-top: 8%" type="submit">Logout</button>
+                    </form>
+                </li>
+                <li class = "nav-item">
                         <a class="nav-link active" aria-curren="page" href="#">Welcome, {% if user.first_name %}{{ user.first_name }}{% else %}{{ user }}{% endif %}.</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/index">Home</a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="/admin">Dashboard</a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -48,7 +50,7 @@
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                             {% if request.session.sets %}
                                 {% for set in request.session.sets %}
-                                <a class="dropdown-item" href="{% url 'SetView' set %}">Set {{ set }}</a>
+                                <a class="dropdown-item" href="{% url 'set_view' set %}">Set {{ set }}</a>
                                 {% endfor %}
                             {% endif %}
                         </div>
@@ -65,13 +67,19 @@
                                 {% endfor %}
                             {% endif %}
                         </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin">Dashboard</a>
+                    </li>
                     {% endif %}
                 {% else %}
-                    <li class = "nav-item">
-                        Please <a href="/admin/">log in</a>.
-                    </li>
+                <li class="nav-item">
+                    <a href="/login/">Log in</a>
+                </li>
+                    
                 {% endif %}
             </ul>
         </div>
+        
     </nav>
 </div>
