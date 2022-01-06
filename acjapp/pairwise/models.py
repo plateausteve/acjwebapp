@@ -36,9 +36,11 @@ class Script(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="the user who uploaded the script")
     set = models.ForeignKey(Set, on_delete=models.CASCADE, blank=True, null=True, verbose_name="the one set to which the script belongs")
     pdf = models.FileField(upload_to="scripts/pdfs", null=True, blank=True)
+    pdf_link_option = models.URLField(blank=True, null=True, verbose_name="optional url source of a publicly available pdf hosted online")
     idcode = models.PositiveIntegerField(editable = True, default = 1000, blank=False, null=False, verbose_name="person ID code")
     def __str__(self):
         return str(self.pk)
+
 
 class Comparison(models.Model):
     set = models.ForeignKey(Set, on_delete=models.CASCADE, verbose_name="the set to which this comparison belongs")

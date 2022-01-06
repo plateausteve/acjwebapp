@@ -8,6 +8,8 @@
         <div class="ratio" style="--bs-aspect-ratio: 150%;">
             {% if script.pdf %}
                 <embed src="{{ script.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="100%" >
+            {% elif script.pdf_link_option %}
+                <embed src="{{ script.pdf_link_option }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="100%">
             {% endif %}
         </div>
     </div>

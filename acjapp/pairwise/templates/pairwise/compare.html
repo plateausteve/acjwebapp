@@ -39,6 +39,8 @@
                 <div class="ratio" style="--bs-aspect-ratio: 150%;">
                     {% if scripti.pdf %}
                         <embed src="{{ scripti.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="100%">
+                    {% elif scripti.pdf_link_option %}
+                        <embed src="{{ scripti.pdf_link_option }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="100%">
                     {% endif %}
                  </div>
             </div>
@@ -46,6 +48,8 @@
                 <div class="ratio" style="--bs-aspect-ratio: 150%;">
                     {% if scriptj.pdf %}
                         <embed src="{{ scriptj.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="100%">
+                    {% elif scriptj.pdf_link_option %} 
+                        <embed src="{{ scriptj.pdf_link_option }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="100%">
                     {% endif %}
                 </div>
             </div>
