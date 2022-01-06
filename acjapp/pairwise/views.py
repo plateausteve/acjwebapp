@@ -45,7 +45,6 @@ def login_view(request):
             user = form.get_user()
             login(request, user)
             if 'next' in request.POST:
-                print(request.POST.get('next'))
                 return redirect(request.POST.get('next'))
             else:
                 return redirect('index.html')
