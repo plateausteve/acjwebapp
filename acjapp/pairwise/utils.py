@@ -40,7 +40,7 @@ class ComputedScript:
             self.rank = rank 
 
 def get_allowed_sets(userid):
-    list = Set.objects.filter(judges__id__icontains=userid)
+    list = Set.objects.filter(judges__id__exact=userid)
     allowed_sets_ids = []
     for set in list:
         allowed_sets_ids.append(set.id)
