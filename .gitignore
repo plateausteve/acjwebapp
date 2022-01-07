@@ -10,10 +10,12 @@ acjapp/.env
 venv
 settings.py
 acjapp/pairwise/migrations/
-
-# specific to pythonanywhere
 .env                                                                                                                                                                                                     
 acjapp/static/css/
+
+# pythonanywhere keys
+compare.drawingtest.org.csr
+compare.drawingtest.org.key
 
 # do not back up the media we upload
 acjapp/media
