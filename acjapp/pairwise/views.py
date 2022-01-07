@@ -106,7 +106,6 @@ def comparisons(request, set):
         html="<p>ERROR: Set not available.</p>"
         return HttpResponse(html)
     comparisons = Comparison.objects.filter(set=set, judge=userid)
-    print(userid, type(userid))
     return render(request, 'pairwise/comparison_list.html', {
         'set': set,
         'comparisons': comparisons,

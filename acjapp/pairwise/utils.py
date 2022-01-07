@@ -22,9 +22,10 @@ from operator import itemgetter
 from chartit import DataPool, Chart
 
 class ComputedScript:
-    def __init__(self, id, idcode, comps, wins, logodds, probability, rmse, stdev, fisher_info, se, ep, lo95ci, hi95ci, samep, rank):
+    def __init__(self, id, idcode, idcode_f, comps, wins, logodds, probability, rmse, stdev, fisher_info, se, ep, lo95ci, hi95ci, samep, rank):
             self.id = id
             self.idcode = idcode
+            self.idcode_f = idcode_f
             self.comps = int(comps)
             self.wins = wins
             self.logodds = logodds
@@ -63,7 +64,6 @@ def script_selection(set, userid):
                 return compslist, None, None, [] # everything is empty
             scripti = Script.objects.get(pk = script.id)
             loi = script.logodds
-            print(scripti)
         elif [scripti.id, script.id] not in compslist and [script.id, scripti.id] not in compslist: # don't consider this scriptj if it's already been compared
             loj = script.logodds
             lodiff = abs(loi-loj)
@@ -81,7 +81,6 @@ def script_selection(set, userid):
 def get_computed_scripts(set, userid):
     computed_scripts_for_user_in_set =[]
     scripts = Script.objects.filter(set=set)
-    print(set, type(set), userid, type(userid))
     for script in scripts:
         #count all the comparisons each script has been involved in for user
         comparisons_as_i_for_user_count = Comparison.objects.filter(scripti=script, judge__pk=userid).count()
@@ -120,7 +119,7 @@ def get_computed_scripts(set, userid):
         hi95ci = round(ep + (1.96 * se), 1)
 
         computed_scripts_for_user_in_set.append(
-            ComputedScript(script.id, script.idcode, comps, wins, logodds, probability, rmse, stdev, fisher_info, se, ep, lo95ci, hi95ci, 0, 0)
+            ComputedScript(script.id, script.idcode, script.idcode_f, comps, wins, logodds, probability, rmse, stdev, fisher_info, se, ep, lo95ci, hi95ci, 0, 0)
         )
     #now increase samep by one for every script including self with matching probability and set a rank value fo each
     computed_scripts_for_user_in_set.sort(key = lambda x: x.ep, reverse=True)

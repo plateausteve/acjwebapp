@@ -7,11 +7,11 @@
 
     [put brackets here] chart_list|load_charts:"cht, cht2" }}-->
     <body>
-        <h3>Scripts in set {{ set }} with all current computations for user {{ user }}:</h3>
+        <h4>Scripts in Set {{ set }} with all current computations for {% if user.first_name %}{{ user.first_name }}{% else %}{{ user }}{% endif %}:</h4>
         <!--div id='cht'> First chart will be rendered here </div>
         <div id='cht2'> Second chart will be rendered here </div-->
         {% if script_table %}
-            <table border="1" style="font-size:x-small">
+            <table class="table table-striped table-hover table-bordered">
                 <tr>
                     <th>Person ID Code</th>
                     <th>Rank</th>
@@ -30,7 +30,7 @@
                 </tr>
                 {% for script in script_table %}
                 <tr>
-                    <td><a href="{% url 'script_detail.html' pk=script.id %}">{{ script.idcode }}</a></td>
+                    <td><a href="{% url 'script_detail.html' pk=script.id %}">{{ script.idcode_f }}</a></td>
                     <td>{{ script.rank }}</td>
                     <td>{{ script.comps }}</td>
                     <td>{{ script.wins }}</td>

@@ -38,6 +38,12 @@ class Script(models.Model):
     pdf = models.FileField(upload_to="scripts/pdfs", null=True, blank=True)
     pdf_link_option = models.URLField(blank=True, null=True, verbose_name="optional url source of a publicly available pdf hosted online")
     idcode = models.PositiveIntegerField(editable = True, default = 1000, blank=False, null=False, verbose_name="person ID code")
+    
+    def idcode_f(self):
+        f = self.idcode
+        return '%06d' % (f)
+
+
     def __str__(self):
         return str(self.pk)
 
@@ -56,7 +62,11 @@ class Comparison(models.Model):
     decision_start = models.DateTimeField(editable = False, blank=True, null=True)
     decision_end = models.DateTimeField(editable = False, blank=True, null=True)
     duration = models.DurationField(editable = False, blank=True, null=True)
-    
+
+    def duration_HHmm(self):
+        seconds = self.duration.total_seconds()
+        return '%02d:%02d:%02d' % (int((seconds/3600)%3600), int((seconds/60)%60), int((seconds)))
+
     def __str__(self):
         return str(self.pk)
 
