@@ -3,7 +3,7 @@
 {% block content %}
     <div class="container-fluid">   
         <p>Set: {{ script.set }}</p>
-        <p>Person ID Code: {{ script.idcode }}</p>
+        <p>Person ID Code: {{ script.idcode_f }}</p>
         <p>Owner: {{ script.user }} ({{ script.user.id }}) </p>
         <div class="ratio" style="--bs-aspect-ratio: 150%;">
             {% if script.pdf %}
