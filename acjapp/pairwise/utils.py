@@ -51,9 +51,19 @@ def script_selection(set, userid):
     scriptcount = Script.objects.filter(set=set).count()
     compslist = build_compslist(set, userid)
     computed_scripts_for_user_in_set = get_computed_scripts(set, userid)
-    if len(compslist) > scriptcount: #only sort them when two rounds of comps has been made
-        computed_scripts_for_user_in_set.sort(key = lambda x: (x.comps, x.samep)) # wouldn't random be nice at the beginning?
-    else: random.shuffle(computed_scripts_for_user_in_set)
+    print(scriptcount, ",", len(compslist))
+    if len(compslist) < scriptcount:
+        random.shuffle(computed_scripts_for_user_in_set) # random at the begining       
+    elif len(compslist) < scriptcount * 2:
+        computed_scripts_for_user_in_set.sort(key = lambda x: (x.comps, x.samep)) # prioritize comps
+    else:
+        computed_scripts_for_user_in_set.sort(key = lambda x: (x.samep, x.comps)) # prioritize same p
+    for x in computed_scripts_for_user_in_set:
+        print(x.samep, " ", x.comps)
+    
+    
+    
+    
     scriptj_possibilities = []
 
     # Go through all comparable scripts, and choose the first as scripti. 
@@ -81,12 +91,13 @@ def script_selection(set, userid):
 def get_computed_scripts(set, userid):
     computed_scripts_for_user_in_set =[]
     scripts = Script.objects.filter(set=set)
+
     for script in scripts:
         #count all the comparisons each script has been involved in for user
         comparisons_as_i_for_user_count = Comparison.objects.filter(scripti=script, judge__pk=userid).count()
         comparisons_as_j_for_user_count = Comparison.objects.filter(scriptj=script, judge__pk=userid).count()
         
-        comps = comparisons_as_i_for_user_count + comparisons_as_j_for_user_count + .01
+        comps = comparisons_as_i_for_user_count + comparisons_as_j_for_user_count + .001
         #comps_display = comps/10
 
         #count all the comparisons each script has won
@@ -114,14 +125,31 @@ def get_computed_scripts(set, userid):
         #this formula is based on previous testing with greys estimated to actual value
         #modeled the actual correlation between phi and theta at 300 comps using the 7n switchcount 
         #y intercept=57.689 and slope is 11.826 using old testing development system and greysep = round(57.689 + (logodds * 11.826), 3)
-        ep = round(100 + (logodds * 15), 1)
+        ep = round(100 + (logodds * 7), 1)
         lo95ci = round(ep - (1.96 * se), 1)
         hi95ci = round(ep + (1.96 * se), 1)
 
         computed_scripts_for_user_in_set.append(
-            ComputedScript(script.id, script.idcode, script.idcode_f, comps, wins, logodds, probability, rmse, stdev, fisher_info, se, ep, lo95ci, hi95ci, 0, 0)
+            ComputedScript(
+                script.id,
+                script.idcode, 
+                script.idcode_f, 
+                comps, 
+                wins, 
+                logodds, 
+                '{:.2f}'.format(probability), 
+                '{:.3f}'.format(rmse), 
+                stdev, 
+                fisher_info, 
+                se, 
+                ep, 
+                lo95ci, 
+                hi95ci, 
+                0, 
+                0
+                )
         )
-    #now increase samep by one for every script including self with matching probability and set a rank value fo each
+    #now decrease (for sorting later) samep by one for every script including self with matching probability and set a rank value fo each
     computed_scripts_for_user_in_set.sort(key = lambda x: x.ep, reverse=True)
     rank=0
     for script in computed_scripts_for_user_in_set:

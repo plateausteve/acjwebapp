@@ -15,8 +15,8 @@
                 <tr>
                     <th>Person ID Code</th>
                     <th>Rank</th>
-                    <th>Comps</th>
                     <th>Wins</th>
+                    <th>Comps</th>
                     <th>Prob</th>
                     <th>RMSE(p)</th>
                     <th>Same P</th>
@@ -32,8 +32,8 @@
                 <tr>
                     <td><a href="{% url 'script_detail.html' pk=script.id %}">{{ script.idcode_f }}</a></td>
                     <td>{{ script.rank }}</td>
-                    <td>{{ script.comps }}</td>
                     <td>{{ script.wins }}</td>
+                    <td>{{ script.comps }}</td>
                     <td>{{ script.probability }}</td>
                     <td>{{ script.rmse }}</td>
                     <td>{{ script.samep }}</td>
