@@ -111,6 +111,7 @@ def comparisons(request, set):
         'comparisons': comparisons,
         }
     )
+       
 
 @login_required(login_url="login")
 def compare(request, set):
@@ -141,15 +142,10 @@ def compare(request, set):
             else:
                 comparison.winj=1
             comparison.save()
-            # compute_scripts_and_save(set) don't need this if no longer saving script values
-        else:
-            now = datetime.now() # must use datetime not timezone in order to keep it the same through to other side of form 
-            starttime = now.timestamp
-            set_object = Set.objects.get(pk=set)
-
+    #whether POST or GET, set all these variables afresh and render comparision form template        
     compslist, scripti, scriptj, j_list = script_selection(set, userid)
-    compscount = len(compslist) #save this for later so it ends after a large portion of possible comparisons are made.
-    now=datetime.now()
+    compscount = len(compslist)
+    now = datetime.now()
     starttime = now.timestamp
     set_object = Set.objects.get(pk=set)
     winform = WinForm()
@@ -160,7 +156,7 @@ def compare(request, set):
             'scripti': scripti,
             'scriptj': scriptj,
             'winform': winform,
-            'set': set, #this is no longer needed now that set_object is passing to the template
+            'set': set,
             'starttime': starttime,
             'j_list': j_list,
             'allowed_sets_ids': allowed_sets_ids,

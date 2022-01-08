@@ -48,21 +48,26 @@ def get_allowed_sets(userid):
     return allowed_sets_ids
 
 def script_selection(set, userid):
+    print("here")
     scriptcount = Script.objects.filter(set=set).count()
     compslist = build_compslist(set, userid)
     computed_scripts_for_user_in_set = get_computed_scripts(set, userid)
-    print(scriptcount, ",", len(compslist))
-    if len(compslist) < scriptcount:
-        random.shuffle(computed_scripts_for_user_in_set) # random at the begining       
-    elif len(compslist) < scriptcount * 2:
-        computed_scripts_for_user_in_set.sort(key = lambda x: (x.comps, x.samep)) # prioritize comps
-    else:
-        computed_scripts_for_user_in_set.sort(key = lambda x: (x.samep, x.comps)) # prioritize same p
+    maxcomps=(scriptcount * (scriptcount-1)/2)
+    switch=min(scriptcount + (scriptcount * (scriptcount-1)/6), maxcomps)
+    print(scriptcount/len(compslist))
+    if len(compslist) < scriptcount: # random at the begining until comps = n, then . . . 
+        random.shuffle(computed_scripts_for_user_in_set)   
+        print("random")     
+    elif len(compslist) < switch: #prioritize comps until comps = min of n+max/2.5 or max, then . . . 
+        computed_scripts_for_user_in_set.sort(key = lambda x: (x.comps, x.samep, x.fisher_info)) # prioritize comps
+        print("prioritize comps")
+    else: #prioritize samep
+        computed_scripts_for_user_in_set.sort(key = lambda x: (x.samep, x.comps, x.fisher_info)) # prioritize same p
+        if computed_scripts_for_user_in_set[0].samep == -1: #if all computed scripts have unique values then abort
+            return compslist, None, None, [] # everything is empty
+        print("prioritize samep" )
     for x in computed_scripts_for_user_in_set:
-        print(x.samep, " ", x.comps)
-    
-    
-    
+        print(x.samep, " ", x.comps, " ", x.fisher_info)
     
     scriptj_possibilities = []
 
@@ -87,6 +92,7 @@ def script_selection(set, userid):
         j_list = []
         scriptj = None
     return compslist, scripti, scriptj, j_list
+
 
 def get_computed_scripts(set, userid):
     computed_scripts_for_user_in_set =[]
@@ -159,7 +165,7 @@ def get_computed_scripts(set, userid):
         if script.samep == -1: #if there's only one at that value, then increase rank increment 1 for next 
             rank += 1
         script.rank=rank
-
+    
     return computed_scripts_for_user_in_set
 
 def build_compslist(set, userid):
