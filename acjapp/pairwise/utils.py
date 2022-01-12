@@ -54,7 +54,6 @@ def script_selection(set, userid):
     computed_scripts_for_user_in_set = get_computed_scripts(set, userid)
     maxcomps=(scriptcount * (scriptcount-1)/2)
     switch=min(scriptcount + (scriptcount * (scriptcount-1)/6), maxcomps)
-    print(scriptcount/len(compslist))
     if len(compslist) < scriptcount: # random at the begining until comps = n, then . . . 
         random.shuffle(computed_scripts_for_user_in_set)   
         print("random")     
