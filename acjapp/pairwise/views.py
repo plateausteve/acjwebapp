@@ -20,10 +20,10 @@ from datetime import datetime
 from django.utils import timezone
 from django.urls import reverse
 from django.http import HttpResponseRedirect, HttpResponse
-from .models import Script, Comparison, Set, WinForm
+from .models import Script, Comparison, ScriptSnapshot, Set, WinForm
 from random import sample
 from django.views import generic
-from .utils import get_computed_scripts, script_selection, get_scriptchart, get_resultschart, get_allowed_sets
+from .utils import ComputedScript, get_computed_scripts, script_selection, get_scriptchart, get_resultschart, get_allowed_sets
 import operator
 from operator import itemgetter
 import numpy as np
@@ -56,6 +56,7 @@ def logout_view(request):
     if request.method == 'POST':
         logout(request)
         return redirect('index.html')
+
 
 
 @login_required(login_url="login")
@@ -164,3 +165,17 @@ def compare(request, set):
             'set_object': set_object,
             } 
         )
+""" 
+@login_required(login_url="login")
+def snapshot(request):
+    if request.method == 'POST':
+        snapshotform = ScriptSnapshotForm(request.POST)
+        if snapshotform.is_valid():
+            scriptsnapshot = snapshotform.save(commit=False)
+            scriptsnapshot.judge =
+            scriptsnapshot.set =
+            scriptsnapshot.script =
+            scriptsnapshot.comps =
+            scriptsnapshot.wins =
+
+ """

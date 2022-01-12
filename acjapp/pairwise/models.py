@@ -14,12 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from io import open_code
+from os import renames
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.aggregates import StdDev
+from django.db.models.fields import FloatField
 from django.utils import timezone
 from django import forms
-from numpy import log
+from numpy import log, sqrt
 import numpy as np
 import datetime
 
@@ -43,10 +47,54 @@ class Script(models.Model):
         f = self.idcode
         return '%06d' % (f)
 
+    def __str__(self):
+        return str(self.pk)
+
+class ScriptSnapshot(models.Model):
+    judge = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="the judge whose comparisions generated this script snapshot")
+    set = models.ForeignKey(Set, on_delete=models.CASCADE, blank=True, null=True, verbose_name="the one set to which this script snapshot belongs")
+    script = models.ForeignKey(Script, on_delete=models.CASCADE, related_name="+", verbose_name="the script of this snapshot")
+    comps = models.FloatField(editable = False, blank=True, null=True, verbose_name="comparisons in this snapshot")
+    wins = models.FloatField(editable = False, blank=True, null=True, verbose_name="wins in this snapshot")
 
     def __str__(self):
         return str(self.pk)
 
+    def logodds(self):
+        odds = self.wins/(self.comps - self.wins) + .01
+        logodds = round(log(odds), 3)
+        return logodds
+
+    def probability(self):
+        probability = round((self.wins/self.comps), 3)
+        return probability
+
+    def rmse(self):
+        mean = self.wins/self.comps 
+        diffs = mean * (1 - mean)/self.comps
+        rmse = round(sqrt(self.wins * diffs / self.comps), 3)
+        return rmse 
+
+    def stdev(self):
+        mean = self.wins/self.comps 
+        stdev = round(sqrt(((((1 - mean) ** 2) * self.wins) + (((0 - mean) ** 2) * (self.comps - self.wins))) / self.comps), 3)
+        return stdev 
+    
+    def fisher_info(self):
+        fisher_info = round(self.comps * (self.wins/self.comps) * (1 - (self.wins/self.comps)) + .01, 2)
+        return fisher_info
+    
+    def se(self):
+        fisher_info = round(self.comps * (self.wins/self.comps) * (1 - (self.wins/self.comps)) + .01, 2)
+        se = round(1 / sqrt(fisher_info), 3)
+        return se
+
+    def ep(self):
+        odds = self.wins/(self.comps - self.wins) + .01
+        logodds = round(log(odds), 3)
+        ep = round(100 + (logodds * 7),1)
+        return ep
+    
 
 class Comparison(models.Model):
     set = models.ForeignKey(Set, on_delete=models.CASCADE, verbose_name="the set to which this comparison belongs")
@@ -81,3 +129,11 @@ class WinForm(forms.ModelForm):
             'scriptj': forms.HiddenInput(),
             'form_start_variable': forms.HiddenInput(),
         }
+""" 
+class ScriptSnapshotForm(forms.ModelForm):
+    class Meta:
+        model = ScriptSnapshot
+        fields = 
+        widgets = {
+            
+        } """

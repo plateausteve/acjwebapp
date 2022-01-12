@@ -23,22 +23,22 @@ from chartit import DataPool, Chart
 
 class ComputedScript:
     def __init__(self, id, idcode, idcode_f, comps, wins, logodds, probability, rmse, stdev, fisher_info, se, ep, lo95ci, hi95ci, samep, rank):
-            self.id = id
-            self.idcode = idcode
-            self.idcode_f = idcode_f
-            self.comps = int(comps)
-            self.wins = wins
-            self.logodds = logodds
-            self.probability = probability
-            self.rmse = rmse
-            self.stdev = stdev
-            self.fisher_info = fisher_info
-            self.se = se
-            self.ep = ep
-            self.lo95ci = lo95ci
-            self.hi95ci = hi95ci
-            self.samep = samep #note that samep will be negative for multiple sorting lambda in script_selection() won't do a regualr and reverse sort
-            self.rank = rank 
+        self.id = id
+        self.idcode = idcode
+        self.idcode_f = idcode_f
+        self.comps = int(comps)
+        self.wins = wins
+        self.logodds = logodds
+        self.probability = probability
+        self.rmse = rmse
+        self.stdev = stdev
+        self.fisher_info = fisher_info
+        self.se = se
+        self.ep = ep
+        self.lo95ci = lo95ci
+        self.hi95ci = hi95ci
+        self.samep = samep #note that samep will be negative for multiple sorting lambda in script_selection() won't do a regualr and reverse sort
+        self.rank = rank 
 
 def get_allowed_sets(userid):
     list = Set.objects.filter(judges__id__exact=userid)
@@ -48,7 +48,6 @@ def get_allowed_sets(userid):
     return allowed_sets_ids
 
 def script_selection(set, userid):
-    print("here")
     scriptcount = Script.objects.filter(set=set).count()
     compslist = build_compslist(set, userid)
     computed_scripts_for_user_in_set = get_computed_scripts(set, userid)
