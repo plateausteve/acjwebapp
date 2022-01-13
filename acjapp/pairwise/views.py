@@ -142,12 +142,19 @@ def compare(request, set):
                 comparison.winj=0 
             else:
                 comparison.winj=1
-            last_comp_by_user = Comparison.objects.filter(judge=request.user).latest('pk')
-            if (comparison.scripti == last_comp_by_user.scripti) and (comparison.scriptj == last_comp_by_user.scriptj) and (comparison.judge == last_comp_by_user.judge):        
-                message = "No comparison saved."
-            else:
-                comparison.save()      
-                message = "Comparison saved."
+            
+            try:
+                last_comp_by_user = Comparison.objects.filter(judge=request.user).latest('pk')
+                print(last_comp_by_user)
+            except:
+                last_comp_by_user = None #note: this may not be necessary if query automatically gives us none
+                comparison.save()
+            if last_comp_by_user:
+                if (comparison.scripti == last_comp_by_user.scripti) and (comparison.scriptj == last_comp_by_user.scriptj) and (comparison.judge == last_comp_by_user.judge):        
+                    message = "No comparison saved."
+                else:
+                    comparison.save()      
+                    message = "Comparison saved."
   
     #whether POST or GET, set all these variables afresh and render comparision form template        
     compslist, scripti, scriptj, j_list = script_selection(set, userid)
