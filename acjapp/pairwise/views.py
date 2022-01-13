@@ -118,6 +118,7 @@ def compare(request, set):
     userid=request.user.id
     allowed_sets_ids = get_allowed_sets(userid)
     request.session['sets']= allowed_sets_ids
+    message = ""
     if int(set) not in allowed_sets_ids:    
         html="<p>ERROR: Set not available.</p>"
         return HttpResponse(html)
@@ -141,7 +142,13 @@ def compare(request, set):
                 comparison.winj=0 
             else:
                 comparison.winj=1
-            comparison.save()
+            last_comp_by_user = Comparison.objects.filter(judge=request.user).latest('pk')
+            if (comparison.scripti == last_comp_by_user.scripti) and (comparison.scriptj == last_comp_by_user.scriptj) and (comparison.judge == last_comp_by_user.judge):        
+                message = "No comparison saved."
+            else:
+                comparison.save()      
+                message = "Comparison saved."
+  
     #whether POST or GET, set all these variables afresh and render comparision form template        
     compslist, scripti, scriptj, j_list = script_selection(set, userid)
     compscount = len(compslist)
@@ -162,5 +169,6 @@ def compare(request, set):
             'allowed_sets_ids': allowed_sets_ids,
             'compscount': compscount,
             'set_object': set_object,
+            'message': message
             } 
         )

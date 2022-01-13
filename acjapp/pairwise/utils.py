@@ -55,16 +55,13 @@ def script_selection(set, userid):
     maxcomps=(scriptcount * (scriptcount-1)/2)
     switch=min(scriptcount + (scriptcount * (scriptcount-1)/6), maxcomps)
     if len(compslist) < scriptcount: # random at the begining until comps = n, then . . . 
-        random.shuffle(computed_scripts_for_user_in_set)   
-        print("random")     
+        random.shuffle(computed_scripts_for_user_in_set)      # random is not working yet
     elif len(compslist) < switch: #prioritize comps until comps = min of n+max/2.5 or max, then . . . 
         computed_scripts_for_user_in_set.sort(key = lambda x: (x.comps, x.samep, x.fisher_info)) # prioritize comps
-        print("prioritize comps")
     else: #prioritize samep
         computed_scripts_for_user_in_set.sort(key = lambda x: (x.samep, x.comps, x.fisher_info)) # prioritize same p
         if computed_scripts_for_user_in_set[0].samep == -1: #if all computed scripts have unique values then abort
             return compslist, None, None, [] # everything is empty
-        print("prioritize samep" )
     for x in computed_scripts_for_user_in_set:
         print(x.samep, " ", x.comps, " ", x.fisher_info)
     
@@ -130,7 +127,7 @@ def get_computed_scripts(set, userid):
         #this formula is based on previous testing with greys estimated to actual value
         #modeled the actual correlation between phi and theta at 300 comps using the 7n switchcount 
         #y intercept=57.689 and slope is 11.826 using old testing development system and greysep = round(57.689 + (logodds * 11.826), 3)
-        ep = round(100 + (logodds * 7), 1)
+        ep = round(50 + (logodds * 10), 1)
         lo95ci = round(ep - (1.96 * se), 1)
         hi95ci = round(ep + (1.96 * se), 1)
 
