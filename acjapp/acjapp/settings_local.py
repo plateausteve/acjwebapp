@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 # Drawing Test - Django-based comparative judgement for art assessment
-# Copyright (C) 2021  Steve and Ray Heil
+# Copyright (C) 2022  Steve and Ray Heil
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

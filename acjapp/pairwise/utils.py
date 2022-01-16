@@ -22,15 +22,14 @@ from operator import itemgetter
 from chartit import DataPool, Chart
 
 class ComputedScript:
-    def __init__(self, id, idcode, idcode_f, comps, wins, logodds, probability, rmse, stdev, fisher_info, se, ep, lo95ci, hi95ci, samep, rank):
+    def __init__(self, id, idcode, idcode_f, comps, wins, logit, probability, stdev, fisher_info, se, ep, lo95ci, hi95ci, samep, rank):
             self.id = id
             self.idcode = idcode
             self.idcode_f = idcode_f
             self.comps = int(comps)
             self.wins = wins
-            self.logodds = logodds
+            self.logit = logit
             self.probability = probability
-            self.rmse = rmse
             self.stdev = stdev
             self.fisher_info = fisher_info
             self.se = se
@@ -48,7 +47,6 @@ def get_allowed_sets(userid):
     return allowed_sets_ids
 
 def script_selection(set, userid):
-    print("here")
     scriptcount = Script.objects.filter(set=set).count()
     compslist = build_compslist(set, userid)
     computed_scripts_for_user_in_set = get_computed_scripts(set, userid)
@@ -68,19 +66,19 @@ def script_selection(set, userid):
     scriptj_possibilities = []
 
     # Go through all comparable scripts, and choose the first as scripti. 
-    # Calculate the difference in log odds between scripti and every other script
+    # Calculate the difference in probability between scripti and every other script
     for i, script in enumerate(computed_scripts_for_user_in_set):
         if i == 0:
             if script.comps == scriptcount-1:
                 return compslist, None, None, [] # everything is empty
             scripti = Script.objects.get(pk = script.id)
-            loi = script.logodds
+            p_i = float(script.probability)
         elif [scripti.id, script.id] not in compslist and [script.id, scripti.id] not in compslist: # don't consider this scriptj if it's already been compared
-            loj = script.logodds
-            lodiff = abs(loi-loj)
-            scriptj_possibilities.append([script.id, lodiff])
+            p_j = float(script.probability)
+            p_diff = abs(p_i - p_j)
+            scriptj_possibilities.append([script.id, p_diff])
     
-    # Based on the calculated log odds difference, choose the most similar script and display it on the page.
+    # Based on the calculated probability difference, choose the most similar script and display it on the page.
     if scriptj_possibilities: # if there are possibilities, we choose the most similar
         j_list = sorted(scriptj_possibilities, key=itemgetter(1))
         scriptj = Script.objects.get(pk = j_list[0][0]) # the item that has the smallest log odds difference (lodiff)
@@ -99,37 +97,42 @@ def get_computed_scripts(set, userid):
         comparisons_as_i_for_user_count = Comparison.objects.filter(scripti=script, judge__pk=userid).count()
         comparisons_as_j_for_user_count = Comparison.objects.filter(scriptj=script, judge__pk=userid).count()
         
-        comps = comparisons_as_i_for_user_count + comparisons_as_j_for_user_count + .001
+        comps = comparisons_as_i_for_user_count + comparisons_as_j_for_user_count + .0001
         #comps_display = comps/10
 
-        #count all the comparisons each script has won
+        #count all the comparisons this script has won
         wins_as_i_for_user_count = Comparison.objects.filter(wini=1, scripti=script, judge__pk=userid).count()
-        wins_as_j_for_user_count = Comparison.objects.filter(winj=1, scriptj=script, judge__pk=userid).count()
+        wins_as_j_for_user_count = Comparison.objects.filter(wini=0, scriptj=script, judge__pk=userid).count()
         wins = wins_as_i_for_user_count + wins_as_j_for_user_count
         
-        #compute the logodds and probability for each script
-        odds = (wins/(comps - wins)) + .01
-        logodds = round(log(odds), 3)
-        probability = round((wins/comps), 3)
+        #compute probability of winning for each script based on comparisons so far
+        probability = wins/comps
 
-        #compute the standard deviation of sample, standard error of sample mean and RMSE for script
+        #compute the standard deviation of sample and standard error of sample mean 
         mean = wins/comps #same as probability, but no rounding
-        diffs = mean * (1 - mean)/comps # SE of mean of sample (which is all comparisons so far)
-        rmse = round(sqrt(wins * diffs / comps),3)
-        stdev = round(sqrt(((((1 - mean) ** 2) * wins) + (((0 - mean) ** 2) * (comps - wins))) / comps), 3)
+        stdev = sqrt(((((1 - probability) ** 2) * wins) + (((0 - probability) ** 2) * (int(comps) - wins))) / comps)
         
-        #compute the Fisher information for probability estimate 
-        fisher_info = round(comps * probability * (1 - probability) + .01, 2)
+        #compute if not all wins or all losses so far
+        if (round(probability,3) == 1) or (probability <= 0):
+            logit = None
+            fisher_info = 0
+            se = None
+            ep = None
+            hi95ci = None
+            lo95ci = None
+        else: 
+            fisher_info = probability * (1 - probability)
+            se = round(1 / sqrt(wins * fisher_info),3)
+            logit = round(log(probability/(1 - probability)),3)
+            logit_hi95ci = logit + (1.96 *se)
+            logit_lo95ci = logit - (1.96 *se)
+            ep = round(50 + (logit * 15), 1)
+            hi95ci = round(50 + (logit_hi95ci * 10), 1)
+            lo95ci = round(50 + (logit_lo95ci * 10), 1)
+            
+
         # possible for SE of probability estimate: se = round(stdev / sqrt(comps),3)
-        se = round(1 / sqrt(fisher_info), 3)
-    
-        #compute the MLE of parameter value--an arbitrary linear function to closely match known values in dev or other convenient scale
-        #this formula is based on previous testing with greys estimated to actual value
-        #modeled the actual correlation between phi and theta at 300 comps using the 7n switchcount 
-        #y intercept=57.689 and slope is 11.826 using old testing development system and greysep = round(57.689 + (logodds * 11.826), 3)
-        ep = round(50 + (logodds * 10), 1)
-        lo95ci = round(ep - (1.96 * se), 1)
-        hi95ci = round(ep + (1.96 * se), 1)
+       
 
         computed_scripts_for_user_in_set.append(
             ComputedScript(
@@ -138,11 +141,10 @@ def get_computed_scripts(set, userid):
                 script.idcode_f, 
                 comps, 
                 wins, 
-                logodds, 
+                logit, 
                 '{:.2f}'.format(probability), 
-                '{:.3f}'.format(rmse), 
-                stdev, 
-                fisher_info, 
+                '{:.2f}'.format(stdev), 
+                '{:.2f}'.format(fisher_info), 
                 se, 
                 ep, 
                 lo95ci, 
@@ -152,7 +154,7 @@ def get_computed_scripts(set, userid):
                 )
         )
     #now decrease (for sorting later) samep by one for every script including self with matching probability and set a rank value fo each
-    computed_scripts_for_user_in_set.sort(key = lambda x: x.ep, reverse=True)
+    computed_scripts_for_user_in_set.sort(key = lambda x: x.probability, reverse=True)
     rank=0
     for script in computed_scripts_for_user_in_set:
         for match in computed_scripts_for_user_in_set:
@@ -223,7 +225,6 @@ def get_scriptchart(computed_scripts):
                 'id',
                 'se',
                 'stdev',
-                'rmse_in_set',
                 'count_same_p',
                 'fisher_info',
                 'comps_display',
@@ -241,7 +242,6 @@ def get_scriptchart(computed_scripts):
                 'id': [ 
                     'se', 
                     'stdev', 
-                    'rmse_in_set',
                     'count_same_p',
                     'fisher_info',
                     'comps_display',
@@ -251,7 +251,7 @@ def get_scriptchart(computed_scripts):
         chart_options={
             'title': {'text': 'Script Data'}, 
             'xAxis': {'title': {'text': 'Item Number'}}, 
-            'yAxis': {'title': {'text': 'Computed SE, RMSE, Fisher Info, & SD for Development'}}, 
+            'yAxis': {'title': {'text': 'Computed SE, Fisher Info, & SD for Development'}}, 
             'legend': {'enabled': True}, 
             'credits': {'enabled': True}
         }

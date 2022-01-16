@@ -72,7 +72,7 @@ def script_list(request, set): #make sure template can take this input as list o
     allowed_sets_ids = get_allowed_sets(userid)
     request.session['sets']= allowed_sets_ids
     computed_scripts = get_computed_scripts(set, userid)
-    computed_scripts.sort(key = lambda x: x.logodds, reverse=True)
+    computed_scripts.sort(key = lambda x: x.probability, reverse=True)
     script_table = computed_scripts
     #cht = get_scriptchart(computed_scripts)
     #cht2 = get_resultschart(computed_scripts)
@@ -90,7 +90,7 @@ def set_view(request, pk):
     allowed_sets_ids = get_allowed_sets(userid)
     request.session['sets']= allowed_sets_ids
     computed_scripts_for_user_in_set = get_computed_scripts(pk, userid)
-    computed_scripts_for_user_in_set.sort(key = lambda x: x.logodds, reverse=True)
+    computed_scripts_for_user_in_set.sort(key = lambda x: x.probability, reverse=True)
     return render(request, 'pairwise/set.html', {
         'pk': pk, 
         'set_scripts': computed_scripts_for_user_in_set
