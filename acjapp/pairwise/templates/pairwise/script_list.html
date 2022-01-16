@@ -17,14 +17,14 @@
                     <th>Rank</th>
                     <th>Wins</th>
                     <th>Comps</th>
-                    <th>Prob</th>
+                    <th>P</th>
                     <th>Same P</th>
-                    <th>SD(p)</th>
+                    <th>&#956;(p)</th>
+                    <th>I(p)</th>
                     <th>Logit &phi;</th>
-                    <th>I(&phi;)</th>
                     <th>SE(&phi;)</th>
                     <th>&theta; low 95%CI</th>
-                    <th>MLE &theta;</th>
+                    <th>Estimate &theta;</th>
                     <th>&theta; high 95% CI</th>
                 </tr>
                 {% for script in script_table %}
@@ -36,8 +36,8 @@
                     <td>{{ script.probability }}</td>
                     <td>{{ script.samep }}</td>
                     <td>{{ script.stdev }}</td>
-                    <td>{{ script.logit }}</td>
                     <td>{{ script.fisher_info }}</td>
+                    <td>{{ script.logit }}</td>
                     <td>{{ script.se }}</td>
                     <td>{{ script.lo95ci }}</td>
                     <td>{{ script.ep }}</td>

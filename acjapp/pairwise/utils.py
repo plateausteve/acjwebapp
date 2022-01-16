@@ -126,9 +126,9 @@ def get_computed_scripts(set, userid):
             logit = round(log(probability/(1 - probability)),3)
             logit_hi95ci = logit + (1.96 *se)
             logit_lo95ci = logit - (1.96 *se)
-            ep = round(50 + (logit * 15), 1)
-            hi95ci = round(50 + (logit_hi95ci * 10), 1)
-            lo95ci = round(50 + (logit_lo95ci * 10), 1)
+            ep = round(100 + (logit * 15), 1)
+            hi95ci = round(100 + (logit_hi95ci * 10), 1)
+            lo95ci = round(100 + (logit_lo95ci * 10), 1)
             
 
         # possible for SE of probability estimate: se = round(stdev / sqrt(comps),3)
