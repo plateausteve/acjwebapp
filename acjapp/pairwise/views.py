@@ -137,11 +137,7 @@ def compare(request, set):
             comparison.decision_start = starttime
             duration = end - starttime
             comparison.duration = duration
-            #winj value opposite of wini
-            if comparison.wini==1:
-                comparison.winj=0 
-            else:
-                comparison.winj=1
+
             
             try:
                 last_comp_by_user = Comparison.objects.filter(judge=request.user).latest('pk')

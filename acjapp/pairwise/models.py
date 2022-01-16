@@ -54,7 +54,6 @@ class Comparison(models.Model):
     scripti = models.ForeignKey(Script, on_delete=models.CASCADE, related_name="+", verbose_name="the left script in the comparison")
     scriptj = models.ForeignKey(Script, on_delete=models.CASCADE, related_name="+", verbose_name="the right script in the comparison")
     wini = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name="is left lesser or greater?")
-    winj = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name="is right lesser or greater?")
     form_start_variable = models.FloatField(blank=True, null=True)
     decision_start = models.DateTimeField(editable = False, blank=True, null=True)
     decision_end = models.DateTimeField(editable = False, blank=True, null=True)

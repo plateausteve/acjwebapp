@@ -17,15 +17,15 @@
                 <td>{{ comparison.pk }}</td>
                 <td>{{ comparison.set.pk }}</td>
                 <td><a href="{% url 'script_detail.html' pk=comparison.scripti.pk %}">
-                    {% if comparison.wini > 0 %}<b>{% endif %}
+                    {% if comparison.wini == 1 %}<b>{% endif %}
                         {{ comparison.scripti.idcode_f }}
-                    {% if comparison.wini > 0 %}</b>{% endif %}
+                    {% if comparison.wini == 1 %}</b>{% endif %}
                     </a>
                 </td>
                 <td><a href="{% url 'script_detail.html' pk=comparison.scriptj.pk %}">
-                    {% if comparison.winj > 0 %}<b>{% endif %}
+                    {% if comparison.wini == 0 %}<b>{% endif %}
                         {{ comparison.scriptj.idcode_f }}
-                    {% if comparison.winj > 0 %}</b>{% endif %}
+                    {% if comparison.wini == 0 %}</b>{% endif %}
                     </a>
                 </td>
                 <td>{{ comparison.wini }}</td>
