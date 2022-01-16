@@ -9,6 +9,7 @@
                 <th>Set</th>
                 <th>Left (bold indicates win)</th>
                 <th>Right (bold indicates win)</th>
+                <th>Left Win</th>
                 <th>Duration (h:m:s)</th>
             </tr>
             {% for comparison in comparisons %}
@@ -27,6 +28,7 @@
                     {% if comparison.winj > 0 %}</b>{% endif %}
                     </a>
                 </td>
+                <td>{{ comparison.wini }}</td>
                 <td>{{ comparison.duration_HHmm }}</td>
             </tr>
             {% endfor %}

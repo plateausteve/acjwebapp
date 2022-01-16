@@ -50,18 +50,15 @@ class Script(models.Model):
 
 class Comparison(models.Model):
     set = models.ForeignKey(Set, on_delete=models.CASCADE, verbose_name="the set to which this comparison belongs")
-    judge = models.ForeignKey(settings.AUTH_USER_MODEL, editable = False, on_delete=models.CASCADE, verbose_name="the user judging the pair")
+    judge = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="the user judging the pair")
     scripti = models.ForeignKey(Script, on_delete=models.CASCADE, related_name="+", verbose_name="the left script in the comparison")
     scriptj = models.ForeignKey(Script, on_delete=models.CASCADE, related_name="+", verbose_name="the right script in the comparison")
-    class Win(models.IntegerChoices):
-        Lesser = 0
-        Greater = 1
-    wini = models.PositiveSmallIntegerField(choices=Win.choices, verbose_name="is left lesser or greater?")
+    wini = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name="is left lesser or greater?")
     winj = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name="is right lesser or greater?")
     form_start_variable = models.FloatField(blank=True, null=True)
     decision_start = models.DateTimeField(editable = False, blank=True, null=True)
     decision_end = models.DateTimeField(editable = False, blank=True, null=True)
-    duration = models.DurationField(editable = False, blank=True, null=True)
+    duration = models.DurationField(blank=True, null=True)
 
     def duration_HHmm(self):
         seconds = self.duration.total_seconds()

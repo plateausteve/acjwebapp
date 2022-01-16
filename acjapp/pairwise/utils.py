@@ -121,10 +121,10 @@ def get_computed_scripts(set, userid):
             hi95ci = None
             lo95ci = None
         else: 
-            fisher_info = probability * (1 - probability)
-            se = round(1 / sqrt(wins * fisher_info),3)
-            logit = round(log(probability/(1 - probability)),3)
-            logit_hi95ci = logit + (1.96 *se)
+            fisher_info = probability * (1 - probability) # Fisher Info is a function of probability
+            se = round(1 / sqrt(wins * fisher_info),3)  # SE is a function of probability
+            logit = round(log(probability/(1 - probability)),3) #logit is a function of probability
+            logit_hi95ci = logit + (1.96 *se) # pretty sure SE is applied to the logit as an estimate of accuracy
             logit_lo95ci = logit - (1.96 *se)
             ep = round(100 + (logit * 15), 1)
             hi95ci = round(100 + (logit_hi95ci * 10), 1)
