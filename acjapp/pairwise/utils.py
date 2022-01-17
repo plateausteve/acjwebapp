@@ -20,6 +20,7 @@ import operator
 import random
 from operator import itemgetter
 from chartit import DataPool, Chart
+import pandas
 
 class ComputedScript:
     def __init__(self, id, idcode, idcode_f, comps, wins, logit, probability, stdev, fisher_info, se, ep, lo95ci, hi95ci, samep, rank):
@@ -258,3 +259,21 @@ def get_scriptchart(computed_scripts):
     )
     return cht
 
+def corr_matrix(setid):
+    judges = []
+    set_judge_script_rank = {}
+    set_judge_script_estimate = {}
+    set = Set.objects.get(pk=setid)
+    for judge in set.judges.all():
+        computed_scripts = get_computed_scripts(set, judge.id)
+        computed_scripts.sort(key = lambda x: x.id)
+        set_judge_script_rank[judge.id]=[]
+        set_judge_script_estimate[judge.id]=[]
+        for script in computed_scripts:
+            set_judge_script_rank[judge.id].append(script.rank)
+            set_judge_script_estimate[judge.id].append(script.logit)
+    rankdf = pandas.DataFrame(data = set_judge_script_rank)
+    estdf = pandas.DataFrame(data = set_judge_script_estimate)
+    rankcorr = rankdf.corr('kendall')
+    estcorr = estdf.corr('spearman')
+    return rankcorr, estcorr

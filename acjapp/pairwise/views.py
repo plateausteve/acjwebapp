@@ -73,12 +73,11 @@ def script_list(request, set): #make sure template can take this input as list o
     request.session['sets']= allowed_sets_ids
     computed_scripts = get_computed_scripts(set, userid)
     computed_scripts.sort(key = lambda x: x.probability, reverse=True)
-    script_table = computed_scripts
     #cht = get_scriptchart(computed_scripts)
     #cht2 = get_resultschart(computed_scripts)
     
     return render(request, 'pairwise/script_list.html', {
-        'script_table': script_table, 
+        'script_table': computed_scripts, 
         'set': set,
         #'chart_list': [cht, cht2],
         } 
@@ -137,8 +136,8 @@ def compare(request, set):
             comparison.decision_start = starttime
             duration = end - starttime
             comparison.duration = duration
-
             
+            # make sure page refresh doesn't duplicate a comparison
             try:
                 last_comp_by_user = Comparison.objects.filter(judge=request.user).latest('pk')
                 print(last_comp_by_user)

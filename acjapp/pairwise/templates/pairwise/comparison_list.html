@@ -6,7 +6,6 @@
         <table class="table table-striped table-hover table-bordered">
             <tr>
                 <th>Key</th>
-                <th>Set</th>
                 <th>Left (bold indicates win)</th>
                 <th>Right (bold indicates win)</th>
                 <th>Left Win</th>
@@ -15,7 +14,6 @@
             {% for comparison in comparisons %}
             <tr>
                 <td>{{ comparison.pk }}</td>
-                <td>{{ comparison.set.pk }}</td>
                 <td><a href="{% url 'script_detail.html' pk=comparison.scripti.pk %}">
                     {% if comparison.wini == 1 %}<b>{% endif %}
                         {{ comparison.scripti.idcode_f }}
