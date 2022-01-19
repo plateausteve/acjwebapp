@@ -12,7 +12,7 @@ def make_groups(df):
     
     for col in df.columns:
         for row in df.loc[[col]]:
-            if 0.8 <= df[col][row] < 1.0: # temp values to artificually create a group of 3
+            if 0.7 <= df[col][row] < 1.0: # temp values to artificually create a group of 3
                 if not col in ignore: # if we already have group [1, 2], we don't want [2, 1]
                     ignore.append(row) 
                     if len(similar_groups) > 0:
@@ -27,4 +27,5 @@ def make_groups(df):
                     else:
                         similar_groups.append([col, row])
                         #print(f"creating group [{col}, {row}] -- first time")  
+    #print(df)
     return similar_groups
