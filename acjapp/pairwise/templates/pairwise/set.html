@@ -7,7 +7,10 @@
             <tr>
                 <th>Person ID Code</th>
                 <th>Rank</th>
+
+                <th>Wins</th>
                 <th>Comparisons</th>
+                <th>Probabilty</th>
                 <th>&theta; low 95%CI</th>
                 <th>Estimate &theta;</th>
                 <th>&theta; high 95% CI</th>
@@ -16,7 +19,9 @@
             <tr>
                 <td><a href="{% url 'script_detail.html' pk=script.id %}">{{ script.idcode_f }}</a></td>
                 <td>{{ script.rank }}</td>
+                <td>{{ script.wins }}</td>
                 <td>{{ script.comps }}</td>
+                <td>{{ script.probability }}</td>
                 <td>{{ script.lo95ci }}</td>
                 <td>{{ script.ep }}</td>
                 <td>{{ script.hi95ci }}</td>

@@ -50,7 +50,9 @@ def get_allowed_sets(userid):
 def script_selection(set, userid):
     scriptcount = Script.objects.filter(set=set).count()
     compslist = build_compslist(set, userid)
-    computed_scripts_for_user_in_set = get_computed_scripts(set, userid)
+    judges = []
+    judges.append(userid)
+    computed_scripts_for_user_in_set = get_computed_scripts(set, judges)
     maxcomps=(scriptcount * (scriptcount-1)/2)
     switch=min(scriptcount + (scriptcount * (scriptcount-1)/6), maxcomps)
     if len(compslist) < scriptcount: # random at the begining until comps = n, then . . . 
@@ -60,10 +62,7 @@ def script_selection(set, userid):
     else: #prioritize samep
         computed_scripts_for_user_in_set.sort(key = lambda x: (x.samep, x.comps, x.fisher_info)) # prioritize same p
         if computed_scripts_for_user_in_set[0].samep == -1: #if all computed scripts have unique values then abort
-            return compslist, None, None, [] # everything is empty
-    for x in computed_scripts_for_user_in_set:
-        print(x.samep, " ", x.comps, " ", x.fisher_info)
-    
+            return compslist, None, None, [] # everything is empty    
     scriptj_possibilities = []
 
     # Go through all comparable scripts, and choose the first as scripti. 
@@ -88,53 +87,12 @@ def script_selection(set, userid):
         scriptj = None
     return compslist, scripti, scriptj, j_list
 
-
-def get_computed_scripts(set, userid):
+def get_computed_scripts(set, judges):
     computed_scripts_for_user_in_set =[]
     scripts = Script.objects.filter(set=set)
-
     for script in scripts:
-        #count all the comparisons each script has been involved in for user
-        comparisons_as_i_for_user_count = Comparison.objects.filter(scripti=script, judge__pk=userid).count()
-        comparisons_as_j_for_user_count = Comparison.objects.filter(scriptj=script, judge__pk=userid).count()
-        
-        comps = comparisons_as_i_for_user_count + comparisons_as_j_for_user_count + .0001
-        #comps_display = comps/10
-
-        #count all the comparisons this script has won
-        wins_as_i_for_user_count = Comparison.objects.filter(wini=1, scripti=script, judge__pk=userid).count()
-        wins_as_j_for_user_count = Comparison.objects.filter(wini=0, scriptj=script, judge__pk=userid).count()
-        wins = wins_as_i_for_user_count + wins_as_j_for_user_count
-        
-        #compute probability of winning for each script based on comparisons so far
-        probability = wins/comps
-
-        #compute the standard deviation of sample and standard error of sample mean 
-        mean = wins/comps #same as probability, but no rounding
-        stdev = sqrt(((((1 - probability) ** 2) * wins) + (((0 - probability) ** 2) * (int(comps) - wins))) / comps)
-        
-        #compute if not all wins or all losses so far
-        if (round(probability,3) == 1) or (probability <= 0):
-            logit = None
-            fisher_info = 0
-            se = None
-            ep = None
-            hi95ci = None
-            lo95ci = None
-        else: 
-            fisher_info = probability * (1 - probability) # Fisher Info is a function of probability
-            se = round(1 / sqrt(wins * fisher_info),3)  # SE is a function of probability
-            logit = round(log(probability/(1 - probability)),3) #logit is a function of probability
-            logit_hi95ci = logit + (1.96 *se) # pretty sure SE is applied to the logit as an estimate of accuracy
-            logit_lo95ci = logit - (1.96 *se)
-            ep = round(100 + (logit * 15), 1)
-            hi95ci = round(100 + (logit_hi95ci * 10), 1)
-            lo95ci = round(100 + (logit_lo95ci * 10), 1)
-            
-
-        # possible for SE of probability estimate: se = round(stdev / sqrt(comps),3)
-       
-
+        comps, wins = compute_comps_wins(script, judges)
+        logit, probability, stdev, fisher_info, se, ep, hi95ci, lo95ci = compute_more(comps, wins)
         computed_scripts_for_user_in_set.append(
             ComputedScript(
                 script.id,
@@ -153,18 +111,8 @@ def get_computed_scripts(set, userid):
                 0, 
                 0
                 )
-        )
-    #now decrease (for sorting later) samep by one for every script including self with matching probability and set a rank value fo each
-    computed_scripts_for_user_in_set.sort(key = lambda x: x.probability, reverse=True)
-    rank=0
-    for script in computed_scripts_for_user_in_set:
-        for match in computed_scripts_for_user_in_set:
-            if match.probability == script.probability:
-                match.samep -= 1
-        if script.samep == -1: #if there's only one at that value, then increase rank increment 1 for next 
-            rank += 1
-        script.rank=rank
-    
+        )  
+    computed_scripts_for_user_in_set = set_ranks(computed_scripts_for_user_in_set)
     return computed_scripts_for_user_in_set
 
 def build_compslist(set, userid):
@@ -175,6 +123,110 @@ def build_compslist(set, userid):
         j = comp.scriptj.id 
         compslist.append([i, j])
     return compslist
+
+def compute_more(comps, wins):
+    #compute probability of winning for each script based on comparisons so far
+    probability = wins/(comps + .001)
+    #compute the standard deviation of sample and standard error of sample mean 
+    stdev = sqrt(((((1 - probability) ** 2) * wins) + (((0 - probability) ** 2) * (int(comps) - wins))) / (comps + .001))
+    #print(stdev)
+    #compute if not all wins or all losses so far
+    if (round(probability,3) == 1) or (probability <= 0):
+        logit = None
+        fisher_info = 0
+        se = None
+        ep = None
+        hi95ci = None
+        lo95ci = None
+    else: 
+        fisher_info = probability * (1 - probability) # Fisher Info is a function of probability
+        se = round(1 / sqrt(wins * fisher_info),3)  # SE is a function of probability
+        logit = round(log(probability/(1 - probability)),3) #logit is a function of probability
+        logit_hi95ci = logit + (1.96 *se) # pretty sure SE is applied to the logit as an estimate of accuracy
+        logit_lo95ci = logit - (1.96 *se)
+        ep = round(100 + (logit * 15), 1)
+        hi95ci = round(100 + (logit_hi95ci * 10), 1)
+        lo95ci = round(100 + (logit_lo95ci * 10), 1)
+    #print("p:", probability, "logit:", logit)
+    return logit, probability, stdev, fisher_info, se, ep, hi95ci, lo95ci
+
+def set_ranks(computed_scripts_for_user_in_set):
+    #now decrease (for sorting later) samep by one for every script including self with matching probability and set a rank value fo each
+    computed_scripts_for_user_in_set.sort(key = lambda x: x.probability, reverse=True)
+    rank=0
+    for script in computed_scripts_for_user_in_set:
+        for match in computed_scripts_for_user_in_set:
+            if match.probability == script.probability:
+                match.samep -= 1
+        if script.samep == -1: #if there's only one at that value, then increase rank increment 1 for next 
+            rank += 1
+        script.rank=rank
+    return computed_scripts_for_user_in_set
+
+def compute_comps_wins(script, judges):
+    comps = .001
+    wins = 0
+    for judge in judges:
+        #count all the comparisons each script has been involved in for user
+        comparisons_as_i_for_judge_count = Comparison.objects.filter(scripti=script, judge__pk=judge).count()
+        comparisons_as_j_for_judge_count = Comparison.objects.filter(scriptj=script, judge__pk=judge).count()
+        
+        thisjudgecomps = comparisons_as_i_for_judge_count + comparisons_as_j_for_judge_count
+        #comps_display = comps/10
+
+        #count all the comparisons this script has won
+        wins_as_i_for_judge_count = Comparison.objects.filter(wini=1, scripti=script, judge__pk=judge).count()
+        wins_as_j_for_judge_count = Comparison.objects.filter(wini=0, scriptj=script, judge__pk=judge).count()
+        thisjudgewins = wins_as_i_for_judge_count + wins_as_j_for_judge_count
+    
+        comps += thisjudgecomps 
+        wins += thisjudgewins
+    return comps, wins
+
+def corr_matrix(setid):
+    judges = []
+    set_judge_script_rank = {}
+    set_judge_script_estimate = {}
+    set = Set.objects.get(pk=setid)
+    for judge in set.judges.all():
+        judges.append(judge.id)
+        computed_scripts = get_computed_scripts(set, judges)
+        computed_scripts.sort(key = lambda x: x.id)
+        set_judge_script_rank[judge.id]=[]
+        set_judge_script_estimate[judge.id]=[]
+        for script in computed_scripts:
+            set_judge_script_rank[judge.id].append(script.rank)
+            set_judge_script_estimate[judge.id].append(script.logit)
+    rankdf = pandas.DataFrame(data = set_judge_script_rank)
+    estdf = pandas.DataFrame(data = set_judge_script_estimate)
+    rankcorr = rankdf.corr('kendall')
+    estcorr = estdf.corr('spearman')
+    return rankcorr, estcorr
+
+def make_groups(df):
+    similar_groups = []
+    ignore = []
+    
+    for col in df.columns:
+        for row in df.loc[[col]]:
+            if 0.7 <= df[col][row] < 1.0: # temp values to artificually create a group of 3
+                if not col in ignore: # if we already have group [1, 2], we don't want [2, 1]
+                    ignore.append(row) 
+                    if len(similar_groups) > 0:
+                        for group in similar_groups:
+                            if group[0] == col:
+                                if not row in group:
+                                    group.append(row) # add to an existing group 
+                                    #print(f"adding {row} to group {group}")                               
+                            else: 
+                                similar_groups.append([col, row]) # create a new group
+                                #print(f"creating group [{col}, {row}] -- not first time")                            
+                    else:
+                        similar_groups.append([col, row])
+                        #print(f"creating group [{col}, {row}] -- first time")  
+    #print(df)
+    return similar_groups
+
 
 # everything below this line is broken until new chart generator can be found or query can be generated possibly create a model just for each chart?
 def get_resultschart(computed_scripts):
@@ -258,22 +310,3 @@ def get_scriptchart(computed_scripts):
         }
     )
     return cht
-
-def corr_matrix(setid):
-    judges = []
-    set_judge_script_rank = {}
-    set_judge_script_estimate = {}
-    set = Set.objects.get(pk=setid)
-    for judge in set.judges.all():
-        computed_scripts = get_computed_scripts(set, judge.id)
-        computed_scripts.sort(key = lambda x: x.id)
-        set_judge_script_rank[judge.id]=[]
-        set_judge_script_estimate[judge.id]=[]
-        for script in computed_scripts:
-            set_judge_script_rank[judge.id].append(script.rank)
-            set_judge_script_estimate[judge.id].append(script.logit)
-    rankdf = pandas.DataFrame(data = set_judge_script_rank)
-    estdf = pandas.DataFrame(data = set_judge_script_estimate)
-    rankcorr = rankdf.corr('kendall')
-    estcorr = estdf.corr('spearman')
-    return rankcorr, estcorr

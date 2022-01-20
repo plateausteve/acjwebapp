@@ -7,7 +7,7 @@ def main():
     pass
 
 def make_groups(df):
-    similar_groups = [] # is having keys even useful here? I dunno anymore. not really tbh
+    similar_groups = []
     ignore = []
     
     for col in df.columns:

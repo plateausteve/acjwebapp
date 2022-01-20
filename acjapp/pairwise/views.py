@@ -23,7 +23,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from .models import Script, Comparison, Set, WinForm
 from random import sample
 from django.views import generic
-from .utils import get_computed_scripts, script_selection, get_scriptchart, get_resultschart, get_allowed_sets
+from .utils import ComputedScript, get_computed_scripts, script_selection, get_scriptchart, get_resultschart, get_allowed_sets, corr_matrix, make_groups, set_ranks, compute_comps_wins, compute_more
 import operator
 from operator import itemgetter
 import numpy as np
@@ -57,42 +57,40 @@ def logout_view(request):
         logout(request)
         return redirect('index.html')
 
-
 @login_required(login_url="login")
 def script_detail(request, pk):
-    userid=request.user.id
-    allowed_sets_ids = get_allowed_sets(userid)
-    request.session['sets']= allowed_sets_ids
     script=get_object_or_404(Script, pk=pk)
     return render(request, 'pairwise/script_detail.html', {'script': script})
 
 @login_required(login_url="login")
-def script_list(request, set): #make sure template can take this input as list of dictionaries
-    userid=request.user.id
-    allowed_sets_ids = get_allowed_sets(userid)
-    request.session['sets']= allowed_sets_ids
-    computed_scripts = get_computed_scripts(set, userid)
-    computed_scripts.sort(key = lambda x: x.probability, reverse=True)
+def script_list(request, set):
+    k, s = corr_matrix(set)
+    try:
+        judges = make_groups(s)[0] # List index out of range error here when s doesn't create a group
+    except:
+        judges = [request.user.id]
+    computed_scripts = get_computed_scripts(set, judges)
     #cht = get_scriptchart(computed_scripts)
     #cht2 = get_resultschart(computed_scripts)
-    
     return render(request, 'pairwise/script_list.html', {
         'script_table': computed_scripts, 
         'set': set,
+        'judges': judges,
         #'chart_list': [cht, cht2],
         } 
     )
 
 @login_required(login_url="login")
 def set_view(request, pk):
-    userid=request.user.id
-    allowed_sets_ids = get_allowed_sets(userid)
+    judges = []
+    judges.append(request.user.id)
+    allowed_sets_ids = get_allowed_sets(request.user.id)
     request.session['sets']= allowed_sets_ids
-    computed_scripts_for_user_in_set = get_computed_scripts(pk, userid)
-    computed_scripts_for_user_in_set.sort(key = lambda x: x.probability, reverse=True)
+    computed_scripts = get_computed_scripts(pk, judges)
+    computed_scripts.sort(key = lambda x: x.probability, reverse=True)
     return render(request, 'pairwise/set.html', {
         'pk': pk, 
-        'set_scripts': computed_scripts_for_user_in_set
+        'set_scripts': computed_scripts
         }
     )
 
@@ -140,7 +138,7 @@ def compare(request, set):
             # make sure page refresh doesn't duplicate a comparison
             try:
                 last_comp_by_user = Comparison.objects.filter(judge=request.user).latest('pk')
-                print(last_comp_by_user)
+
             except:
                 last_comp_by_user = None #note: this may not be necessary if query automatically gives us none
                 comparison.save()
