@@ -105,9 +105,9 @@ def get_computed_scripts(set, judges):
                 '{:.2f}'.format(stdev), 
                 '{:.2f}'.format(fisher_info), 
                 se, 
-                ep, 
-                lo95ci, 
-                hi95ci, 
+                '{:.1f}'.format(ep), 
+                '{:.1f}'.format(lo95ci), 
+                '{:.1f}'.format(hi95ci), 
                 0, 
                 0
                 )
@@ -126,7 +126,8 @@ def build_compslist(set, userid):
 
 def compute_more(comps, wins):
     #compute probability of winning for each script based on comparisons so far
-    probability = wins/(comps + .001)
+    #probability = wins/(comps + .001)
+    probability = (wins + .5)/(comps + 1) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 23
     #compute the standard deviation of sample and standard error of sample mean 
     stdev = sqrt(((((1 - probability) ** 2) * wins) + (((0 - probability) ** 2) * (int(comps) - wins))) / (comps + .001))
     #print(stdev)
@@ -139,15 +140,18 @@ def compute_more(comps, wins):
         hi95ci = None
         lo95ci = None
     else: 
-        fisher_info = probability * (1 - probability) # Fisher Info is a function of probability
-        se = round(1 / sqrt(wins * fisher_info),3)  # SE is a function of probability
-        logit = round(log(probability/(1 - probability)),3) #logit is a function of probability
-        logit_hi95ci = logit + (1.96 *se) # pretty sure SE is applied to the logit as an estimate of accuracy
-        logit_lo95ci = logit - (1.96 *se)
-        ep = round(100 + (logit * 15), 1)
-        hi95ci = round(100 + (logit_hi95ci * 10), 1)
-        lo95ci = round(100 + (logit_lo95ci * 10), 1)
-    #print("p:", probability, "logit:", logit)
+        fisher_info = 1/(probability * (1 - probability)) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 20
+        #fisher_info = probability * (1 - probability) # see verhavert(2018)
+        #se = round(1 / sqrt(wins * fisher_info),3) # see verhavert(2018)
+        se = round(stdev / sqrt(comps),3) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 19
+        loglikelihood = (wins * log(probability)) + (comps-wins) * log(1-probability) # not using this directly
+        logit = round(log(probability/(1 - probability)),3) 
+        fisher_info_of_logit = fisher_info/(logit ** 2) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 30
+        ci = 1.96 * sqrt(1/fisher_info_of_logit) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 30
+        a = 60 # set this to control the range of the parameter values
+        ep = round((logit * 10), 1) + a
+        hi95ci = round(((logit + ci) * 10), 1) + a
+        lo95ci = round(((logit - ci) * 10), 1) + a
     return logit, probability, stdev, fisher_info, se, ep, hi95ci, lo95ci
 
 def set_ranks(computed_scripts_for_user_in_set):
