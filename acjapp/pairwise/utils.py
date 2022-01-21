@@ -146,13 +146,17 @@ def compute_more(comps, wins):
         se = round(stdev / sqrt(comps),3) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 19
         loglikelihood = (wins * log(probability)) + (comps-wins) * log(1-probability) # not using this directly
         logit = round(log(probability/(1 - probability)),3) 
-        fisher_info_of_logit = fisher_info/(logit ** 2) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 30
+        #fisher_info_of_logit = fisher_info/(logit ** 2) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 30
+        fisher_info_of_logit = comps * probability * ( 1 - probability) # se http://personal.psu.edu/abs12//stat504/online/01b_loglike/10_loglike_alternat.htm        
         ci = 1.96 * sqrt(1/fisher_info_of_logit) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 30
-        a = 60 # set this to control the range of the parameter values
-        ep = round((logit * 10), 1) + a
-        hi95ci = round(((logit + ci) * 10), 1) + a
-        lo95ci = round(((logit - ci) * 10), 1) + a
+        b = 10 # determine the spread of parameter values
+        a = 100 - (3.18 * b )# aim for high parameter of 100 for probability .96 / logit of 3.18
+     # set this to control the range of the parameter values
+        ep = round((logit * b), 1) + a
+        hi95ci = round(((logit + ci) * b), 1) + a
+        lo95ci = round(((logit - ci) * b), 1) + a
     return logit, probability, stdev, fisher_info, se, ep, hi95ci, lo95ci
+    # more here: http://personal.psu.edu/abs12//stat504/online/01b_loglike/01b_loglike_print.htm
 
 def set_ranks(computed_scripts_for_user_in_set):
     #now decrease (for sorting later) samep by one for every script including self with matching probability and set a rank value fo each
