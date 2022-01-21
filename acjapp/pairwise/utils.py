@@ -105,9 +105,9 @@ def get_computed_scripts(set, judges):
                 '{:.2f}'.format(stdev), 
                 '{:.2f}'.format(fisher_info), 
                 se, 
-                '{:.1f}'.format(ep), 
-                '{:.1f}'.format(lo95ci), 
-                '{:.1f}'.format(hi95ci), 
+                ep, 
+                lo95ci, 
+                hi95ci, 
                 0, 
                 0
                 )
@@ -123,53 +123,6 @@ def build_compslist(set, userid):
         j = comp.scriptj.id 
         compslist.append([i, j])
     return compslist
-
-def compute_more(comps, wins):
-    #compute probability of winning for each script based on comparisons so far
-    #probability = wins/(comps + .001)
-    probability = (wins + .5)/(comps + 1) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 23
-    #compute the standard deviation of sample and standard error of sample mean 
-    stdev = sqrt(((((1 - probability) ** 2) * wins) + (((0 - probability) ** 2) * (int(comps) - wins))) / (comps + .001))
-    #print(stdev)
-    #compute if not all wins or all losses so far
-    if (round(probability,3) == 1) or (probability <= 0):
-        logit = None
-        fisher_info = 0
-        se = None
-        ep = None
-        hi95ci = None
-        lo95ci = None
-    else: 
-        fisher_info = 1/(probability * (1 - probability)) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 20
-        #fisher_info = probability * (1 - probability) # see verhavert(2018)
-        #se = round(1 / sqrt(wins * fisher_info),3) # see verhavert(2018)
-        se = round(stdev / sqrt(comps),3) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 19
-        loglikelihood = (wins * log(probability)) + (comps-wins) * log(1-probability) # not using this directly
-        logit = round(log(probability/(1 - probability)),3) 
-        #fisher_info_of_logit = fisher_info/(logit ** 2) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 30
-        fisher_info_of_logit = comps * probability * ( 1 - probability) # se http://personal.psu.edu/abs12//stat504/online/01b_loglike/10_loglike_alternat.htm        
-        ci = 1.96 * sqrt(1/fisher_info_of_logit) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 30
-        b = 10 # determine the spread of parameter values
-        a = 100 - (3.18 * b )# aim for high parameter of 100 for probability .96 / logit of 3.18
-     # set this to control the range of the parameter values
-        ep = round((logit * b), 1) + a
-        hi95ci = round(((logit + ci) * b), 1) + a
-        lo95ci = round(((logit - ci) * b), 1) + a
-    return logit, probability, stdev, fisher_info, se, ep, hi95ci, lo95ci
-    # more here: http://personal.psu.edu/abs12//stat504/online/01b_loglike/01b_loglike_print.htm
-
-def set_ranks(computed_scripts_for_user_in_set):
-    #now decrease (for sorting later) samep by one for every script including self with matching probability and set a rank value fo each
-    computed_scripts_for_user_in_set.sort(key = lambda x: x.probability, reverse=True)
-    rank=0
-    for script in computed_scripts_for_user_in_set:
-        for match in computed_scripts_for_user_in_set:
-            if match.probability == script.probability:
-                match.samep -= 1
-        if script.samep == -1: #if there's only one at that value, then increase rank increment 1 for next 
-            rank += 1
-        script.rank=rank
-    return computed_scripts_for_user_in_set
 
 def compute_comps_wins(script, judges):
     comps = .001
@@ -190,6 +143,50 @@ def compute_comps_wins(script, judges):
         comps += thisjudgecomps 
         wins += thisjudgewins
     return comps, wins
+
+def compute_more(comps, wins):
+    #compute probability of winning for each script based on comparisons so far
+    probability = wins/(comps)
+    #probability = (wins + .5)/(comps + 1) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 23
+    #compute the standard deviation of sample and standard error of sample mean 
+    stdev = sqrt(((((1 - probability) ** 2) * wins) + (((0 - probability) ** 2) * (int(comps) - wins))) / (comps + .001))
+    #print(stdev)
+    #compute if not all wins or all losses so far
+    if (round(probability,3) == 1) or (probability <= 0):
+        logit = None
+        fisher_info = 0
+        se = None
+        ep = None
+        hi95ci = None
+        lo95ci = None
+    else: 
+        fisher_info = 1/(probability * (1 - probability)) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 20
+        se = round(stdev / sqrt(comps),3) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 19
+        loglikelihood = (wins * log(probability)) + (comps-wins) * log(1-probability) # not using this directly
+        logit = round(log(probability/(1 - probability)),3) 
+        fisher_info_of_logit = comps * probability * ( 1 - probability) # se http://personal.psu.edu/abs12//stat504/online/01b_loglike/10_loglike_alternat.htm        
+        ci = 1.96 * sqrt(1/fisher_info_of_logit) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 30
+        b = 10 # determine the spread of parameter values
+        a = int(100 - (3.18 * b ))# aim for high parameter of 100 for probability .96 / logit of 3.18
+        ep = round((logit * b), 1) + a
+        hi95ci = round(((logit + ci) * b), 1) + a
+        lo95ci = round(((logit - ci) * b), 1) + a
+    return logit, probability, stdev, fisher_info, se, ep, hi95ci, lo95ci
+    # more here: http://personal.psu.edu/abs12//stat504/online/01b_loglike/01b_loglike_print.htm
+
+def set_ranks(computed_scripts_for_user_in_set):
+    #now decrease (for sorting later) samep by one for every script including self with matching probability and set a rank value fo each
+    computed_scripts_for_user_in_set.sort(key = lambda x: x.probability, reverse=True)
+    rank=0
+    for script in computed_scripts_for_user_in_set:
+        for match in computed_scripts_for_user_in_set:
+            if match.probability == script.probability:
+                match.samep -= 1
+        if script.samep == -1: #if there's only one at that value, then increase rank increment 1 for next 
+            rank += 1
+        script.rank=rank
+    return computed_scripts_for_user_in_set
+
 
 def corr_matrix(setid):
     judges = []
