@@ -131,9 +131,7 @@ def compute_comps_wins(script, judges):
         #count all the comparisons each script has been involved in for user
         comparisons_as_i_for_judge_count = Comparison.objects.filter(scripti=script, judge__pk=judge).count()
         comparisons_as_j_for_judge_count = Comparison.objects.filter(scriptj=script, judge__pk=judge).count()
-        
         thisjudgecomps = comparisons_as_i_for_judge_count + comparisons_as_j_for_judge_count
-        #comps_display = comps/10
 
         #count all the comparisons this script has won
         wins_as_i_for_judge_count = Comparison.objects.filter(wini=1, scripti=script, judge__pk=judge).count()
@@ -146,11 +144,10 @@ def compute_comps_wins(script, judges):
 
 def compute_more(comps, wins):
     #compute probability of winning for each script based on comparisons so far
-    probability = wins/(comps)
+    probability = wins/(comps) # comps comes in with a .001 so no error dividing by 0
     #probability = (wins + .5)/(comps + 1) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 23
     #compute the standard deviation of sample and standard error of sample mean 
     stdev = sqrt(((((1 - probability) ** 2) * wins) + (((0 - probability) ** 2) * (int(comps) - wins))) / (comps + .001))
-    #print(stdev)
     #compute if not all wins or all losses so far
     if (round(probability,3) == 1) or (probability <= 0):
         logit = None
@@ -167,7 +164,7 @@ def compute_more(comps, wins):
         fisher_info_of_logit = comps * probability * ( 1 - probability) # se http://personal.psu.edu/abs12//stat504/online/01b_loglike/10_loglike_alternat.htm        
         ci = 1.96 * sqrt(1/fisher_info_of_logit) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 30
         b = 10 # determine the spread of parameter values
-        a = int(100 - (3.18 * b ))# aim for high parameter of 100 for probability .96 / logit of 3.18
+        a = int(100 - (3.18 * b )) # aim for high parameter of 100 for probability .96 / logit of 3.18
         ep = round((logit * b), 1) + a
         hi95ci = round(((logit + ci) * b), 1) + a
         lo95ci = round(((logit - ci) * b), 1) + a
