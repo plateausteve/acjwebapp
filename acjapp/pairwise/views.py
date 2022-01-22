@@ -68,9 +68,10 @@ def script_list(request, set):
     print(k)
     print(p)
     try:
-        judges = make_groups(s)[0] # List index out of range error here when s doesn't create a group
+        judges = make_groups(p)[0] # List index out of range error here when s doesn't create a group
     except:
         judges = [request.user.id]
+        print("exception")
     computed_scripts = get_computed_scripts(set, judges)
     #cht = get_scriptchart(computed_scripts)
     #cht2 = get_resultschart(computed_scripts)
