@@ -45,6 +45,18 @@
                 </tr>
                 {% endfor %}
             </table>
+            {% if user.is_superuser %}
+            <table class="table" style="text-align: center;">
+                <tr>
+                    <td>Kendall's tau</td>
+                    <td>Pearson's r</td>
+                </tr>
+                <tr>
+                    <td>{{ k|safe }}</td>
+                    <td>{{ p|safe }}</td>
+                </tr>
+            </table>
+            {% endif %}
         {% else %}
             <p>There are no scripts for you in this set in the database. </p>
         {% endif %}   

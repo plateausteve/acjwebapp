@@ -50,19 +50,18 @@ def get_allowed_sets(userid):
 def script_selection(set, userid):
     scriptcount = Script.objects.filter(set=set).count()
     compslist = build_compslist(set, userid)
-    judges = []
-    judges.append(userid)
-    computed_scripts_for_user_in_set = get_computed_scripts(set, judges)
+    judges = [userid] #judges must be a list, even if it only has one judge in it
+    computed_scripts_for_user_in_set = get_computed_scripts(set, judges) 
     maxcomps=(scriptcount * (scriptcount-1)/2)
     switch=min(scriptcount + (scriptcount * (scriptcount-1)/6), maxcomps)
     if len(compslist) < scriptcount: # random at the begining until comps = n, then . . . 
-        random.shuffle(computed_scripts_for_user_in_set)      # random is not working yet
+        random.shuffle(computed_scripts_for_user_in_set)     
     elif len(compslist) < switch: #prioritize comps until comps = min of n+max/2.5 or max, then . . . 
-        computed_scripts_for_user_in_set.sort(key = lambda x: (x.comps, x.samep, x.fisher_info)) # prioritize comps
+        computed_scripts_for_user_in_set.sort(key = lambda x: (x.comps, x.samep, x.fisher_info)) 
     else: #prioritize samep
-        computed_scripts_for_user_in_set.sort(key = lambda x: (x.samep, x.comps, x.fisher_info)) # prioritize same p
+        computed_scripts_for_user_in_set.sort(key = lambda x: (x.samep, x.comps, x.fisher_info))
         if computed_scripts_for_user_in_set[0].samep == -1: #if all computed scripts have unique values then abort
-            return compslist, None, None, [] # everything is empty    
+            return compslist, None, None, [] # everything is empty   
     scriptj_possibilities = []
 
     # Go through all comparable scripts, and choose the first as scripti. 
@@ -108,8 +107,8 @@ def get_computed_scripts(set, judges):
                 ep, 
                 lo95ci, 
                 hi95ci, 
-                0, 
-                0
+                0, # samep
+                0 #rank
                 )
         )  
     computed_scripts_for_user_in_set = set_ranks(computed_scripts_for_user_in_set)
@@ -186,13 +185,11 @@ def set_ranks(computed_scripts_for_user_in_set):
 
 
 def corr_matrix(setid):
-    judges = []
     set_judge_script_rank = {}
     set_judge_script_estimate = {}
     set = Set.objects.get(pk=setid)
     for judge in set.judges.all():
-        judges.append(judge.id)
-        computed_scripts = get_computed_scripts(set, judges)
+        computed_scripts = get_computed_scripts(set, [judge.id])
         computed_scripts.sort(key = lambda x: x.id)
         set_judge_script_rank[judge.id]=[]
         set_judge_script_estimate[judge.id]=[]
@@ -202,7 +199,7 @@ def corr_matrix(setid):
     rankdf = pandas.DataFrame(data = set_judge_script_rank)
     estdf = pandas.DataFrame(data = set_judge_script_estimate)
     rankcorr = rankdf.corr('kendall')
-    estcorr = estdf.corr('spearman')
+    estcorr = estdf.corr('pearson')
     return rankcorr, estcorr
 
 def make_groups(df):
