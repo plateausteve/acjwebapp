@@ -64,14 +64,11 @@ def script_detail(request, pk):
 
 @login_required(login_url="login")
 def script_list(request, set):
-    k, p = corr_matrix(set) #get kendall's Tau and Pearson's standard correlation
-    print(k)
-    print(p)
+    k, s, p = corr_matrix(set) #get kendall's Tau and Pearson's standard correlation
     try:
-        judges = make_groups(k)[0] # List index out of range error here when s doesn't create a group
+        judges = make_groups(s)[0] # List index out of range error here when s doesn't create a group
     except:
         judges = [request.user.id]
-        print("exception")
     computed_scripts = get_computed_scripts(set, judges)
     #cht = get_scriptchart(computed_scripts)
     #cht2 = get_resultschart(computed_scripts)
@@ -80,7 +77,9 @@ def script_list(request, set):
         'set': set,
         'judges': judges,
         'k': k.to_html(),
+        's': s.to_html(),
         'p': p.to_html()
+        
         #'chart_list': [cht, cht2],
         } 
     )

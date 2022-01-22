@@ -198,9 +198,10 @@ def corr_matrix(setid):
             set_judge_script_estimate[judge.id].append(script.logit)
     rankdf = pandas.DataFrame(data = set_judge_script_rank)
     estdf = pandas.DataFrame(data = set_judge_script_estimate)
-    rankcorr = rankdf.corr('kendall')
-    estcorr = estdf.corr('pearson')
-    return rankcorr, estcorr
+    k = rankdf.corr('kendall')
+    s = rankdf.corr('spearman')
+    p = estdf.corr('pearson')
+    return k, s, p
 
 def make_groups(df):
     similar_groups = []

@@ -7,7 +7,7 @@
 
     [put brackets here] chart_list|load_charts:"cht, cht2" }}-->
     <body>
-        <h4>Scripts in Set {{ set }} with all current computations for users  {{ judges }}:</h4>
+        <h4>Scripts in Set {{ set }} with all current computations for correlated users  {{ judges }}:</h4>
         <!--div id='cht'> First chart will be rendered here </div>
         <div id='cht2'> Second chart will be rendered here </div-->
         {% if script_table %}
@@ -54,6 +54,11 @@
                     <td>{{ k|safe }}</td>
                 </tr>
                 <tr>
+                    <td>Spearman's rho</td>
+                </tr>
+                <tr>
+                    <td>{{ s|safe }}</td>
+                </tr><tr>
                     <td>Pearson's r</td>
                 </tr>
                 <tr>
