@@ -68,7 +68,7 @@ def script_list(request, set):
     print(k)
     print(p)
     try:
-        judges = make_groups(p)[0] # List index out of range error here when s doesn't create a group
+        judges = make_groups(k)[0] # List index out of range error here when s doesn't create a group
     except:
         judges = [request.user.id]
         print("exception")
