@@ -15,12 +15,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .models import Script, Comparison, Set
+import numpy as np
 from numpy import log, sqrt
 import operator
 import random
+import itertools
 from operator import itemgetter
 from chartit import DataPool, Chart
 import pandas
+import re
 
 class ComputedScript:
     def __init__(self, id, idcode, idcode_f, comps, wins, logit, probability, stdev, fisher_info, se, ep, lo95ci, hi95ci, samep, rank):
@@ -203,12 +206,13 @@ def corr_matrix(setid):
     p = estdf.corr('pearson')
     return k, s, p
 
-def make_groups(df):
+# this make_groups() was designed using correlation matrices
+""" def make_groups(df):
     similar_groups = []
     ignore = []
-    
+    #note: current issue -- makes a group of 1,2,8 where 1 to 2 is .95 and 1 to 8 is .71 but 2 to 8 is .57 
     for col in df.columns:
-        for row in df.loc[[col]]:
+        for row in df.loc[[col]]: # makes a list of data in each column
             if 0.7 <= df[col][row] < 1.0: # temp values to artificually create a group of 3
                 if not col in ignore: # if we already have group [1, 2], we don't want [2, 1]
                     ignore.append(row) 
@@ -225,8 +229,145 @@ def make_groups(df):
                         similar_groups.append([col, row])
                         #print(f"creating group [{col}, {row}] -- first time")  
     #print(df)
-    return similar_groups
+    return similar_groups """
 
+""" def interraterb(setobject):
+    compdata = []
+    comps = Comparison.objects.filter(set=setobject)
+    for comp in comps:
+        compdata.append([comp.judge.id, comp.scripti.id, comp.scriptj.id, comp.wini])
+    compsarray = np.array(compdata)
+    judges = list(set(compsarray[:,0])) # set() returns only unique rows in the list which is the first column of the array
+    pairs = list(itertools.combinations(judges, 2)) # all possible combinations of judges into pairs
+    scriptlist = []
+    scripts = Script.objects.filter(set = setobject)
+    combosarray =[]
+    for script in scripts:
+        scriptlist.append(script.id)
+    scriptcombos = itertools.combinations(scriptlist, 2) #all possible combinations of script.id into pairs
+    agreematrix = pandas.DataFrame(columns=pairs)
+    for combo in scriptcombos:
+        for pair in pairs: 
+            judge1 = [pair[0], combo[0], combo[1], 1] 
+            judge2 = [pair[1], combo[0], combo[1], 1]
+            if judge1 and judge2 in compdata: #both judges say this pair in this order wins
+                print(judge1, "and", judge2, "in compdata")
+                agreematrix.append(str(pair): 1, ignore_index=True)
+            judge1 = [pair[0], combo[0], combo[1], 0]
+            judge2 = [pair[1], combo[0], combo[1], 0]
+            if judge1 and judge2 in compdata: #both judges say this pair in this order loses
+                print(judge1, "and", judge2, "in compdata")
+                agreematrix.append(str(pair): 1, ignore_index=True)
+            #still need to check for reverse order
+    #once agreematrix is built with column for each pair and values that show agreement for that combo and that pair
+    #then add up each column and select the judges with the greatest sum of agreement among eachother
+    return pairs, compdata, compsarray, scriptcombos, combosarray """
+    
+# this function selects 3 judges with top percent agreement when there are more than three
+# when there are 0, 1, or 2 judges with comparisons for the given set it returns workable empties
+def make_groups(setobject):
+    compdata = []
+    try:
+        comps = Comparison.objects.filter(set=setobject)
+    except:
+        comps = None
+    for comp in comps: #first time, make the compsjudges list
+        compdata.append(comp.judge.id)
+    compsjudges = list(set(compdata)) # list of unique judge ids who have made comparisons on this set
+    if len(compsjudges) < 2:
+        bestgroup = []
+        bestagreement = 0
+        stats_df = None
+        return bestgroup, bestagreement, stats_df
+    
+    #create scriptpairs from combinations of all scripts in set
+    
+    scripts = Script.objects.filter(set=setobject)
+    scriptlist = []
+    for script in scripts:
+        scriptlist.append(script.id)
+    judgecomps = {}
+    # for each scriptpair add to the list of comparision judgments made by each judge-- 
+    for judge in compsjudges: # first iterate through all judges so you can update judge's listof comps
+        column =[]
+        scriptpairs = itertools.combinations(scriptlist, 2)
+        for scriptpair in scriptpairs:        
+            try: # get a comparison that matches that scriptpair order left and right if it exists for this judge
+                comp = Comparison.objects.get(set = setobject, judge = judge, scripti__id = scriptpair[0], scriptj__id = scriptpair[1])
+                row = [comp.scripti.id, comp.scriptj.id, comp.wini] 
+            except:
+                try: # get a comparison that matches reverse order of script pair if there is one for this judge
+                    comp = Comparison.objects.get(set = setobject, judge = judge, scriptj__id = scriptpair[0], scripti__id = scriptpair[1] )
+                    row = [comp.scriptj.id, comp.scripti.id]
+                    if comp.wini == 1:
+                        row.extend([0])
+                    else:
+                        row.extend([1])
+                except:
+                    #this judge has no matching comp in either order
+                    comp = None
+                    row = ([None, None, None])
+            column.append(row)
+        judgecomps.update({str(judge): column}) # update the dict to include the whole column
+        # where each row in the column contains [scriptid, scriptid, win]
+
+    if len(compsjudges) > 2:
+        combo_n = 3
+    else:
+        combo_n = 2
+    judgegroups = itertools.combinations(compsjudges, combo_n)
+    judgegroupagreement = {} # calculate percent agreement among judges in each group
+    judgegroupselect = []
+    judgegroupstats = {}
+    judges=[]
+    x=[]
+    n=[]
+    p=[]
+    se=[]
+    for judgegroup in judgegroups:
+        column = []
+        for row in judgecomps[str(judgegroup[0])]:
+            #row for each judge's list of comparisions
+            rowtally = 1
+            if row == [None, None, None]: 
+                # don't look for matching comps if the this script pair hasn't been compared yet
+                pass
+            else:
+                if row in judgecomps[str(judgegroup[1])]:
+                    rowtally += 1 # add one agreement
+                if combo_n >2:
+                    if row in judgecomps[str(judgegroup[2])]:  
+                        rowtally += 1  
+            # calculate percent agreement for each row in the judges comparisons list
+            column.append(rowtally/combo_n)  
+        judgegroupagreement.update({str(judgegroup): column})
+
+        # calculating stats for each row and appending to list for later dictionary & dataframe
+        judges.append(judgegroup) # judges is a key of the dictionary, adding to its values list
+        x.append(sum(judgegroupagreement[str(judgegroup)])) # x will be a key, adding to values list
+        n.append(len(judgegroupagreement[str(judgegroup)])) # n will be a key, adding to values list
+        p.append(sum(judgegroupagreement[str(judgegroup)])/len(judgegroupagreement[str(judgegroup)])) # p will be a key, adding to values list
+        std=np.std(judgegroupagreement[str(judgegroup)])
+        se.append(std/sqrt(len(judgegroupagreement[str(judgegroup)]))) # se will be a key, adding to values list
+        
+        judgegroupselect.append([str(judgegroup), sum(judgegroupagreement[str(judgegroup)])/len(judgegroupagreement[str(judgegroup)])]) # could do without this if I knew how to sort the dictionary being built
+
+    judgegroupstats.update({'judges': judges, "p": p,"se": se, "x": x, "n": n}) # finally, the dict. to build with keys and value lists
+    
+    df = pandas.DataFrame(judgegroupstats) # make a dataframe to pass to the template
+    stats_df=df.sort_values(by='p', ascending = False) # sort by p highest to lowest
+    bestgroupstring = str(stats_df.iloc[0][0]) # choose first judgegroup string
+    bestagreement = round((stats_df.iloc[0][1]) * 100, 1)
+    bestgroupids = re.findall('[0-9]+', bestgroupstring) # extract the numeric ids from string
+    bestgroup = []
+    for id in bestgroupids:
+        bestgroup.append(int(id)) # turn the id strings into integers
+    return bestgroup, bestagreement, stats_df
+                
+                
+                
+               
+            
 
 # everything below this line is broken until new chart generator can be found or query can be generated possibly create a model just for each chart?
 def get_resultschart(computed_scripts):

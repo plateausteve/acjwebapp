@@ -64,23 +64,40 @@ def script_detail(request, pk):
 
 @login_required(login_url="login")
 def script_list(request, set):
+    
     k, s, p = corr_matrix(set) #get kendall's Tau and Pearson's standard correlation
-    try:
-        judges = make_groups(s)[0] # List index out of range error here when s doesn't create a group
-    except:
+    # not using correlation to select judges because I don't have a way to correlate 3
+    # try:
+    #     judges = make_groups(set)
+    # except:
+    #     judges = [request.user.id]
+    j, a, stats_df = make_groups(set)
+    if len(j) < 2:
         judges = [request.user.id]
+        a2 = 1
+        k2 = None
+        s2 = None
+        p2 = None
+        stats = None
+    else:
+        judges = j
+        a2 = a
+        k2 = k.to_html()
+        s2 = s.to_html()
+        p2 = p.to_html()
+        stats = stats_df.to_html()
     computed_scripts = get_computed_scripts(set, judges)
-    #cht = get_scriptchart(computed_scripts)
-    #cht2 = get_resultschart(computed_scripts)
+
+
     return render(request, 'pairwise/script_list.html', {
         'script_table': computed_scripts, 
         'set': set,
         'judges': judges,
-        'k': k.to_html(),
-        's': s.to_html(),
-        'p': p.to_html()
-        
-        #'chart_list': [cht, cht2],
+        'a': a2,
+        'k': k2,
+        's': s2,
+        'p': p2,
+        'stats': stats
         } 
     )
 
