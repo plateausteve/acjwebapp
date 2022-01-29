@@ -45,13 +45,12 @@
                 </tr>
                 {% endfor %}
             </table>
-            <!--{% if user.is_superuser %}-->
             <table class="table" style="text-align: center;">
                 <tr>
                     <td>Percent Agreement</td>
                 </tr>
                 <tr>
-                    <td>{{ stats|safe }}</td>
+                    <td style="text-align: center;">{{ stats|safe }}</td>
                 </tr>
                 <tr>
                     <td>Kendall's tau</td>
@@ -71,7 +70,6 @@
                     <td>{{ p|safe }}</td>
                 </tr>
             </table>
-            <!--{% endif %}-->
         {% else %}
             <p>There are no scripts for you in this set in the database. </p>
         {% endif %}   
