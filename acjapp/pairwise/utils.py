@@ -206,65 +206,9 @@ def corr_matrix(setid):
     p = estdf.corr('pearson')
     return k, s, p
 
-# this make_groups() was designed using correlation matrices
-""" def make_groups(df):
-    similar_groups = []
-    ignore = []
-    #note: current issue -- makes a group of 1,2,8 where 1 to 2 is .95 and 1 to 8 is .71 but 2 to 8 is .57 
-    for col in df.columns:
-        for row in df.loc[[col]]: # makes a list of data in each column
-            if 0.7 <= df[col][row] < 1.0: # temp values to artificually create a group of 3
-                if not col in ignore: # if we already have group [1, 2], we don't want [2, 1]
-                    ignore.append(row) 
-                    if len(similar_groups) > 0:
-                        for group in similar_groups:
-                            if group[0] == col:
-                                if not row in group:
-                                    group.append(row) # add to an existing group 
-                                    #print(f"adding {row} to group {group}")                               
-                            else: 
-                                similar_groups.append([col, row]) # create a new group
-                                #print(f"creating group [{col}, {row}] -- not first time")                            
-                    else:
-                        similar_groups.append([col, row])
-                        #print(f"creating group [{col}, {row}] -- first time")  
-    #print(df)
-    return similar_groups """
-
-""" def interraterb(setobject):
-    compdata = []
-    comps = Comparison.objects.filter(set=setobject)
-    for comp in comps:
-        compdata.append([comp.judge.id, comp.scripti.id, comp.scriptj.id, comp.wini])
-    compsarray = np.array(compdata)
-    judges = list(set(compsarray[:,0])) # set() returns only unique rows in the list which is the first column of the array
-    pairs = list(itertools.combinations(judges, 2)) # all possible combinations of judges into pairs
-    scriptlist = []
-    scripts = Script.objects.filter(set = setobject)
-    combosarray =[]
-    for script in scripts:
-        scriptlist.append(script.id)
-    scriptcombos = itertools.combinations(scriptlist, 2) #all possible combinations of script.id into pairs
-    agreematrix = pandas.DataFrame(columns=pairs)
-    for combo in scriptcombos:
-        for pair in pairs: 
-            judge1 = [pair[0], combo[0], combo[1], 1] 
-            judge2 = [pair[1], combo[0], combo[1], 1]
-            if judge1 and judge2 in compdata: #both judges say this pair in this order wins
-                print(judge1, "and", judge2, "in compdata")
-                agreematrix.append(str(pair): 1, ignore_index=True)
-            judge1 = [pair[0], combo[0], combo[1], 0]
-            judge2 = [pair[1], combo[0], combo[1], 0]
-            if judge1 and judge2 in compdata: #both judges say this pair in this order loses
-                print(judge1, "and", judge2, "in compdata")
-                agreematrix.append(str(pair): 1, ignore_index=True)
-            #still need to check for reverse order
-    #once agreematrix is built with column for each pair and values that show agreement for that combo and that pair
-    #then add up each column and select the judges with the greatest sum of agreement among eachother
-    return pairs, compdata, compsarray, scriptcombos, combosarray """
-    
 # this function selects 3 judges with top percent agreement when there are more than three
 # when there are 0, 1, or 2 judges with comparisons for the given set it returns workable empties
+# interrater agreement reference: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3900052/
 def make_groups(setobject):
     compdata = []
     try:
@@ -328,18 +272,18 @@ def make_groups(setobject):
         column = []
         for row in judgecomps[str(judgegroup[0])]:
             #row for each judge's list of comparisions
-            rowtally = 1
             if row == [None, None, None]: 
                 # don't look for matching comps if the this script pair hasn't been compared yet
-                pass
+                pass # skip this row and don't add it to the column
             else:
+                rowtally = 1
                 if row in judgecomps[str(judgegroup[1])]:
                     rowtally += 1 # add one agreement
                 if combo_n >2:
                     if row in judgecomps[str(judgegroup[2])]:  
                         rowtally += 1  
-            # calculate percent agreement for each row in the judges comparisons list
-            column.append(rowtally/combo_n)  
+                # calculate percent agreement for each row in the judges comparisons list
+                column.append(rowtally/combo_n)  
         judgegroupagreement.update({str(judgegroup): column})
 
         # calculating stats for each row and appending to list for later dictionary & dataframe
@@ -451,3 +395,62 @@ def get_scriptchart(computed_scripts):
         }
     )
     return cht
+
+
+# this make_groups() was designed using correlation matrices
+""" def make_groups(df):
+    similar_groups = []
+    ignore = []
+    #note: current issue -- makes a group of 1,2,8 where 1 to 2 is .95 and 1 to 8 is .71 but 2 to 8 is .57 
+    for col in df.columns:
+        for row in df.loc[[col]]: # makes a list of data in each column
+            if 0.7 <= df[col][row] < 1.0: # temp values to artificually create a group of 3
+                if not col in ignore: # if we already have group [1, 2], we don't want [2, 1]
+                    ignore.append(row) 
+                    if len(similar_groups) > 0:
+                        for group in similar_groups:
+                            if group[0] == col:
+                                if not row in group:
+                                    group.append(row) # add to an existing group 
+                                    #print(f"adding {row} to group {group}")                               
+                            else: 
+                                similar_groups.append([col, row]) # create a new group
+                                #print(f"creating group [{col}, {row}] -- not first time")                            
+                    else:
+                        similar_groups.append([col, row])
+                        #print(f"creating group [{col}, {row}] -- first time")  
+    #print(df)
+    return similar_groups """
+
+""" def interraterb(setobject):
+    compdata = []
+    comps = Comparison.objects.filter(set=setobject)
+    for comp in comps:
+        compdata.append([comp.judge.id, comp.scripti.id, comp.scriptj.id, comp.wini])
+    compsarray = np.array(compdata)
+    judges = list(set(compsarray[:,0])) # set() returns only unique rows in the list which is the first column of the array
+    pairs = list(itertools.combinations(judges, 2)) # all possible combinations of judges into pairs
+    scriptlist = []
+    scripts = Script.objects.filter(set = setobject)
+    combosarray =[]
+    for script in scripts:
+        scriptlist.append(script.id)
+    scriptcombos = itertools.combinations(scriptlist, 2) #all possible combinations of script.id into pairs
+    agreematrix = pandas.DataFrame(columns=pairs)
+    for combo in scriptcombos:
+        for pair in pairs: 
+            judge1 = [pair[0], combo[0], combo[1], 1] 
+            judge2 = [pair[1], combo[0], combo[1], 1]
+            if judge1 and judge2 in compdata: #both judges say this pair in this order wins
+                print(judge1, "and", judge2, "in compdata")
+                agreematrix.append(str(pair): 1, ignore_index=True)
+            judge1 = [pair[0], combo[0], combo[1], 0]
+            judge2 = [pair[1], combo[0], combo[1], 0]
+            if judge1 and judge2 in compdata: #both judges say this pair in this order loses
+                print(judge1, "and", judge2, "in compdata")
+                agreematrix.append(str(pair): 1, ignore_index=True)
+            #still need to check for reverse order
+    #once agreematrix is built with column for each pair and values that show agreement for that combo and that pair
+    #then add up each column and select the judges with the greatest sum of agreement among eachother
+    return pairs, compdata, compsarray, scriptcombos, combosarray """
+    
