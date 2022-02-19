@@ -24,6 +24,7 @@ from operator import itemgetter
 from chartit import DataPool, Chart
 import pandas
 import re
+import csv
 
 class ComputedScript:
     def __init__(self, id, idcode, idcode_f, comps, wins, logit, probability, stdev, fisher_info, se, ep, lo95ci, hi95ci, samep, rank):
@@ -393,6 +394,15 @@ def get_scriptchart(computed_scripts):
         }
     )
     return cht
+
+def bulkcreatescripts(filepath, user_id, set_id):
+    #examples of input include filepath="data/set6.csv" user_id=6, set_id=5
+    file = open(filepath, "r", encoding='utf-8-sig')
+    csv_reader = csv.reader(file)
+    id_list = []
+    for i in csv_reader:
+        script = Script(set_id=set_id, idcode=int(i), user_id=user_id)
+        print("Created script instance for for idcode ", int(i))
 
 
 # this make_groups() was designed using correlation matrices
