@@ -24,7 +24,7 @@ import numpy as np
 import datetime
 
 class Set(models.Model):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="the user who uploaded the scripts of this set")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, verbose_name="the user who uploaded the scripts of this set")
     judges = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='judges', verbose_name="the users with comparing capabilities for this set", blank=True)
     name = models.CharField(max_length=100)
     greater_statement = models.CharField(default="Greater", max_length=50, verbose_name="the comparative adjective posed as question for judges about the items")
@@ -33,7 +33,7 @@ class Set(models.Model):
         return str(self.pk)
 
 class Script(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="the user who uploaded the script")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True, verbose_name="the user who uploaded the script")
     set = models.ForeignKey(Set, on_delete=models.CASCADE, blank=True, null=True, verbose_name="the one set to which the script belongs")
     pdf = models.FileField(upload_to="scripts/pdfs", null=True, blank=True)
     pdf_link_option = models.URLField(blank=True, null=True, verbose_name="optional url source of a publicly available pdf hosted online")

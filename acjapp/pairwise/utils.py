@@ -57,9 +57,7 @@ def script_selection(set, userid):
     computed_scripts_for_user_in_set = get_computed_scripts(set, judges) 
     maxcomps=(scriptcount * (scriptcount-1)/2)
     switch=min(scriptcount + (scriptcount * (scriptcount-1)/6), maxcomps)
-    if len(compslist) < scriptcount: # random at the begining until comps = n, then . . . 
-        random.shuffle(computed_scripts_for_user_in_set)     
-    elif len(compslist) < switch: #prioritize comps until comps = min of n+max/2.5 or max, then . . . 
+    if len(compslist) < switch: #prioritize comps until comps = min of n+max/2.5 or max, then . . . 
         computed_scripts_for_user_in_set.sort(key = lambda x: (x.comps, x.samep, x.fisher_info)) 
     else: #prioritize samep
         computed_scripts_for_user_in_set.sort(key = lambda x: (x.samep, x.comps, x.fisher_info))
