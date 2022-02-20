@@ -2,9 +2,7 @@
 
 {% block content %}
     <div class="container-fluid">   
-        <p>Set: {{ script.set }}</p>
-        <p>Person ID Code: {{ script.idcode_f }}</p>
-        <p>Uploaded by user {{ script.user.id }} </p>
+        <p>Set: {{ script.set }}; person ID Code: {{ script.idcode_f }}; uploaded by user {{ script.user.id }} </p>
         <div class="ratio" style="--bs-aspect-ratio: 150%;">
             {% if script.pdf.url %}
                 <embed src="{{ script.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="100%" >

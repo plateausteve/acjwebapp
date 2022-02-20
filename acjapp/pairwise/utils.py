@@ -60,8 +60,12 @@ def script_selection(set, userid):
     print(scriptcount, len(compslist), switch)
     if len(compslist) < scriptcount:
         random.shuffle(computed_scripts_for_user_in_set)
-        scripti = computed_scripts_for_user_in_set[0]
-        scriptj = computed_scripts_for_user_in_set[1]
+        i=computed_scripts_for_user_in_set[0]
+        pki = i.id
+        j=computed_scripts_for_user_in_set[1]
+        pkj = j.id
+        scripti = Script.objects.get(pk=pki)
+        scriptj = Script.objects.get(pk=pkj)
         j_list = []
         for script in computed_scripts_for_user_in_set:
             j_list.append(script.id)
