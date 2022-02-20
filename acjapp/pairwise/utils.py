@@ -58,9 +58,18 @@ def script_selection(set, userid):
     computed_scripts_for_user_in_set = get_computed_scripts(set, judges) 
     maxcomps=(scriptcount * (scriptcount-1)/2)
     switch=min(scriptcount + (scriptcount * (scriptcount-1)/6), maxcomps)
-    if len(compslist) < switch: #prioritize comps until comps = min of n+max/2.5 or max, then . . . 
+    print(scriptcount, len(compslist), switch)
+    if len(compslist) < scriptcount:
+        random.shuffle(computed_scripts_for_user_in_set)
+        scripti = computed_scripts_for_user_in_set[0]
+        scriptj = computed_scripts_for_user_in_set[1]
+        j_list = []
+        for script in computed_scripts_for_user_in_set:
+            j_list.append(script.id)
+        return compslist, scripti, scriptj, j_list
+    elif len(compslist) < switch: #prioritize minimum comps until comps = min of n+max/3 or max, then . . . 
         computed_scripts_for_user_in_set.sort(key = lambda x: (x.comps, x.samep, x.fisher_info)) 
-    else: #prioritize samep
+    else: #prioritize minimum samep
         computed_scripts_for_user_in_set.sort(key = lambda x: (x.samep, x.comps, x.fisher_info))
         if computed_scripts_for_user_in_set[0].samep == -1: #if all computed scripts have unique values then abort
             return compslist, None, None, [] # everything is empty   
@@ -77,11 +86,12 @@ def script_selection(set, userid):
         elif [scripti.id, script.id] not in compslist and [script.id, scripti.id] not in compslist: # don't consider this scriptj if it's already been compared
             p_j = float(script.probability)
             p_diff = abs(p_i - p_j)
-            scriptj_possibilities.append([script.id, p_diff])
+            r_j = random.randint(0,1000)
+            scriptj_possibilities.append([script.id, p_diff, r_j])
     
     # Based on the calculated probability difference, choose the most similar script and display it on the page.
     if scriptj_possibilities: # if there are possibilities, we choose the most similar
-        j_list = sorted(scriptj_possibilities, key=itemgetter(1))
+        j_list = sorted(scriptj_possibilities, key=itemgetter(1,2))
         scriptj = Script.objects.get(pk = j_list[0][0]) # the item that has the smallest log odds difference (lodiff)
     else: # if there are no possibilities, we can't choose a scriptj at all. whatever recieves the request will have to deal with a NoneType
         j_list = []
