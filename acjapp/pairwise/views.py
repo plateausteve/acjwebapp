@@ -35,7 +35,7 @@ def index(request):
     if request.user.is_authenticated:
         userid=request.user.id
         allowed_sets_ids = get_allowed_sets(userid)
-        request.session['sets'] = allowed_sets_ids
+        request.session['sets'] = sorted(allowed_sets_ids)
     return render(request, 'pairwise/index.html', {})
 
 def login_view(request):
