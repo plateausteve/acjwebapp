@@ -4,12 +4,10 @@
     <div class="container-fluid">   
         <p>Set: {{ script.set }}</p>
         <p>Person ID Code: {{ script.idcode_f }}</p>
-        <p>Owner: {{ script.user }} ({{ script.user.id }}) </p>
+        <p>Uploaded by user {{ script.user.id }} </p>
         <div class="ratio" style="--bs-aspect-ratio: 150%;">
-            {% if script.pdf %}
+            {% if script.pdf.url %}
                 <embed src="{{ script.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="100%" >
-            {% elif script.pdf_link_option %}
-                <embed src="{{ script.pdf_link_option }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="100%">
             {% endif %}
         </div>
     </div>
