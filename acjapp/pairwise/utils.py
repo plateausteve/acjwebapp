@@ -396,13 +396,18 @@ def get_scriptchart(computed_scripts):
     return cht
 
 def bulkcreatescripts(filepath, user_id, set_id):
-    #examples of input include filepath="data/set6.csv" user_id=6, set_id=5
+    #in python shell define the variable as below
+    #filepath="data/set4.csv" 
+    #user_id=24 
+    #set_id=4
     file = open(filepath, "r", encoding='utf-8-sig')
     csv_reader = csv.reader(file)
-    id_list = []
-    for i in csv_reader:
-        script = Script(set_id=set_id, idcode=int(i), user_id=user_id)
-        print("Created script instance for for idcode ", int(i))
+    for row in csv_reader:
+        id=int(row[0])
+        script = Script(set_id=set_id, idcode=id, user_id=user_id)
+        script.save()
+        print("Created script instance for for idcode ", id, "in set ", set_id, " for user ", user_id)
+    return
 
 
 # this make_groups() was designed using correlation matrices
