@@ -17,7 +17,6 @@
 from .models import Script, Comparison, Set
 import numpy as np
 from numpy import log, sqrt
-import operator
 import random
 import itertools
 from operator import itemgetter
@@ -86,11 +85,11 @@ def script_selection(set, userid):
         elif [scripti.id, script.id] not in compslist and [script.id, scripti.id] not in compslist: # don't consider this scriptj if it's already been compared
             p_j = float(script.probability)
             p_diff = abs(p_i - p_j)
-            r_j = random.randint(0,1000)
+            r_j = random.randint(0,1000) # solely for random int to be a secondary sort field in selection of scriptj
             scriptj_possibilities.append([script.id, p_diff, r_j])
     
     # Based on the calculated probability difference, choose the most similar script and display it on the page.
-    if scriptj_possibilities: # if there are possibilities, we choose the most similar
+    if scriptj_possibilities: # if there are possibilities, we choose the most similar so far, and if multiple same, random
         j_list = sorted(scriptj_possibilities, key=itemgetter(1,2))
         scriptj = Script.objects.get(pk = j_list[0][0]) # the item that has the smallest log odds difference (lodiff)
     else: # if there are no possibilities, we can't choose a scriptj at all. whatever recieves the request will have to deal with a NoneType
