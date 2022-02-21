@@ -45,9 +45,9 @@ class ComputedScript:
             self.randomsorter = randomsorter
 
 def get_allowed_sets(userid):
-    list = Set.objects.filter(judges__id__exact=userid)
+    sets = Set.objects.filter(judges__id__exact=userid).order_by('pk')
     allowed_sets_ids = []
-    for set in list:
+    for set in sets:
         allowed_sets_ids.append(set.id)
     return allowed_sets_ids
 
