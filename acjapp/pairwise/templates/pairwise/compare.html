@@ -36,7 +36,7 @@
         <div class="row justify-content-around">
             <div class="col align-self-center">
                 <div class="ratio" style="--bs-aspect-ratio: 150%;">
-                    {% if scripti.pdf.url %}
+                    {% if scripti.pdf %}
                         <embed src="{{ scripti.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="100%">
                     {% endif %}
                  </div>
@@ -53,8 +53,8 @@
     <div>
     {%if user.is_superuser %}
         <p>Debug information:</p>
-        <p>Script i ID: {{ scripti.id }}; STUDENT ID: {{ scripti.idcode }}</p>
-        <p>Script j ID: {{ scriptj.id }}; STUDENT ID: {{ scriptj.idcode }}</p>
+        <p>Script i ID: {{ scripti.id }}; PERSON ID: {{ scripti.idcode }}</p>
+        <p>Script j ID: {{ scriptj.id }}; PERSON ID: {{ scriptj.idcode }}</p>
         <p>List of Js: {{ j_list }}</p>
     {% endif %}
     {% else %}

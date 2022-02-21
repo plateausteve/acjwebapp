@@ -26,7 +26,7 @@ import re
 import csv
 
 class ComputedScript:
-    def __init__(self, id, idcode, idcode_f, comps, wins, logit, probability, stdev, fisher_info, se, ep, lo95ci, hi95ci, samep, rank):
+    def __init__(self, id, idcode, idcode_f, comps, wins, logit, probability, stdev, fisher_info, se, ep, lo95ci, hi95ci, samep, rank, randomsorter):
             self.id = id
             self.idcode = idcode
             self.idcode_f = idcode_f
@@ -40,8 +40,9 @@ class ComputedScript:
             self.ep = ep
             self.lo95ci = lo95ci
             self.hi95ci = hi95ci
-            self.samep = samep #note that samep will be negative for multiple sorting lambda in script_selection() won't do a regualr and reverse sort
+            self.samep = samep 
             self.rank = rank 
+            self.randomsorter = randomsorter
 
 def get_allowed_sets(userid):
     list = Set.objects.filter(judges__id__exact=userid)
@@ -58,28 +59,16 @@ def script_selection(set, userid):
     maxcomps=(scriptcount * (scriptcount-1)/2)
     switch=min(scriptcount + (scriptcount * (scriptcount-1)/6), maxcomps)
     print(scriptcount, len(compslist), switch)
-    if len(compslist) < scriptcount:
-        random.shuffle(computed_scripts_for_user_in_set)
-        i=computed_scripts_for_user_in_set[0]
-        pki = i.id
-        j=computed_scripts_for_user_in_set[1]
-        pkj = j.id
-        scripti = Script.objects.get(pk=pki)
-        scriptj = Script.objects.get(pk=pkj)
-        j_list = []
-        for script in computed_scripts_for_user_in_set:
-            j_list.append(script.id)
-        return compslist, scripti, scriptj, j_list
-    elif len(compslist) < switch: #prioritize minimum comps until comps = min of n+max/3 or max, then . . . 
-        computed_scripts_for_user_in_set.sort(key = lambda x: (x.comps, x.samep, x.fisher_info)) 
-    else: #prioritize minimum samep
-        computed_scripts_for_user_in_set.sort(key = lambda x: (x.samep, x.comps, x.fisher_info))
+    if len(compslist) < switch: #prioritize minimum comps until comps = min of n+max/3 or max, then . . . 
+        computed_scripts_for_user_in_set.sort(key = lambda x: (x.comps, x.samep, x.fisher_info, x.randomsorter)) 
+    else: #prioritize lowest same probability (least distinct estimate <-1, samep = -1 indicates unique estimate)
+        computed_scripts_for_user_in_set.sort(key = lambda x: (x.samep, x.comps, x.fisher_info, x.randomsorter))
         if computed_scripts_for_user_in_set[0].samep == -1: #if all computed scripts have unique values then abort
             return compslist, None, None, [] # everything is empty   
     scriptj_possibilities = []
 
     # Go through all comparable scripts, and choose the first as scripti. 
-    # Calculate the difference in probability between scripti and every other script
+    # Then calculate the difference in probability between scripti and every other script
     for i, script in enumerate(computed_scripts_for_user_in_set):
         if i == 0:
             if script.comps == scriptcount-1:
@@ -88,12 +77,11 @@ def script_selection(set, userid):
             p_i = float(script.probability)
         elif [scripti.id, script.id] not in compslist and [script.id, scripti.id] not in compslist: # don't consider this scriptj if it's already been compared
             p_j = float(script.probability)
-            p_diff = abs(p_i - p_j)
-            r_j = random.randint(0,1000) # solely for random int to be a secondary sort field in selection of scriptj
-            scriptj_possibilities.append([script.id, p_diff, r_j])
+            p_diff = round(abs(p_i - p_j),3)
+            scriptj_possibilities.append([script.id, p_diff, script.randomsorter, script.comps, script.samep, script.fisher_info])
     
-    # Based on the calculated probability difference, choose the most similar script and display it on the page.
-    if scriptj_possibilities: # if there are possibilities, we choose the most similar so far, and if multiple same, random
+    # Based on lowest probability difference, then random index, choose the most similar script to display as scriptj
+    if scriptj_possibilities: 
         j_list = sorted(scriptj_possibilities, key=itemgetter(1,2))
         scriptj = Script.objects.get(pk = j_list[0][0]) # the item that has the smallest log odds difference (lodiff)
     else: # if there are no possibilities, we can't choose a scriptj at all. whatever recieves the request will have to deal with a NoneType
@@ -106,7 +94,7 @@ def get_computed_scripts(set, judges):
     scripts = Script.objects.filter(set=set)
     for script in scripts:
         comps, wins = compute_comps_wins(script, judges)
-        logit, probability, stdev, fisher_info, se, ep, hi95ci, lo95ci = compute_more(comps, wins)
+        logit, probability, stdev, fisher_info, se, ep, hi95ci, lo95ci, randomsorter = compute_more(comps, wins)
         computed_scripts_for_user_in_set.append(
             ComputedScript(
                 script.id,
@@ -117,13 +105,14 @@ def get_computed_scripts(set, judges):
                 logit, 
                 '{:.2f}'.format(probability), 
                 '{:.2f}'.format(stdev), 
-                '{:.2f}'.format(fisher_info), 
+                round(fisher_info,2), 
                 se, 
                 ep, 
                 lo95ci, 
                 hi95ci, 
                 0, # samep
-                0 #rank
+                0, #rank
+                randomsorter,
                 )
         )  
     computed_scripts_for_user_in_set = set_ranks(computed_scripts_for_user_in_set)
@@ -136,6 +125,7 @@ def build_compslist(set, userid):
         i = comp.scripti.id
         j = comp.scriptj.id 
         compslist.append([i, j])
+    print(compslist)
     return compslist
 
 def compute_comps_wins(script, judges):
@@ -182,7 +172,8 @@ def compute_more(comps, wins):
         ep = round((logit * b), 1) + a
         hi95ci = round(((logit + ci) * b), 1) + a
         lo95ci = round(((logit - ci) * b), 1) + a
-    return logit, probability, stdev, fisher_info, se, ep, hi95ci, lo95ci
+    randomsorter = random.randint(0,1000)
+    return logit, probability, stdev, fisher_info, se, ep, hi95ci, lo95ci, randomsorter
     # more here: http://personal.psu.edu/abs12//stat504/online/01b_loglike/01b_loglike_print.htm
 
 def set_ranks(computed_scripts_for_user_in_set):
