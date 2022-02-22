@@ -65,10 +65,10 @@ def script_selection(set, userid):
         computed_scripts_for_user_in_set.sort(key = lambda x: (x.samep, x.comps, x.fisher_info, x.randomsorter))
         if computed_scripts_for_user_in_set[0].samep == -1: #if all computed scripts have unique values then abort
             return compslist, None, None, [] # everything is empty   
-    scriptj_possibilities = []
 
     # Go through all comparable scripts, and choose the first as scripti. 
     # Then calculate the difference in probability between scripti and every other script
+    j_list = []
     for i, script in enumerate(computed_scripts_for_user_in_set):
         if i == 0:
             if script.comps == scriptcount-1:
@@ -78,11 +78,11 @@ def script_selection(set, userid):
         elif [scripti.id, script.id] not in compslist and [script.id, scripti.id] not in compslist: # don't consider this scriptj if it's already been compared
             p_j = float(script.probability)
             p_diff = round(abs(p_i - p_j),3)
-            scriptj_possibilities.append([script.id, p_diff, script.randomsorter, script.comps, script.samep, script.fisher_info])
+            j_list.append([script.id, p_diff, script.comps, script.samep, script.fisher_info, script.randomsorter])
     
     # Based on lowest probability difference, then random index, choose the most similar script to display as scriptj
-    if scriptj_possibilities: 
-        j_list = sorted(scriptj_possibilities, key=itemgetter(1,2))
+    if j_list: 
+        j_list.sort(key=itemgetter(1,5))
         scriptj = Script.objects.get(pk = j_list[0][0]) # the item that has the smallest log odds difference (lodiff)
     else: # if there are no possibilities, we can't choose a scriptj at all. whatever recieves the request will have to deal with a NoneType
         j_list = []
@@ -125,7 +125,6 @@ def build_compslist(set, userid):
         i = comp.scripti.id
         j = comp.scriptj.id 
         compslist.append([i, j])
-    print(compslist)
     return compslist
 
 def compute_comps_wins(script, judges):
@@ -211,7 +210,7 @@ def corr_matrix(setid):
 
 # this function selects 3 judges with top percent agreement when there are more than three
 # when there are 0, 1, or 2 judges with comparisons for the given set it returns workable empties
-# interrater agreement reference: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3900052/
+# interrater percent agreement reference: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3900052/
 def make_groups(setobject):
     compdata = []
     try:
