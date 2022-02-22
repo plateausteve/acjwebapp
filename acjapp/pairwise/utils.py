@@ -58,7 +58,6 @@ def script_selection(set, userid):
     computed_scripts_for_user_in_set = get_computed_scripts(set, judges) 
     maxcomps=(scriptcount * (scriptcount-1)/2)
     switch=min(scriptcount + (scriptcount * (scriptcount-1)/6), maxcomps)
-    print(scriptcount, len(compslist), switch)
     if len(compslist) < switch: #prioritize minimum comps until comps = min of n+max/3 or max, then . . . 
         computed_scripts_for_user_in_set.sort(key = lambda x: (x.comps, x.samep, x.fisher_info, x.randomsorter)) 
     else: #prioritize lowest same probability (least distinct estimate <-1, samep = -1 indicates unique estimate)
@@ -82,7 +81,7 @@ def script_selection(set, userid):
     
     # Based on lowest probability difference, then random index, choose the most similar script to display as scriptj
     if j_list: 
-        j_list.sort(key=itemgetter(1,5))
+        j_list.sort(key=itemgetter(1,5)) # 1 is p_diff, 5 is randomsorter
         scriptj = Script.objects.get(pk = j_list[0][0]) # the item that has the smallest log odds difference (lodiff)
     else: # if there are no possibilities, we can't choose a scriptj at all. whatever recieves the request will have to deal with a NoneType
         j_list = []
