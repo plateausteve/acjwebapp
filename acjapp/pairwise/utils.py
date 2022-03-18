@@ -262,7 +262,6 @@ def make_groups(setobject):
         combo_n = 2
     judgegroups = itertools.combinations(compsjudges, combo_n)
     judgegroupagreement = {} # calculate percent agreement among judges in each group
-    judgegroupselect = []
     judgegroupstats = {}
     judges=[]
     x=[]
@@ -288,6 +287,7 @@ def make_groups(setobject):
         judgegroupagreement.update({str(judgegroup): column})
 
         # calculating stats for each row and appending to list for later dictionary & dataframe
+        
         judges.append(judgegroup) # judges is a key of the dictionary, adding to its values list
         x.append(sum(judgegroupagreement[str(judgegroup)])) # x will be a key, adding to values list
         n.append(len(judgegroupagreement[str(judgegroup)])) # n will be a key, adding to values list
@@ -295,8 +295,6 @@ def make_groups(setobject):
         std=np.std(judgegroupagreement[str(judgegroup)])
         se.append(std/sqrt(len(judgegroupagreement[str(judgegroup)]))) # se will be a key, adding to values list
         
-        judgegroupselect.append([str(judgegroup), sum(judgegroupagreement[str(judgegroup)])/len(judgegroupagreement[str(judgegroup)])]) # could do without this if I knew how to sort the dictionary being built
-
     judgegroupstats.update({'judges': judges, "p": p,"se": se, "x": x, "n": n}) # finally, the dict. to build with keys and value lists
     
     df = pandas.DataFrame(judgegroupstats) # make a dataframe to pass to the template
