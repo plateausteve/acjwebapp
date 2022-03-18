@@ -286,14 +286,14 @@ def make_groups(setobject):
                 column.append(int(rowtally/combo_n)) #added Int() so it only counts 1 if all three agree  
         judgegroupagreement.update({str(judgegroup): column})
 
-        # calculating stats for each row and appending to list for later dictionary & dataframe
-        
-        judges.append(judgegroup) # judges is a key of the dictionary, adding to its values list
-        x.append(sum(judgegroupagreement[str(judgegroup)])) # x will be a key, adding to values list
-        n.append(len(judgegroupagreement[str(judgegroup)])) # n will be a key, adding to values list
-        p.append(sum(judgegroupagreement[str(judgegroup)])/len(judgegroupagreement[str(judgegroup)])) # p will be a key, adding to values list
-        std=np.std(judgegroupagreement[str(judgegroup)])
-        se.append(std/sqrt(len(judgegroupagreement[str(judgegroup)]))) # se will be a key, adding to values list
+        # calculating stats for each row and appending to list for later dictionary & dataframe 
+        if len(judgegroupagreement[str(judgegroup)])*3 > len(scriptlist)*(len(scriptlist)-1)/2: # only if n of shared comparisons > 1/3 of possible comparisons
+            judges.append(judgegroup) # judges is a key of the dictionary, adding to its values list
+            x.append(sum(judgegroupagreement[str(judgegroup)])) # x will be a key, adding to values list
+            n.append(len(judgegroupagreement[str(judgegroup)])) # n will be a key, adding to values list
+            p.append(sum(judgegroupagreement[str(judgegroup)])/len(judgegroupagreement[str(judgegroup)])) # p will be a key, adding to values list
+            std=np.std(judgegroupagreement[str(judgegroup)])
+            se.append(std/sqrt(len(judgegroupagreement[str(judgegroup)]))) # se will be a key, adding to values list
         
     judgegroupstats.update({'judges': judges, "p": p,"se": se, "x": x, "n": n}) # finally, the dict. to build with keys and value lists
     
