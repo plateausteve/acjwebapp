@@ -66,7 +66,7 @@ def script_selection(set, userid):
             return compslist, None, None, [] # everything is empty   
 
     # Go through all comparable scripts, and choose the first as scripti. 
-    # Then calculate the difference in probability between scripti and every other script
+    # Then calculate the difference in probability 'p_diff' between scripti and every other script
     j_list = []
     for i, script in enumerate(computed_scripts_for_user_in_set):
         if i == 0:
@@ -233,7 +233,7 @@ def make_groups(setobject):
         scriptlist.append(script.id)
     judgecomps = {}
     # for each scriptpair add to the list of comparision judgments made by each judge-- 
-    for judge in compsjudges: # first iterate through all judges so you can update judge's listof comps
+    for judge in compsjudges: # first iterate through all judges so you can update judge's list of comps
         column =[]
         scriptpairs = itertools.combinations(scriptlist, 2)
         for scriptpair in scriptpairs:        
@@ -284,7 +284,7 @@ def make_groups(setobject):
                     if row in judgecomps[str(judgegroup[2])]:  
                         rowtally += 1  
                 # calculate percent agreement for each row in the judges comparisons list
-                column.append(rowtally/combo_n)  
+                column.append(int(rowtally/combo_n)) #added Int() so it only counts 1 if all three agree  
         judgegroupagreement.update({str(judgegroup): column})
 
         # calculating stats for each row and appending to list for later dictionary & dataframe
@@ -310,6 +310,20 @@ def make_groups(setobject):
     return bestgroup, bestagreement, stats_df
                 
                 
+
+def bulkcreatescripts(filepath, user_id, set_id):
+    #in python shell define the variable as below
+    #filepath="data/set4.csv" 
+    #user_id=24 
+    #set_id=4
+    file = open(filepath, "r", encoding='utf-8-sig')
+    csv_reader = csv.reader(file)
+    for row in csv_reader:
+        id=int(row[0])
+        script = Script(set_id=set_id, idcode=id, user_id=user_id)
+        script.save()
+        print("Created script instance for for idcode ", id, "in set ", set_id, " for user ", user_id)
+    return
                 
                
             
@@ -396,20 +410,6 @@ def get_scriptchart(computed_scripts):
         }
     )
     return cht
-
-def bulkcreatescripts(filepath, user_id, set_id):
-    #in python shell define the variable as below
-    #filepath="data/set4.csv" 
-    #user_id=24 
-    #set_id=4
-    file = open(filepath, "r", encoding='utf-8-sig')
-    csv_reader = csv.reader(file)
-    for row in csv_reader:
-        id=int(row[0])
-        script = Script(set_id=set_id, idcode=id, user_id=user_id)
-        script.save()
-        print("Created script instance for for idcode ", id, "in set ", set_id, " for user ", user_id)
-    return
 
 
 # this make_groups() was designed using correlation matrices
