@@ -346,9 +346,10 @@ def judgereport(judgeid):
         n = Comparison.objects.filter(judge__pk = judgeid, set = set).count()
         scriptcount = Script.objects.filter(set=set).count()
         estcomps = int(scriptcount * (scriptcount-1) * .333)
-        report.append([n, estcomps])
-    df = pandas.DataFrame(report, index=sets, columns = ["Done Yet","Estimated End"])
-    return df
+        report.append([set, n, estcomps])
+    df = pandas.DataFrame(report, columns = ["Set","Done Yet","Estimated End"])
+    htmltable = df.to_html(index=False)
+    return df, htmltable
 
                      
             
