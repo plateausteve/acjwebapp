@@ -271,29 +271,45 @@ def make_groups(setobject):
     for judgegroup in judgegroups:
         column = []
         for row in judgecomps[str(judgegroup[0])]:
-            #row for each judge's list of comparisions
+            #row for first judge's list of comparisions
+            flag = 0 # using this flag variable to signal missing pair in another judge
+            
             if row == [None, None, None]: 
                 # don't look for matching comps if the this script pair hasn't been compared yet
                 pass # skip this row and don't add it to the column
             else:
-                rowtally = 1
+                #setting row_opp to the opposite decision is a clumsy way to set up to make sure the pair doesn't show up at all in other judges' comps
+                if row[2] == 1:
+                    row_opp = [row[0],row[1],0]
+                else:
+                    row_opp = [row[0],row[1],1]
+
+                rowtally = 1 # judge agrees with self, next how about others?                
+                
                 if row in judgecomps[str(judgegroup[1])]:
-                    rowtally += 1 # add one agreement
-                if combo_n >2:
+                    rowtally += 1 # add one agreement for the second judge  
+                elif row_opp not in judgecomps[str(judgegroup[1])]:
+                    flag += 1 #the pair is not in second judge's list at all and signal not to add this row to the column    
+                if combo_n > 2:
                     if row in judgecomps[str(judgegroup[2])]:  
-                        rowtally += 1  
-                # calculate percent agreement for each row in the judges comparisons list
-                column.append(int(rowtally/combo_n)) #added Int() so it only counts 1 if all three agree  
+                        rowtally += 1   # if there is a third judge, add one agreement for the third
+                    elif row_opp not in judgecomps[str(judgegroup[2])]:
+                        flag += 1 #the pair is not in the third judge's list at all and increase signal not to add this row to the column
+                if flag == 0:
+                    column.append(int(rowtally/combo_n)) #added Int() so it only counts 1 if all three agree, and only 0 if all three share that pair 
         judgegroupagreement.update({str(judgegroup): column})
 
         # calculating stats for each row and appending to list for later dictionary & dataframe 
-        if len(judgegroupagreement[str(judgegroup)])*3 > len(scriptlist)*(len(scriptlist)-1)/2: # only if n of shared comparisons > 1/3 of possible comparisons
+        rowx=sum(judgegroupagreement[str(judgegroup)])
+        rown=len(judgegroupagreement[str(judgegroup)])
+        maxcomps = (len(scriptlist)*(len(scriptlist)-1))/2
+        if rown * 4 > maxcomps: # only if n of shared comparisons > a factor possible comparisons
             judges.append(judgegroup) # judges is a key of the dictionary, adding to its values list
-            x.append(sum(judgegroupagreement[str(judgegroup)])) # x will be a key, adding to values list
-            n.append(len(judgegroupagreement[str(judgegroup)])) # n will be a key, adding to values list
-            p.append(sum(judgegroupagreement[str(judgegroup)])/len(judgegroupagreement[str(judgegroup)])) # p will be a key, adding to values list
+            x.append(rowx) # x will be a key, adding to values list
+            n.append(rown) # n will be a key, adding to values list
+            p.append(rowx/rown) # p will be a key, adding to values list
             std=np.std(judgegroupagreement[str(judgegroup)])
-            se.append(std/sqrt(len(judgegroupagreement[str(judgegroup)]))) # se will be a key, adding to values list
+            se.append(std/sqrt(rown)) # se will be a key, adding to values list
         
     judgegroupstats.update({'judges': judges, "p": p,"se": se, "x": x, "n": n}) # finally, the dict. to build with keys and value lists
     
