@@ -303,8 +303,7 @@ def make_groups(setobject):
         rowx=sum(judgegroupagreement[str(judgegroup)])
         rown=len(judgegroupagreement[str(judgegroup)])
         maxcomps = (len(scriptlist)*(len(scriptlist)-1))/2
-        # save for later --- if rown * 4 > maxcomps: # only if n of shared comparisons > 1/4 possible comparisons
-        if rown > 0:
+        if rown * 6 > maxcomps: # only if n of shared comparisons > 1/6 possible comparisons
             judges.append(judgegroup) # judges is a key of the dictionary, adding to its values list
             x.append(rowx) # x will be a key, adding to values list
             n.append(rown) # n will be a key, adding to values list

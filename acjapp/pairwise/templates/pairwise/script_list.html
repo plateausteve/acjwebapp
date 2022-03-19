@@ -47,10 +47,16 @@
             </table>
             <table class="table" style="text-align: center;">
                 <tr>
-                    <td>Percent Agreement</td>
+                    <td>Percent Agreement (no partial agreement, i.e. x = pairs with 100% agreement, n = pairs in common)</td>
                 </tr>
                 <tr>
                     <td style="text-align: center;">{{ stats|safe }}</td>
+                </tr>
+                <tr>
+                    <td>Spearman's rho</td>
+                </tr>
+                <tr>
+                    <td>{{ s|safe }}</td>
                 </tr>
                 <tr>
                     <td>Kendall's tau</td>
@@ -59,11 +65,6 @@
                     <td>{{ k|safe }}</td>
                 </tr>
                 <tr>
-                    <td>Spearman's rho</td>
-                </tr>
-                <tr>
-                    <td>{{ s|safe }}</td>
-                </tr><tr>
                     <td>Pearson's r</td>
                 </tr>
                 <tr>
