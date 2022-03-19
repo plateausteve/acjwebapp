@@ -304,12 +304,13 @@ def make_groups(setobject):
         rown=len(judgegroupagreement[str(judgegroup)])
         maxcomps = (len(scriptlist)*(len(scriptlist)-1))/2
         # save for later --- if rown * 4 > maxcomps: # only if n of shared comparisons > 1/4 possible comparisons
-        judges.append(judgegroup) # judges is a key of the dictionary, adding to its values list
-        x.append(rowx) # x will be a key, adding to values list
-        n.append(rown) # n will be a key, adding to values list
-        p.append(rowx/rown) # p will be a key, adding to values list
-        std=np.std(judgegroupagreement[str(judgegroup)])
-        se.append(std/sqrt(rown)) # se will be a key, adding to values list
+        if rown > 0:
+            judges.append(judgegroup) # judges is a key of the dictionary, adding to its values list
+            x.append(rowx) # x will be a key, adding to values list
+            n.append(rown) # n will be a key, adding to values list
+            p.append(rowx/rown) # p will be a key, adding to values list
+            std=np.std(judgegroupagreement[str(judgegroup)])
+            se.append(std/sqrt(rown)) # se will be a key, adding to values list
         
     judgegroupstats.update({'judges': judges, "p": p,"se": se, "x": x, "n": n}) # finally, the dict. to build with keys and value lists
     
