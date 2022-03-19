@@ -272,10 +272,10 @@ def make_groups(setobject):
         column = []
         for row in judgecomps[str(judgegroup[0])]:
             #row for first judge's list of comparisions
-            flag = 0 # using this flag variable to signal missing pair in another judge
+            flag = 0 # using this flag variable to signal any missing pair in another judge's comps
             
             if row == [None, None, None]: 
-                # don't look for matching comps if the this script pair hasn't been compared yet
+                # don't look for matching comps if the this pair hasn't been compared yet
                 pass # skip this row and don't add it to the column
             else:
                 #setting row_opp to the opposite decision is a clumsy way to set up to make sure the pair doesn't show up at all in other judges' comps
@@ -339,7 +339,18 @@ def bulkcreatescripts(filepath, user_id, set_id):
         print("Created script instance for for idcode ", id, "in set ", set_id, " for user ", user_id)
     return
                 
-               
+def judgereport(judgeid):
+    sets = get_allowed_sets(judgeid)
+    report = []
+    for set in sets:
+        n = Comparison.objects.filter(judge__pk = judgeid, set = set).count()
+        scriptcount = Script.objects.filter(set=set).count()
+        estcomps = int(scriptcount * (scriptcount-1) * .333)
+        report.append([n, estcomps])
+    df = pandas.DataFrame(report, index=sets, columns = ["Done Yet","Estimated End"])
+    return df
+
+                     
             
 
 # everything below this line is broken until new chart generator can be found or query can be generated possibly create a model just for each chart?
