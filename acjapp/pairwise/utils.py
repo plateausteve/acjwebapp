@@ -347,7 +347,7 @@ def judgereport(judgeid):
         scriptcount = Script.objects.filter(set=set).count()
         estcomps = int(scriptcount * (scriptcount-1) * .333)
         report.append([set, n, estcomps])
-    df = pandas.DataFrame(report, columns = ["Set","Done Yet","Estimated End"])
+    df = pandas.DataFrame(report, columns = ["Set","Done So Far","Estimated End"])
     htmltable = df.to_html(index=False)
     return df, htmltable
 
