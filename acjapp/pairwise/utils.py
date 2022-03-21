@@ -102,7 +102,7 @@ def get_computed_scripts(set, judges):
                 comps, 
                 wins, 
                 logit, 
-                '{:.2f}'.format(probability), 
+                '{:.3f}'.format(probability), 
                 '{:.2f}'.format(stdev), 
                 round(fisher_info,2), 
                 se, 

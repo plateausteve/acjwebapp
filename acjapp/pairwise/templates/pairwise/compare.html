@@ -50,6 +50,36 @@
             </div>
         </div>
     </div>
+    <p></p>
+        <div class="row justify-content-around">
+            <div class="col justify-content-start">
+                <form method="POST" style="text-align: center">
+                    {% csrf_token %}
+                    {{ winform }}
+                    <input type="hidden" name="set" value={{set}}>
+                    <input type="hidden" name="wini" value="1">
+                    <input type="hidden" name="scripti" value="{{ scripti }}">
+                    <input type="hidden" name="scriptj" value="{{ scriptj }}">
+                    <input type="hidden" name="form_start_variable" value="{{ starttime }}">
+                    <input type="submit" value="Left is {{ set_object.greater_statement }}">
+                </form>
+                <br>
+            </div>
+            <div class="col justify-content-start">
+                <form method="POST" style="text-align: center">
+                    {% csrf_token %}
+                    {{ winform }}
+                    <input type="hidden" name="set" value={{set}}>
+                    <input type="hidden" name="wini" value="0">
+                    <input type="hidden" name="scripti" value="{{ scripti }}">
+                    <input type="hidden" name="scriptj" value="{{ scriptj }}">
+                    <input type="hidden" name="form_start_variable" value="{{ starttime }}">
+                    <input type="submit" value="Right is {{ set_object.greater_statement }}">
+                </form>
+                <br>
+            </div>
+        </div>
+    </div>
     <div>
     {%if user.is_superuser %}
         <p>Debug information:</p>
