@@ -220,7 +220,6 @@ def make_groups(setobject):
     except:
         comps = None
     compsjudges = comps
-    print(comps)
     if len(compsjudges) < 2:
         bestgroup = []
         bestagreement = 0
@@ -263,13 +262,14 @@ def make_groups(setobject):
     else:
         combo_n = 2
     judgegroups = itertools.combinations(compsjudges, combo_n)
-    judgegroupagreement = {} # calculate percent agreement among judges in each group
+    judgegroupagreement = {} 
     judgegroupstats = {}
     judges=[]
     x=[]
     n=[]
     p=[]
     se=[]
+    # calculate percent agreement among judges in each group
     for judgegroup in judgegroups:
         column = []
         for row in judgecomps[str(judgegroup[0])]:
@@ -318,9 +318,12 @@ def make_groups(setobject):
     df = pandas.DataFrame(judgegroupstats) # make a dataframe to pass to the template
     stats_df_indexkey=df.sort_values(by='p', ascending = False) # sort by p highest to lowest
     stats_df=stats_df_indexkey.set_index('judges')
-    bestgroupstring = str(stats_df.iloc[0][0]) # choose first judgegroup string
-    bestagreement = round((stats_df.iloc[0][1]) * 100, 1)
+    print(stats_df.index[0], type(stats_df.index[0]))
+    bestgroupstring = str(stats_df.index[0]) # choose first judgegroup string
     bestgroupids = re.findall('[0-9]+', bestgroupstring) # extract the numeric ids from string
+    b = stats_df.iat[0, 0]
+    print(b, type(b))
+    bestagreement = round(b *100, 1)
     bestgroup = []
     for id in bestgroupids:
         bestgroup.append(int(id)) # turn the id strings into integers
