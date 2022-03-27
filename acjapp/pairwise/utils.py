@@ -207,18 +207,20 @@ def corr_matrix(setid):
     p = estdf.corr('pearson')
     return k, s, p
 
+def make_groups_rho(setobject):
+    pass
+    return
+
 # this function selects 3 judges with top percent agreement when there are more than three
 # when there are 0, 1, or 2 judges with comparisons for the given set it returns workable empties
 # interrater percent agreement reference: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3900052/
 def make_groups(setobject):
-    compdata = []
-    try:
-        comps = Comparison.objects.filter(set=setobject)
+    try: # if comps exist for this set, query a list of unique judge ids who have made comparisons on this set
+        comps = Comparison.objects.filter(set=setobject).values_list('judge_id', flat=True).distinct()
     except:
         comps = None
-    for comp in comps: #first time, make the compsjudges list
-        compdata.append(comp.judge.id)
-    compsjudges = list(set(compdata)) # list of unique judge ids who have made comparisons on this set
+    compsjudges = comps
+    print(comps)
     if len(compsjudges) < 2:
         bestgroup = []
         bestagreement = 0
@@ -303,7 +305,7 @@ def make_groups(setobject):
         rowx=sum(judgegroupagreement[str(judgegroup)])
         rown=len(judgegroupagreement[str(judgegroup)])
         maxcomps = (len(scriptlist)*(len(scriptlist)-1))/2
-        if rown * 6 > maxcomps: # only if n of shared comparisons > 1/6 possible comparisons
+        if rown * 100 > maxcomps: # only if n of shared comparisons > 1/6 possible comparisons
             judges.append(judgegroup) # judges is a key of the dictionary, adding to its values list
             x.append(rowx) # x will be a key, adding to values list
             n.append(rown) # n will be a key, adding to values list
@@ -314,7 +316,8 @@ def make_groups(setobject):
     judgegroupstats.update({'judges': judges, "p": p,"se": se, "x": x, "n": n}) # finally, the dict. to build with keys and value lists
     
     df = pandas.DataFrame(judgegroupstats) # make a dataframe to pass to the template
-    stats_df=df.sort_values(by='p', ascending = False) # sort by p highest to lowest
+    stats_df_indexkey=df.sort_values(by='p', ascending = False) # sort by p highest to lowest
+    stats_df=stats_df_indexkey.set_index('judges')
     bestgroupstring = str(stats_df.iloc[0][0]) # choose first judgegroup string
     bestagreement = round((stats_df.iloc[0][1]) * 100, 1)
     bestgroupids = re.findall('[0-9]+', bestgroupstring) # extract the numeric ids from string
