@@ -23,7 +23,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from .models import Script, Comparison, Set, WinForm
 from random import sample
 from django.views import generic
-from .utils import ComputedScript, get_computed_scripts, script_selection, get_scriptchart, get_resultschart, get_allowed_sets, corr_matrix, make_groups, set_ranks, compute_comps_wins, compute_more
+from .utils import * #ComputedScript, get_computed_scripts, script_selection, get_scriptchart, get_resultschart, get_allowed_sets, corr_matrix, make_groups, set_ranks, compute_comps_wins, compute_more
 import operator
 from operator import itemgetter
 import numpy as np
@@ -65,13 +65,13 @@ def script_detail(request, pk):
 @login_required(login_url="login")
 def script_list(request, set):
     
-    k, s, p = corr_matrix(set) #get kendall's Tau and Pearson's standard correlation
+    k, s, p = corr_matrix(set) #get Spearman's rho, Kendall's Tau and Pearson's standard correlation
     # not using correlation to select judges because I don't have a way to correlate 3
     # try:
     #     judges = make_groups(set)
     # except:
     #     judges = [request.user.id]
-    j, a, stats_df = make_groups(set)
+    j, a, stats_df = make_groups_rho(set)
     if len(j) < 2:
         judges = [request.user.id]
         a2 = 1
