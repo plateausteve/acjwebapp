@@ -24,10 +24,10 @@ from chartit import DataPool, Chart
 import pandas
 import re
 import csv
-from scipy.stats import spearmanr
+from scipy.stats import spearmanr, percentileofscore
 
 class ComputedScript:
-    def __init__(self, id, idcode, idcode_f, comps, wins, logit, probability, stdev, fisher_info, se, ep, lo95ci, hi95ci, samep, rank, randomsorter):
+    def __init__(self, id, idcode, idcode_f, comps, wins, logit, probability, stdev, fisher_info, se, ep, lo95ci, hi95ci, samep, rank, randomsorter, percentile):
             self.id = id
             self.idcode = idcode
             self.idcode_f = idcode_f
@@ -44,6 +44,7 @@ class ComputedScript:
             self.samep = samep 
             self.rank = rank 
             self.randomsorter = randomsorter
+            self.percentile = percentile
 
 def get_allowed_sets(userid):
     sets = Set.objects.filter(judges__id__exact=userid).order_by('pk')
@@ -111,11 +112,13 @@ def get_computed_scripts(set, judges):
                 lo95ci, 
                 hi95ci, 
                 0, # samep
-                0, #rank
+                0, # rank
                 randomsorter,
+                0, #percentile
                 )
         )  
     computed_scripts_for_user_in_set = set_ranks(computed_scripts_for_user_in_set)
+    #computed_scripts_for_user_in_set = set_percentiles(computed_scripts_for_user_in_set)
     return computed_scripts_for_user_in_set
 
 def build_compslist(set, userid):
@@ -159,6 +162,7 @@ def compute_more(comps, wins):
         ep = None
         hi95ci = None
         lo95ci = None
+        percentile = None
     else: 
         fisher_info = 1/(probability * (1 - probability)) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 20
         se = round(stdev / sqrt(comps),3) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 19
@@ -171,6 +175,7 @@ def compute_more(comps, wins):
         ep = round((logit * b), 1) + a
         hi95ci = round(((logit + ci) * b), 1) + a
         lo95ci = round(((logit - ci) * b), 1) + a
+
     randomsorter = random.randint(0,1000)
     return logit, probability, stdev, fisher_info, se, ep, hi95ci, lo95ci, randomsorter
     # more here: http://personal.psu.edu/abs12//stat504/online/01b_loglike/01b_loglike_print.htm
@@ -186,6 +191,20 @@ def set_ranks(computed_scripts_for_user_in_set):
         if script.samep == -1: #if there's only one at that value, then increase rank increment 1 for next 
             rank += 1
         script.rank=rank
+    return computed_scripts_for_user_in_set
+
+def set_percentiles(computed_scripts_for_user_in_set):
+    scores = []
+    for script in computed_scripts_for_user_in_set:
+        try: 
+            scores.extend(script.probability)
+            print(script.probability)
+        except:
+            scores.extend(None)
+    for script in computed_scripts_for_user_in_set:
+        print(script.percentile)
+        script.percentile=percentileofscore(scores, script.logit, kind='rank')
+    print(scores)
     return computed_scripts_for_user_in_set
 
 
@@ -267,14 +286,11 @@ def make_groups_rho(setid):
                 rho3,
                 p3,
             ]
-            print(data)
             corrdata.append(data)
-    print(corrdata)
     df = pandas.DataFrame(corrdata, columns = ['Judge Group', 'Rho Average','Pair 1 Judges', 'Pair 1 Rho','Pair 1 P-value', 'Pair 2 Judges', 'Pair 2 Rho', 'Pair 2 P-value', 'Pair 3 Judges', 'Pair 3 Rho', 'Pair 3 P-value'])
     df_sorted = df.sort_values(by='Rho Average', ascending=False)
     stats_df = df_sorted.set_index('Judge Group')
     b = stats_df.iat[0, 0]
-    print(b, type(b))
     bestagreement = round(b,3)
     bestgroup = pandas.DataFrame.first_valid_index(stats_df)
     return bestgroup, bestagreement, stats_df
@@ -385,11 +401,9 @@ def make_groups_percentagree(setobject):
     df = pandas.DataFrame(judgegroupstats) # make a dataframe to pass to the template
     stats_df_indexkey=df.sort_values(by='p', ascending = False) # sort by p highest to lowest
     stats_df=stats_df_indexkey.set_index('judges')
-    print(stats_df.index[0], type(stats_df.index[0]))
     bestgroupstring = str(stats_df.index[0]) # choose first judgegroup string
     bestgroupids = re.findall('[0-9]+', bestgroupstring) # extract the numeric ids from string
     b = stats_df.iat[0, 0]
-    print(b, type(b))
     bestagreement = round(b *100, 1)
     bestgroup = []
     for id in bestgroupids:
@@ -491,11 +505,9 @@ def group_stats(setobject, judgelist):
     df = pandas.DataFrame(judgegroupstats) # make a dataframe to pass to the template
     stats_df_indexkey=df.sort_values(by='p', ascending = False) # sort by p highest to lowest
     stats_df=stats_df_indexkey.set_index('judges')
-    print(stats_df.index[0], type(stats_df.index[0]))
     bestgroupstring = str(stats_df.index[0]) # choose first judgegroup string
     bestgroupids = re.findall('[0-9]+', bestgroupstring) # extract the numeric ids from string
     b = stats_df.iat[0, 0]
-    print(b, type(b))
     bestagreement = round(b *100, 1)
     bestgroup = []
     for id in bestgroupids:

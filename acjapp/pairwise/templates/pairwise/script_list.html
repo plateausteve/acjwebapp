@@ -26,6 +26,7 @@
                     <th>Low 95% CI</th>
                     <th>Estimate</th>
                     <th>High 95% CI</th>
+                    <!--<th>Percentile</th>-->
                 </tr>
                 {% for script in script_table %}
                 <tr>
@@ -42,6 +43,7 @@
                     <td>{{ script.lo95ci }}</td>
                     <td>{{ script.ep }}</td>
                     <td>{{ script.hi95ci }}</td>
+                    <!--<td>{{ script.percentile }}</td>-->
                 </tr>
                 {% endfor %}
             </table>

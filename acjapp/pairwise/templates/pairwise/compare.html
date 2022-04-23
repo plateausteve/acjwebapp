@@ -4,7 +4,7 @@
 {% if scriptj and scripti %}
     {% if user.is_authenticated %}
     <div class="container-fluid">
-        <p style="text-align: center">You are comparing items from Set {{ set_object.pk }} {{ set_object.name }}. You have completed {{ compscount }} comparisions in this set so far. {{ message }} Ready to compare.</p>
+        <p style="text-align: center">You are comparing items from Set {{ set_object.pk }} {{ set_object.name }}. You have completed {{ compscount }} of {{ compsmax }} possible comparisions in this set so far. About {{ compstarget }} are needed. {{ message }} Ready to compare.</p>
         <div class="row justify-content-around">
             <div class="col justify-content-start">
                 <form method="POST" style="text-align: center">
@@ -93,7 +93,7 @@
     </div>  
 {% else %}
     <div>
-        <p style="text-align: center">There are no scripts for you to compare in Set {{ set }}.</p>
+        <p style="text-align: center">You have completed {{ compscount }} comparisions, and there are no scripts for you to compare in Set {{ set }}.</p>
     </div>
 {% endif %}
 {% endblock %}

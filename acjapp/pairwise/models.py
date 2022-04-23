@@ -28,7 +28,8 @@ class Set(models.Model):
     judges = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='judges', verbose_name="the users with comparing capabilities for this set", blank=True)
     name = models.CharField(max_length=100)
     greater_statement = models.CharField(default="Greater", max_length=50, verbose_name="the comparative adjective posed as question for judges about the items")
-    
+    override_end = models.PositiveSmallIntegerField(editable = True, blank = True, null = True, verbose_name = "end after so many comparisons override")
+  
     def __str__(self):
         return str(self.pk)
 
@@ -41,7 +42,6 @@ class Script(models.Model):
     def idcode_f(self):
         f = self.idcode
         return '%06d' % (f)
-
 
     def __str__(self):
         return str(self.pk)

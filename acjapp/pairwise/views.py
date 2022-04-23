@@ -173,11 +173,20 @@ def compare(request, set):
     #whether POST or GET, set all these variables afresh and render comparision form template        
     compslist, scripti, scriptj, j_list = script_selection(set, userid)
     compscount = len(compslist)
+    script_count = Script.objects.filter(set=set).count()
+    compsmax = int(script_count * (script_count - 1) * .5)
     now = datetime.now()
     starttime = now.timestamp
     set_object = Set.objects.get(pk=set)
+    if set_object.override_end == None:
+        compstarget = int(.66 * compsmax)
+    else:
+        compstarget = set_object.override_end
     winform = WinForm()
     if len(j_list)==0:
+        scripti=None
+        scriptj=None
+    if compscount >= compstarget:
         scripti=None
         scriptj=None
     return render(request, 'pairwise/compare.html', {
@@ -189,6 +198,8 @@ def compare(request, set):
             'j_list': j_list,
             'allowed_sets_ids': allowed_sets_ids,
             'compscount': compscount,
+            'compsmax': compsmax,
+            'compstarget': compstarget,
             'set_object': set_object,
             'message': message
             } 
