@@ -55,7 +55,7 @@ def get_allowed_sets(userid):
 
 def script_selection(set, userid):
     scriptcount = Script.objects.filter(set=set).count()
-    set_object = Set.objects.get(pk=set)
+    set_object = Set.objects.get(pk=set) # sometimes we need to object not just the string of the set number
     compslist = build_compslist(set, userid)
     judges = [userid] #judges must be a list, even if it only has one judge in it
     computed_scripts_for_user_in_set = get_computed_scripts(set, judges) 
