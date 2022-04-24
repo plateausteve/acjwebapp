@@ -179,14 +179,11 @@ def compare(request, set):
     starttime = now.timestamp
     set_object = Set.objects.get(pk=set)
     if set_object.override_end == None:
-        compstarget = int(.66 * compsmax)
+        compstarget = int(round((.66 * compsmax),-1))
     else:
         compstarget = set_object.override_end
     winform = WinForm()
-    if len(j_list)==0:
-        scripti=None
-        scriptj=None
-    if compscount >= compstarget:
+    if len(j_list) == 0 or compscount >= compstarget:
         scripti=None
         scriptj=None
     return render(request, 'pairwise/compare.html', {

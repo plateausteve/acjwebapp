@@ -55,6 +55,7 @@ def get_allowed_sets(userid):
 
 def script_selection(set, userid):
     scriptcount = Script.objects.filter(set=set).count()
+    set_object = Set.objects.get(pk=set)
     compslist = build_compslist(set, userid)
     judges = [userid] #judges must be a list, even if it only has one judge in it
     computed_scripts_for_user_in_set = get_computed_scripts(set, judges) 
@@ -64,8 +65,8 @@ def script_selection(set, userid):
         computed_scripts_for_user_in_set.sort(key = lambda x: (x.comps, x.samep, x.fisher_info, x.randomsorter)) 
     else: #prioritize lowest same probability (least distinct estimate <-1, samep = -1 indicates unique estimate)
         computed_scripts_for_user_in_set.sort(key = lambda x: (x.samep, x.comps, x.fisher_info, x.randomsorter))
-        if computed_scripts_for_user_in_set[0].samep == -1: #if all computed scripts have unique values then abort
-            return compslist, None, None, [] # everything is empty   
+        if computed_scripts_for_user_in_set[0].samep == -1 and set_object.override_end == None:
+            return compslist, None, None, [] # everything is empty
 
     # Go through all comparable scripts, and choose the first as scripti. 
     # Then calculate the difference in probability 'p_diff' between scripti and every other script
