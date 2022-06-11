@@ -1,11 +1,11 @@
 {% extends 'pairwise/base.html' %}
 
 {% block content %}
-     <!-- <script src="https://code.highcharts.com/highcharts.src.js"></script>
+    <script src="https://code.highcharts.com/highcharts.src.js"></script>
     <script src="https://code.jquery.com/jquery-1.12.4.js"   integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU="   crossorigin="anonymous"></script>
     <script src="https://code.highcharts.com/highcharts-more.js"></script>
 
-    [put brackets here] chart_list|load_charts:"cht, cht2" }}-->
+    <!--[put brackets here] chart_list|load_charts:"cht, cht2" }}-->
     <body>
         <h5>Scripts in Set {{ set }} with stats for users {% for judge in judges %} {{ judge }},{% endfor %} average of Spearman's rank correlation coefficient {{ a }}</h5>
         <!--div id='cht'> First chart will be rendered here </div>
@@ -47,14 +47,63 @@
                 </tr>
                 {% endfor %}
             </table>
+            <script src="https://code.highcharts.com/highcharts.js"></script>
+            <script src="https://code.highcharts.com/modules/sankey.js"></script>
+            <script src="https://code.highcharts.com/modules/dependency-wheel.js"></script>
+            <script src="https://code.highcharts.com/modules/exporting.js"></script>
+            <script src="https://code.highcharts.com/modules/export-data.js"></script>
+            <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+            <figure class="highcharts-figure">
+                <div id="container"></div>
+                <p class="highcharts-description">
+                    A dependency wheel, where each color arc represents a judge and consists of multiple
+                    weighted links to other judges.
+                </p>
+            </figure>
+            <script>
+                    Highcharts.chart('container', {
+
+                        title: {
+                            text:  "Relationships of Judges Dependency Wheel"
+                        },
+
+                        accessibility: {
+                            point: {
+                                valueDescriptionFormat: '{index}. From {point.from} to {point.to}: {point.weight}.'
+                            }
+                        },
+
+                        series: [{
+                            keys: ['from', 'to', 'weight'],
+                            data: {{ chart_data|safe }},                     
+                            type: 'dependencywheel',
+                            name: 'Dependency wheel series',
+                            dataLabels: {
+                                color: '#333',
+                                textPath: {
+                                    enabled: true,
+                                    attributes: {
+                                        dy: 5
+                                    }
+                                },
+                                distance: 10
+                            },
+                            size: '95%'
+                        }]
+
+                    });
+
+            </script>
             <table class="table" style="text-align: center;">
                 <tr>
-                    <td>TITLE OF TABLE</td>
+                    <td>Combinations of Three Judges</td>
                 </tr>
                 <tr>
                     <td style="text-align: center;">{{ stats|safe }}</td>
                 </tr>
             </table>
+
         {% else %}
             <p>There are no scripts for you in this set in the database. </p>
         {% endif %}   

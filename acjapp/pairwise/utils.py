@@ -63,7 +63,7 @@ def script_selection(set, userid):
     switch=min(scriptcount + (scriptcount * (scriptcount-1)/6), maxcomps)
     if len(compslist) < switch: #prioritize minimum comps until comps = min of n+max/3 or max, then . . . 
         computed_scripts_for_user_in_set.sort(key = lambda x: (x.comps, x.samep, x.fisher_info, x.randomsorter)) 
-    else: #prioritize lowest same probability (least distinct estimate <-1, samep = -1 indicates unique estimate)
+    else: #prioritize lowest same probability (least distinct estimate < -1, samep = -1 indicates unique estimate)
         computed_scripts_for_user_in_set.sort(key = lambda x: (x.samep, x.comps, x.fisher_info, x.randomsorter))
         if computed_scripts_for_user_in_set[0].samep == -1 and set_object.override_end == None:
             return compslist, None, None, [] # everything is empty
@@ -255,11 +255,14 @@ def make_groups_rho(setid):
     else:
         judgepairs = itertools.combinations(judgelist, 2)
         judgepaircorr = {}
+        chart_data=[]
         for judgepair in judgepairs:
             judge1 = judgepair[0]
             judge2 = judgepair[1]
             coef, p = spearmanr(set_judge_script_rank[judge1], set_judge_script_rank[judge2])
             judgepaircorr[judgepair]=[coef, p]
+            if coef >= .6:
+                chart_data.append([str(judge1), str(judge2), round(coef,3)])
         judgegroups = itertools.combinations(judgelist, 3)
         corrdata = []
         for judgegroup in judgegroups:
@@ -294,11 +297,11 @@ def make_groups_rho(setid):
     b = stats_df.iat[0, 0]
     bestagreement = round(b,3)
     bestgroup = pandas.DataFrame.first_valid_index(stats_df)
-    return bestgroup, bestagreement, stats_df
+    return bestgroup, bestagreement, stats_df, chart_data
 
-# this function not currently in use. Selects 3 judges with top percent agreement when there are more than three
-# when there are 0, 1, or 2 judges with comparisons for the given set it returns workable empties
-# interrater percent agreement reference: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3900052/
+""" this function not currently in use. Selects 3 judges with top percent agreement when there are more than three
+when there are 0, 1, or 2 judges with comparisons for the given set it returns workable empties
+interrater percent agreement reference: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3900052/
 def make_groups_percentagree(setobject):
     try: # if comps exist for this set, query a list of unique judge ids who have made comparisons on this set
         judgelist = Comparison.objects.filter(set=setobject).values_list('judge_id', flat=True).distinct()
@@ -409,7 +412,7 @@ def make_groups_percentagree(setobject):
     bestgroup = []
     for id in bestgroupids:
         bestgroup.append(int(id)) # turn the id strings into integers
-    return bestgroup, bestagreement, stats_df
+    return bestgroup, bestagreement, stats_df """
 
 #added this function for command-line, just like make_groups above but takes judgelist as input, skips selecting best group. Needs to be consolidated into above function                
 def group_stats(setobject, judgelist):

@@ -71,7 +71,7 @@ def script_list(request, set):
     #     judges = make_groups(set)
     # except:
     #     judges = [request.user.id]
-    j, a, stats_df = make_groups_rho(set)
+    j, a, stats_df, chart_data = make_groups_rho(set)
     if len(j) < 2:
         judges = [request.user.id]
         a2 = 1
@@ -97,7 +97,8 @@ def script_list(request, set):
         'k': k2,
         's': s2,
         'p': p2,
-        'stats': stats
+        'stats': stats,
+        'chart_data': chart_data
         } 
     )
 
