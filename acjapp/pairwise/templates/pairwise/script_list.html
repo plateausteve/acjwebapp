@@ -13,48 +13,11 @@
     <body>
         <h5>Scripts in Set {{ set }} with stats for users {% for judge in judges %} {{ judge }},{% endfor %} average of Spearman's rank correlation coefficient {{ a }}</h5>
         {% if script_table %}
-            <table class="table table-striped table-hover table-bordered">
-                <tr>
-                    <th>Person ID Code</th>
-                    <th>Rank</th>
-                    <th>Wins</th>
-                    <th>Comps</th>
-                    <th>P</th>
-                    <th>Same P</th>
-                    <th>&sigma;(p)</th>
-                    <th>SE(p)</th>
-                    <th><i>I</i>(p)</th>
-                    <th>Logit &phi;</th>
-                    <th>Low 95% CI</th>
-                    <th>Estimate</th>
-                    <th>High 95% CI</th>
-                    <!--<th>Percentile</th>-->
-                </tr>
-                {% for script in script_table %}
-                <tr>
-                    <td><a href="{% url 'script_detail.html' pk=script.id %}">{{ script.idcode_f }}</a></td>
-                    <td>{{ script.rank }}</td>
-                    <td>{{ script.wins }}</td>
-                    <td>{{ script.comps }}</td>
-                    <td>{{ script.probability }}</td>
-                    <td>{{ script.samep }}</td>
-                    <td>{{ script.stdev }}</td>
-                    <td>{{ script.se }}</td>
-                    <td>{{ script.fisher_info }}</td>
-                    <td>{{ script.logit }}</td>
-                    <td>{{ script.lo95ci }}</td>
-                    <td>{{ script.ep }}</td>
-                    <td>{{ script.hi95ci }}</td>
-                    <!--<td>{{ script.percentile }}</td>-->
-                </tr>
-                {% endfor %}
-            </table>
+            <br><br>
             <figure class="highcharts-figure">
                 <div id="container1"></div>
                 <p class="highcharts-description">
-                    Chart showing the use of error bar series to visualize uncertainty or
-                    error in datasets. In this demo, both the line series and the column
-                    series have error bars attached to them, showing the uncertainty range.
+                    Scores of scripts in this set appear in black on the chart with error bars at 95% confidence interval by the left y axis. The number of comparisons combined appears in blue on the right y axis. Scripts with no score at top or bottom of distribution are not represented on this chart.
                 </p>
             </figure>
             <script>
@@ -127,18 +90,18 @@
                     }]
                 });
             </script>
+            <br><br>
             <figure class="highcharts-figure">
                 <div id="container"></div>
                 <p class="highcharts-description">
-                    A dependency wheel, where each color arc represents a judge and consists of multiple
-                    weighted links to other judges.
+                    Each color arc on this dependency wheel represents a judge with multiple weighted links to other judges. The weight of each link is the Spearman's rho ranked correlation coefficient. Minimum rho represented is .60.
                 </p>
             </figure>
             <script>
                 Highcharts.chart('container', {
 
                     title: {
-                        text:  "Relationships of Judges Dependency Wheel"
+                        text:  "Similarities Between Judges"
                     },
 
                     accessibility: {
@@ -167,6 +130,45 @@
 
                 });
             </script>
+            <br><br>
+            <h5>Data Table</h5>
+            <table class="table table-striped table-hover table-bordered">
+                <tr>
+                    <th>Person ID Code</th>
+                    <th>Rank</th>
+                    <th>Wins</th>
+                    <th>Comps</th>
+                    <th>P</th>
+                    <th>Same P</th>
+                    <th>&sigma;(p)</th>
+                    <th>SE(p)</th>
+                    <th><i>I</i>(p)</th>
+                    <th>Logit &phi;</th>
+                    <th>Low 95% CI</th>
+                    <th>Estimate</th>
+                    <th>High 95% CI</th>
+                    <!--<th>Percentile</th>-->
+                </tr>
+                {% for script in script_table %}
+                <tr>
+                    <td><a href="{% url 'script_detail.html' pk=script.id %}">{{ script.idcode_f }}</a></td>
+                    <td>{{ script.rank }}</td>
+                    <td>{{ script.wins }}</td>
+                    <td>{{ script.comps }}</td>
+                    <td>{{ script.probability }}</td>
+                    <td>{{ script.samep }}</td>
+                    <td>{{ script.stdev }}</td>
+                    <td>{{ script.se }}</td>
+                    <td>{{ script.fisher_info }}</td>
+                    <td>{{ script.logit }}</td>
+                    <td>{{ script.lo95ci }}</td>
+                    <td>{{ script.ep }}</td>
+                    <td>{{ script.hi95ci }}</td>
+                    <!--<td>{{ script.percentile }}</td>-->
+                </tr>
+                {% endfor %}
+            </table>
+            <br><br>
             <table class="table" style="text-align: center;">
                 <tr>
                     <td>Combinations of Three Judges</td>
@@ -175,7 +177,6 @@
                     <td style="text-align: center;">{{ stats|safe }}</td>
                 </tr>
             </table>
-
         {% else %}
             <p>There are no scripts for you in this set in the database. </p>
         {% endif %}   
