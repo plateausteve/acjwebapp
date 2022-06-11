@@ -87,7 +87,18 @@ def script_list(request, set):
         p2 = p.to_html()
         stats = stats_df.to_html()
     computed_scripts = get_computed_scripts(set, judges)
-
+    scriptids=[]
+    comparisonsn=[]
+    scores=[]
+    scoreerrors=[]
+    for script in computed_scripts:
+        if script.ep == None:
+            pass
+        else: 
+            scriptids.append(script.idcode)
+            comparisonsn.append(script.comps)
+            scores.append(script.ep)
+            scoreerrors.append([script.lo95ci, script.hi95ci])
 
     return render(request, 'pairwise/script_list.html', {
         'script_table': computed_scripts, 
@@ -98,7 +109,11 @@ def script_list(request, set):
         's': s2,
         'p': p2,
         'stats': stats,
-        'chart_data': chart_data
+        'chart_data': chart_data,
+        'scriptids': scriptids,
+        'comparisonsn': comparisonsn,
+        'scores': scores,
+        'scoreerrors': scoreerrors
         } 
     )
 

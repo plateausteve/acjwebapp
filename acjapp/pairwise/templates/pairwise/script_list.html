@@ -3,13 +3,15 @@
 {% block content %}
     <script src="https://code.highcharts.com/highcharts.src.js"></script>
     <script src="https://code.jquery.com/jquery-1.12.4.js"   integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU="   crossorigin="anonymous"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/highcharts-more.js"></script>
-
-    <!--[put brackets here] chart_list|load_charts:"cht, cht2" }}-->
+    <script src="https://code.highcharts.com/modules/sankey.js"></script>
+    <script src="https://code.highcharts.com/modules/dependency-wheel.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
     <body>
         <h5>Scripts in Set {{ set }} with stats for users {% for judge in judges %} {{ judge }},{% endfor %} average of Spearman's rank correlation coefficient {{ a }}</h5>
-        <!--div id='cht'> First chart will be rendered here </div>
-        <div id='cht2'> Second chart will be rendered here </div-->
         {% if script_table %}
             <table class="table table-striped table-hover table-bordered">
                 <tr>
@@ -47,13 +49,84 @@
                 </tr>
                 {% endfor %}
             </table>
-            <script src="https://code.highcharts.com/highcharts.js"></script>
-            <script src="https://code.highcharts.com/modules/sankey.js"></script>
-            <script src="https://code.highcharts.com/modules/dependency-wheel.js"></script>
-            <script src="https://code.highcharts.com/modules/exporting.js"></script>
-            <script src="https://code.highcharts.com/modules/export-data.js"></script>
-            <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+            <figure class="highcharts-figure">
+                <div id="container1"></div>
+                <p class="highcharts-description">
+                    Chart showing the use of error bar series to visualize uncertainty or
+                    error in datasets. In this demo, both the line series and the column
+                    series have error bars attached to them, showing the uncertainty range.
+                </p>
+            </figure>
+            <script>
+                Highcharts.chart('container1', {
+                    chart: {
+                        zoomType: 'xy'
+                    },
+                    title: {
+                        text: 'Script Scores with Error Bars'
+                    },
+                    xAxis: [{
+                        categories: {{ scriptids|safe }}
+                    }],
+                    yAxis: [{ // Primary yAxis
+                        labels: {
+                            format: '{value}',
+                            style: {
+                                color: Highcharts.getOptions().colors[1]
+                            }
+                        },
+                        title: {
+                            text: 'Score',
+                            style: {
+                                color: Highcharts.getOptions().colors[1]
+                            }
+                        }
+                    }, { // Secondary yAxis
+                        title: {
+                            text: 'Comparisons',
+                            style: {
+                                color: Highcharts.getOptions().colors[0]
+                            }
+                        },
+                        labels: {
+                            format: '{value}',
+                            style: {
+                                color: Highcharts.getOptions().colors[0]
+                            }
+                        },
+                        opposite: true
+                    }],
 
+                    tooltip: {
+                        shared: true
+                    },
+
+                    series: [{
+                        name: 'Comparisons',
+                        type: 'scatter',
+                        yAxis: 1,
+                        data: {{ comparisonsn|safe }},
+                        tooltip: {
+                            pointFormat: '<span style="font-weight: bold; color: {series.color}">{series.name}</span>: <b>{point.y:.1f}</b> '
+                        }
+                    }, 
+                        {
+                        name: 'Score',
+                        type: 'scatter',
+                        data: {{ scores|safe }},
+                        tooltip: {
+                            pointFormat: '<span style="font-weight: bold; color: {series.color}">{series.name}</span>: <b>{point.y:.1f}</b> '
+                        }
+                    }, {
+                        name: 'Score error',
+                        type: 'errorbar',
+                        data: {{ scoreerrors|safe }},
+                        tooltip: {
+                            pointFormat: '(error range: {point.low}-{point.high})<br/>'
+                        }
+                    }]
+                });
+            </script>
             <figure class="highcharts-figure">
                 <div id="container"></div>
                 <p class="highcharts-description">
@@ -62,38 +135,37 @@
                 </p>
             </figure>
             <script>
-                    Highcharts.chart('container', {
+                Highcharts.chart('container', {
 
-                        title: {
-                            text:  "Relationships of Judges Dependency Wheel"
-                        },
+                    title: {
+                        text:  "Relationships of Judges Dependency Wheel"
+                    },
 
-                        accessibility: {
-                            point: {
-                                valueDescriptionFormat: '{index}. From {point.from} to {point.to}: {point.weight}.'
-                            }
-                        },
+                    accessibility: {
+                        point: {
+                            valueDescriptionFormat: '{index}. From {point.from} to {point.to}: {point.weight}.'
+                        }
+                    },
 
-                        series: [{
-                            keys: ['from', 'to', 'weight'],
-                            data: {{ chart_data|safe }},                     
-                            type: 'dependencywheel',
-                            name: 'Dependency wheel series',
-                            dataLabels: {
-                                color: '#333',
-                                textPath: {
-                                    enabled: true,
-                                    attributes: {
-                                        dy: 5
-                                    }
-                                },
-                                distance: 10
+                    series: [{
+                        keys: ['from', 'to', 'weight'],
+                        data: {{ chart_data|safe }},                     
+                        type: 'dependencywheel',
+                        name: 'Dependency wheel series',
+                        dataLabels: {
+                            color: '#333',
+                            textPath: {
+                                enabled: true,
+                                attributes: {
+                                    dy: 5
+                                }
                             },
-                            size: '95%'
-                        }]
+                            distance: 10
+                        },
+                        size: '95%'
+                    }]
 
-                    });
-
+                });
             </script>
             <table class="table" style="text-align: center;">
                 <tr>
