@@ -63,14 +63,9 @@ def script_detail(request, pk):
     return render(request, 'pairwise/script_detail.html', {'script': script})
 
 @login_required(login_url="login")
-def script_list(request, set):
+def stats(request, set):
     
-    k, s, p = corr_matrix(set) #get Spearman's rho, Kendall's Tau and Pearson's standard correlation
-    # not using correlation to select judges because I don't have a way to correlate 3
-    # try:
-    #     judges = make_groups(set)
-    # except:
-    #     judges = [request.user.id]
+    k, s, p = corr_matrix(set) #get Spearman's rho, Kendall's Tau and Pearson's standard correlation -- not really using s & p
     j, a, stats_df, chart_data = make_groups_rho(set)
     if len(j) < 2:
         judges = [request.user.id]
@@ -87,20 +82,24 @@ def script_list(request, set):
         p2 = p.to_html()
         stats = stats_df.to_html()
     computed_scripts = get_computed_scripts(set, judges)
+    print(computed_scripts)
+
+    #build lists to send to Highchart charts for error bar chart
+    lohi_computed_scripts = sorted(computed_scripts, key = lambda x: x.probability)
     scriptids=[]
-    comparisonsn=[]
+    fisher=[]
     scores=[]
     scoreerrors=[]
-    for script in computed_scripts:
+    for script in lohi_computed_scripts:
         if script.ep == None:
             pass
         else: 
             scriptids.append(script.idcode)
-            comparisonsn.append(script.comps)
+            fisher.append(script.fisher_info)
             scores.append(script.ep)
             scoreerrors.append([script.lo95ci, script.hi95ci])
 
-    return render(request, 'pairwise/script_list.html', {
+    return render(request, 'pairwise/stats.html', {
         'script_table': computed_scripts, 
         'set': set,
         'judges': judges,
@@ -111,7 +110,7 @@ def script_list(request, set):
         'stats': stats,
         'chart_data': chart_data,
         'scriptids': scriptids,
-        'comparisonsn': comparisonsn,
+        'fisher': fisher,
         'scores': scores,
         'scoreerrors': scoreerrors
         } 

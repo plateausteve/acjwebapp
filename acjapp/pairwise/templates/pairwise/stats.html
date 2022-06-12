@@ -11,13 +11,13 @@
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
     <body>
-        <h5>Scripts in Set {{ set }} with stats for users {% for judge in judges %} {{ judge }},{% endfor %} average of Spearman's rank correlation coefficient {{ a }}</h5>
+        <h5>Scripts in Set {{ set }} with stats for users {% for judge in judges %} {{ judge }},{% endfor %} average of Spearman's rank correlation coefficient (rho) {{ a }}</h5>
         {% if script_table %}
             <br><br>
             <figure class="highcharts-figure">
                 <div id="container1"></div>
                 <p class="highcharts-description">
-                    Scores of scripts in this set appear in black on the chart with error bars at 95% confidence interval by the left y axis. The number of comparisons combined appears in blue on the right y axis. Scripts with no score at top or bottom of distribution are not represented on this chart.
+                    Scores of scripts in this set appear in black on the chart with error bars at 95% confidence interval on the left y axis. The Fisher information appears in blue on the right y axis. Scripts with no score at top or bottom of distribution are not represented on this chart.
                 </p>
             </figure>
             <script>
@@ -26,7 +26,7 @@
                         zoomType: 'xy'
                     },
                     title: {
-                        text: 'Script Scores with Error Bars'
+                        text: 'Scores with 95% CI and Fisher Information'
                     },
                     xAxis: [{
                         categories: {{ scriptids|safe }}
@@ -46,7 +46,7 @@
                         }
                     }, { // Secondary yAxis
                         title: {
-                            text: 'Comparisons',
+                            text: 'Fisher Info',
                             style: {
                                 color: Highcharts.getOptions().colors[0]
                             }
@@ -65,10 +65,10 @@
                     },
 
                     series: [{
-                        name: 'Comparisons',
+                        name: 'Fisher Info',
                         type: 'scatter',
                         yAxis: 1,
-                        data: {{ comparisonsn|safe }},
+                        data: {{ fisher|safe }},
                         tooltip: {
                             pointFormat: '<span style="font-weight: bold; color: {series.color}">{series.name}</span>: <b>{point.y:.1f}</b> '
                         }
@@ -94,7 +94,7 @@
             <figure class="highcharts-figure">
                 <div id="container"></div>
                 <p class="highcharts-description">
-                    Each color arc on this dependency wheel represents a judge with multiple weighted links to other judges. The weight of each link is the Spearman's rho ranked correlation coefficient. Minimum rho represented is .60.
+                    Each color arc on this dependency wheel represents a judge with multiple weighted links to other judges. The weight of each link is the Spearman's ranked correlation coefficient (rho). Minimum rho represented is .60.
                 </p>
             </figure>
             <script>
@@ -142,8 +142,8 @@
                     <th>Same P</th>
                     <th>&sigma;(p)</th>
                     <th>SE(p)</th>
-                    <th><i>I</i>(p)</th>
                     <th>Logit &phi;</th>
+                    <th><i>I</i>(&phi;)</th>
                     <th>Low 95% CI</th>
                     <th>Estimate</th>
                     <th>High 95% CI</th>
@@ -159,8 +159,8 @@
                     <td>{{ script.samep }}</td>
                     <td>{{ script.stdev }}</td>
                     <td>{{ script.se }}</td>
-                    <td>{{ script.fisher_info }}</td>
                     <td>{{ script.logit }}</td>
+                    <td>{{ script.fisher_info }}</td>
                     <td>{{ script.lo95ci }}</td>
                     <td>{{ script.ep }}</td>
                     <td>{{ script.hi95ci }}</td>
