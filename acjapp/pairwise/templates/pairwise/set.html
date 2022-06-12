@@ -2,17 +2,15 @@
 
 {% block content %}
     {% if set_scripts %}
-        <h4>Your Set {{ pk }} Results:</h4>
+        <h4>Your Set {{ pk }} results:</h4>
         <table class="table table-striped table-hover table-bordered">
             <tr>
                 <th>Person ID Code</th>
                 <th>Rank</th>
                 <th>Wins</th>
                 <th>Comparisons</th>
-                <th>Probabilty</th>
-                <th>Low 95% CI</th>
-                <th>Estimate</th>
-                <th>High 95% CI</th>
+                <th>Probabilty &theta; </th>
+                <th>SE(&theta;)</th>
             </tr>
             {% for script in set_scripts %}
             <tr>
@@ -21,9 +19,7 @@
                 <td>{{ script.wins }}</td>
                 <td>{{ script.comps }}</td>
                 <td>{{ script.probability }}</td>
-                <td>{{ script.lo95ci }}</td>
-                <td>{{ script.ep }}</td>
-                <td>{{ script.hi95ci }}</td>
+                <td>{{ script.se }}</td>
             </tr>
             {% endfor %}
         </table>

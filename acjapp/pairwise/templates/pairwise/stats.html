@@ -10,14 +10,19 @@
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <style>
+        h5 {text-align: center; font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;}
+        h6 {text-align: center; font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;}
+    </style>
     <body>
-        <h5>Scripts in Set {{ set }} with stats for users {% for judge in judges %} {{ judge }},{% endfor %} average of Spearman's rank correlation coefficient (rho) {{ a }}</h5>
+        <h5>Set {{ set }} Statistics</h5>
+        <h6>For judges {% for judge in judges %} {{ judge }},{% endfor %} with average of Spearman's rank correlation coefficient (rho) {{ a }}</h6>
         {% if script_table %}
             <br><br>
             <figure class="highcharts-figure">
                 <div id="container1"></div>
                 <p class="highcharts-description">
-                    Scores of scripts in this set appear in black on the chart with error bars at 95% confidence interval on the left y axis. The Fisher information appears in blue on the right y axis. Scripts with no score at top or bottom of distribution are not represented on this chart.
+                    Scores of scripts in this set appear in black on the chart with error bars at 95% confidence interval by the left y axis. The Fisher information appears in blue on the chart by the right y axis. Scripts with no score at top or bottom of distribution are not represented on this chart.
                 </p>
             </figure>
             <script>
@@ -26,7 +31,7 @@
                         zoomType: 'xy'
                     },
                     title: {
-                        text: 'Scores with 95% CI and Fisher Information'
+                        text: 'Scores with 95% CI and Fisher information'
                     },
                     xAxis: [{
                         categories: {{ scriptids|safe }}
@@ -101,7 +106,7 @@
                 Highcharts.chart('container', {
 
                     title: {
-                        text:  "Similarities Between Judges"
+                        text:  "Similar rankings between judges"
                     },
 
                     accessibility: {
@@ -112,7 +117,7 @@
 
                     series: [{
                         keys: ['from', 'to', 'weight'],
-                        data: {{ chart_data|safe }},                     
+                        data: {{ corr_chart_data|safe }},                     
                         type: 'dependencywheel',
                         name: 'Dependency wheel series',
                         dataLabels: {
@@ -131,21 +136,22 @@
                 });
             </script>
             <br><br>
-            <h5>Data Table</h5>
+            <h5>Ranks and scores</h5>
+            <p>
+                The table below shows an estimated rank and score for each script. Click a Person ID Code to visit the script's page. Estimated scores are computed from the logit and their confidence intervals are computed from logit and Fisher information of the logit. There's a 95% probability that repeated measures with the same judges will fall within the confidence interval, and most likely they will fall much closer to the score estimate. 
+            </p>
             <table class="table table-striped table-hover table-bordered">
                 <tr>
                     <th>Person ID Code</th>
                     <th>Rank</th>
                     <th>Wins</th>
                     <th>Comps</th>
-                    <th>P</th>
-                    <th>Same P</th>
-                    <th>&sigma;(p)</th>
-                    <th>SE(p)</th>
+                    <th>P &theta;</th>
+                    <th>SE(&theta;)</th>
                     <th>Logit &phi;</th>
-                    <th><i>I</i>(&phi;)</th>
+                    <th>Fisher info (&phi;)</th>
                     <th>Low 95% CI</th>
-                    <th>Estimate</th>
+                    <th>Score</th>
                     <th>High 95% CI</th>
                     <!--<th>Percentile</th>-->
                 </tr>
@@ -156,8 +162,6 @@
                     <td>{{ script.wins }}</td>
                     <td>{{ script.comps }}</td>
                     <td>{{ script.probability }}</td>
-                    <td>{{ script.samep }}</td>
-                    <td>{{ script.stdev }}</td>
                     <td>{{ script.se }}</td>
                     <td>{{ script.logit }}</td>
                     <td>{{ script.fisher_info }}</td>
@@ -169,16 +173,14 @@
                 {% endfor %}
             </table>
             <br><br>
-            <table class="table" style="text-align: center;">
+            <h5>All combinations of judges</h5>
+            <table class="table" style="text-align: center; font-size: smaller;">
                 <tr>
-                    <td>Combinations of Three Judges</td>
-                </tr>
-                <tr>
-                    <td style="text-align: center;">{{ stats|safe }}</td>
+                    <td style="text-align: center;">{{ corrstats|safe }}</td>
                 </tr>
             </table>
         {% else %}
-            <p>There are no scripts for you in this set in the database. </p>
+            <p>There are no stats for you from this set in the database. </p>
         {% endif %}   
     </body>
 {% endblock %}

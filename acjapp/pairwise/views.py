@@ -15,19 +15,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
 from datetime import datetime
-from django.utils import timezone
-from django.urls import reverse
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponse
 from .models import Script, Comparison, Set, WinForm
-from random import sample
-from django.views import generic
-from .utils import * #ComputedScript, get_computed_scripts, script_selection, get_scriptchart, get_resultschart, get_allowed_sets, corr_matrix, make_groups, set_ranks, compute_comps_wins, compute_more
-import operator
-from operator import itemgetter
-import numpy as np
-from django.contrib.auth import authenticate, login, logout
+from .utils import * 
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 
@@ -64,27 +56,19 @@ def script_detail(request, pk):
 
 @login_required(login_url="login")
 def stats(request, set):
-    
-    k, s, p = corr_matrix(set) #get Spearman's rho, Kendall's Tau and Pearson's standard correlation -- not really using s & p
-    j, a, stats_df, chart_data = make_groups_rho(set)
+    judgelist = [] # the make_groups function can also take preselected judges when needed -- right now command line only
+    j, a, corrstats_df, corr_chart_data = make_groups(set, judgelist)
     if len(j) < 2:
         judges = [request.user.id]
         a2 = 1
-        k2 = None
-        s2 = None
-        p2 = None
-        stats = None
+        corrstats = None
     else:
         judges = j
         a2 = a
-        k2 = k.to_html()
-        s2 = s.to_html()
-        p2 = p.to_html()
-        stats = stats_df.to_html()
+        corrstats = corrstats_df.to_html()
     computed_scripts = get_computed_scripts(set, judges)
-    print(computed_scripts)
 
-    #build lists to send to Highchart charts for error bar chart
+    #build lists to send to Highchart charts for error bar chart -- resort for low to high scores
     lohi_computed_scripts = sorted(computed_scripts, key = lambda x: x.probability)
     scriptids=[]
     fisher=[]
@@ -104,11 +88,8 @@ def stats(request, set):
         'set': set,
         'judges': judges,
         'a': a2,
-        'k': k2,
-        's': s2,
-        'p': p2,
-        'stats': stats,
-        'chart_data': chart_data,
+        'corrstats': corrstats,
+        'corr_chart_data': corr_chart_data,
         'scriptids': scriptids,
         'fisher': fisher,
         'scores': scores,
@@ -121,7 +102,7 @@ def set_view(request, pk):
     judges = []
     judges.append(request.user.id)
     allowed_sets_ids = get_allowed_sets(request.user.id)
-    request.session['sets']= allowed_sets_ids
+    request.session['sets'] = allowed_sets_ids
     computed_scripts = get_computed_scripts(pk, judges)
     computed_scripts.sort(key = lambda x: x.probability, reverse=True)
     return render(request, 'pairwise/set.html', {
@@ -145,17 +126,16 @@ def comparisons(request, set):
         }
     )
        
-
 @login_required(login_url="login")
 def compare(request, set):
     userid=request.user.id
     allowed_sets_ids = get_allowed_sets(userid)
     request.session['sets']= allowed_sets_ids
-    message = ""
+    message = "" # empty message will be ignored in template
     if int(set) not in allowed_sets_ids:    
-        html="<p>ERROR: Set not available.</p>"
-        return HttpResponse(html)
-    if request.method == 'POST': #if arriving here after submitting comparison form or script form
+        html = "<p>ERROR: Set not available.</p>"
+        return HttpResponse(html) 
+    if request.method == 'POST': #if arriving here after submitting a form
         winform = WinForm(request.POST)
         if winform.is_valid():
             comparison = winform.save(commit=False)
@@ -164,8 +144,8 @@ def compare(request, set):
             comparison.scriptj = Script.objects.get(pk=request.POST.get('scriptj'))
             comparison.set = Set.objects.get(pk=set)
             start = comparison.form_start_variable # still a float from form
-            starttime = datetime.fromtimestamp(start) #convert back to datetime
-            end = datetime.now() #use datetime instead of timezone because of conversion from timestamp
+            starttime = datetime.fromtimestamp(start) # convert back to datetime
+            end = datetime.now() # use datetime instead of timezone
             comparison.decision_end = end
             comparison.decision_start = starttime
             duration = end - starttime
@@ -174,7 +154,6 @@ def compare(request, set):
             # make sure page refresh doesn't duplicate a comparison
             try:
                 last_comp_by_user = Comparison.objects.filter(judge=request.user).latest('pk')
-
             except:
                 last_comp_by_user = None #note: this may not be necessary if query automatically gives us none
                 comparison.save()
@@ -193,7 +172,7 @@ def compare(request, set):
     now = datetime.now()
     starttime = now.timestamp
     set_object = Set.objects.get(pk=set)
-    if set_object.override_end == None:
+    if set_object.override_end == None: # check if an comparisons limit override has been defined for the set
         compstarget = int(round((.66 * compsmax),-1))
     else:
         compstarget = set_object.override_end
