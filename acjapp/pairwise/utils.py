@@ -184,8 +184,8 @@ def compute_more(comps, wins):
         b = 10 # determine the spread of parameter values
         a = int(100 - (3.18 * b )) # aim for max parameter of 100 for logit=3.18 / p = .96)
         ep = round((logit * b), 1) + a
-        hi95ci = round(((logithi95) * b), 1) + a
-        lo95ci = round(((logitlo95) * b), 1) + a
+        hi95ci = round((((logithi95) * b) + a), 1)
+        lo95ci = round((((logitlo95) * b) + a), 1)
 
     randomsorter = random.randint(0,1000)
     return logit, probability, stdev, fisher_info, se, ep, hi95ci, lo95ci, randomsorter
