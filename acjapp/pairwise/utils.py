@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # stats methods reference: http://personal.psu.edu/abs12/ 
-# # Aleksandra B. Slavković | Professor of Statistics 
+# Aleksandra B. Slavković | Professor of Statistics 
 # Department of Statistics, Penn State University, University Park, PA 16802
 
 from .models import Script, Comparison, Set
@@ -94,6 +94,7 @@ def script_selection(set, userid):
     return compslist, scripti, scriptj, j_list
 
 def get_computed_scripts(set, judges):
+    probabilities_of_set = []
     computed_scripts_for_user_in_set =[]
     scripts = Script.objects.filter(set=set)
     for script in scripts:
@@ -114,14 +115,17 @@ def get_computed_scripts(set, judges):
                 ep, 
                 lo95ci, 
                 hi95ci, 
-                0, # samep
-                0, # rank
+                0, # samep is set separately
+                0, # rank is set separately
                 randomsorter,
-                0, #percentile
+                0, # percentile is set separately
                 )
-        )  
-    computed_scripts_for_user_in_set = set_ranks(computed_scripts_for_user_in_set)
-    #computed_scripts_for_user_in_set = set_percentiles(computed_scripts_for_user_in_set)
+        )
+        if probability == None:
+            pass
+        else:
+            probabilities_of_set.append(round(probability, 3))
+    computed_scripts_for_user_in_set = set_ranks(computed_scripts_for_user_in_set, probabilities_of_set)
     return computed_scripts_for_user_in_set
 
 def build_compslist(set, userid):
@@ -154,10 +158,10 @@ def compute_comps_wins(script, judges):
 def compute_more(comps, wins):
     #compute probability of winning for each script based on comparisons so far
     probability = wins/(comps) # comps comes in with a .001 so no error dividing by 0
-    #probability = (wins + .5)/(comps + 1) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 23
-    #compute the standard deviation of sample of comparisons for this script 
+    # probability = (wins + .5)/(comps + 1) # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 23
+    # compute the standard deviation of sample of comparisons for this script 
     stdev = sqrt(((((1 - probability) ** 2) * wins) + (((0 - probability) ** 2) * (int(comps) - wins))) / (comps + .001))
-    #compute, if not all wins or all losses so far
+    #compute other attributes only if not all wins or all losses so far
     if (round(probability, 3) == 1) or (probability <= 0):
         logit = None
         fisher_info = 0
@@ -165,16 +169,16 @@ def compute_more(comps, wins):
         ep = None
         hi95ci = None
         lo95ci = None
-        percentile = None # not using this stat yet
     else: 
-        se = round(stdev / sqrt(comps),3) # standard error of p scale measures variability of the sample mean about the true mean
+        se = round(stdev / sqrt(comps),3) 
+        # standard error of p scale measures variability of the sample mean about the true mean
         # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 13
-        logit = round(log(probability/(1 - probability)),3) # also called the MLE of phi φ or logit
+        logit = round(log(probability/(1 - probability)),3) # also called the MLE of phi φ 
         fisher_info = comps * probability * ( 1 - probability) # slide 33
         # see http://personal.psu.edu/abs12//stat504/online/01b_loglike/10_loglike_alternat.htm        
         # "an asymptotic confidence interval constructed on the φ scale will be more accurate in coverage than an interval constructed on the p scale"
         # note: the CI for logit is fine for this, we don't need to transform it back to p as in this article
-        ci = 1.96 * sqrt(1/fisher_info) # of logit--see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 30
+        ci = 1.96 * sqrt(1/fisher_info) # of logit--see slide 30
         logithi95 = logit + ci
         logitlo95 = logit - ci
         b = 10 # determine the spread of parameter values
@@ -187,31 +191,24 @@ def compute_more(comps, wins):
     return logit, probability, stdev, fisher_info, se, ep, hi95ci, lo95ci, randomsorter
     # more here: http://personal.psu.edu/abs12//stat504/online/01b_loglike/01b_loglike_print.htm
 
-def set_ranks(computed_scripts_for_user_in_set):
+def set_ranks(computed_scripts_for_user_in_set, probabilities_of_set):
     #now decrease (for sorting later) samep by one for every script including self with matching probability and set a rank value fo each
     computed_scripts_for_user_in_set.sort(key = lambda x: x.probability, reverse=True)
-    rank=0
+    rank = 0
     for script in computed_scripts_for_user_in_set:
         for match in computed_scripts_for_user_in_set:
             if match.probability == script.probability:
                 match.samep -= 1
         if script.samep == -1: #if there's only one at that value, then increase rank increment 1 for next 
             rank += 1
-        script.rank=rank
-    return computed_scripts_for_user_in_set
-
-def set_percentiles(computed_scripts_for_user_in_set):
-    scores = []
-    for script in computed_scripts_for_user_in_set:
-        try: 
-            scores.extend(script.probability)
-            print(script.probability)
-        except:
-            scores.extend(None)
-    for script in computed_scripts_for_user_in_set:
-        print(script.percentile)
-        script.percentile=percentileofscore(scores, script.logit, kind='rank')
-    print(scores)
+        script.rank = rank
+        # calculate percentile in this set using the list of probabilities in set
+        p = script.probability
+        if p == None:
+            perc = None
+        else: 
+            perc = percentileofscore(probabilities_of_set, float(p), kind='weak')
+        script.percentile = '{:.2f}'.format(perc)
     return computed_scripts_for_user_in_set
 
 def make_groups(setid, judgelist):
@@ -287,13 +284,10 @@ def make_groups(setid, judgelist):
     bestgroup = pandas.DataFrame.first_valid_index(corrstats_df)
     return bestgroup, bestagreement, corrstats_df, corr_chart_data                    
 
-
-# used from command line only
+# used from the django manage.py python shell
 def bulkcreatescripts(filepath, user_id, set_id):
-    #in python shell define the variable as below
-    #filepath="data/set4.csv" 
-    #user_id=24 
-    #set_id=4
+    # in python shell define the variable as this example
+    # bulkcreatescripts("data/set4.csv",24,4)
     file = open(filepath, "r", encoding='utf-8-sig')
     csv_reader = csv.reader(file)
     for row in csv_reader:
@@ -303,21 +297,39 @@ def bulkcreatescripts(filepath, user_id, set_id):
         print("Created script instance for for idcode ", id, "in set ", set_id, " for user ", user_id)
     return
 
-# used from command line only          
+# used from the django manage.py python shell
+# usage example: a, b = judgereport(30)
 def judgereport(judgeid):
     sets = get_allowed_sets(judgeid)
     report = []
     for set in sets:
         n = Comparison.objects.filter(judge__pk = judgeid, set = set).count()
         scriptcount = Script.objects.filter(set=set).count()
-        estcomps = int(scriptcount * (scriptcount-1) * .333)
-        report.append([set, n, estcomps])
-    df = pandas.DataFrame(report, columns = ["Set","Done So Far","Estimated End"])
+        setobject = Set.objects.get(pk=set)
+        if setobject.override_end == None:
+            maxcomps = int(scriptcount * (scriptcount-1) * .333)
+        else:
+            maxcomps = setobject.override_end
+        report.append([set, n, maxcomps])
+    df = pandas.DataFrame(report, columns = ["Set","Done So Far","End"])
     htmltable = df.to_html(index=False)
     return df, htmltable
 
-#used from command line only
-def groupstats(set, judgelist):
-    computed_scripts = get_computed_scripts(set, judgelist)
-    df = pandas.DataFrame([script.__dict__ for script in computed_scripts ]) # convert list of objects into a dataframe
-    return df
+# used from the django manage.py python shell
+# usage example: a,b,c,d,e = groupstats(4, [1,27,26],[36,35,38])
+def groupstats(set, judgelist1, judgelist2):
+    computed_scripts = get_computed_scripts(set, judgelist1)
+    rankorder1_df = pandas.DataFrame([script.__dict__ for script in computed_scripts ]) # convert list of objects into a dataframe
+    rankorder1_df.drop(['idcode_f', 'fisher_info', 'samep', 'randomsorter', 'percentile','comps','wins','stdev','probability','se','ep','lo95ci','hi95ci'], axis = 1, inplace=True) # drop unneeded columns
+    idorder1_df = rankorder1_df.sort_values("id")
+    if judgelist2 == []:
+        rankorder2_df = "None"
+        idorder2_df = "None"
+        rankcorr_df = "None"
+    else:
+        computed_scripts = get_computed_scripts(set, judgelist2)
+        rankorder2_df = pandas.DataFrame([script.__dict__ for script in computed_scripts ]) 
+        rankorder2_df.drop(['idcode_f', 'fisher_info', 'samep', 'randomsorter', 'percentile','comps','wins','stdev','probability','se','ep','lo95ci','hi95ci'], axis = 1, inplace=True) # drop unneeded columns
+        idorder2_df = rankorder2_df.sort_values("id")
+        rankcorr_df = idorder1_df.corrwith(idorder2_df, axis = 0, method = "spearman")        
+    return rankorder1_df, idorder1_df, rankorder2_df, idorder2_df, rankcorr_df
