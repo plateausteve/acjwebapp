@@ -1,0 +1,7 @@
+cff-version: 1.2.0
+message: "If you reference or use this software, please cite it as below."
+authors:
+  - family-names: Heil
+    given-names: Steven
+title: "Adaptive Comparative Judgment Web App"
+date-released: 2022-07-31
