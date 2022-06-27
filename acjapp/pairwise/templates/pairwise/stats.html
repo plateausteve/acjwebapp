@@ -79,20 +79,28 @@
                         }
                     }, 
                         {
-                        name: 'Score',
-                        type: 'scatter',
-                        data: {{ scores|safe }},
-                        tooltip: {
-                            pointFormat: '<span style="font-weight: bold; color: {series.color}">{series.name}</span>: <b>{point.y:.1f}</b> '
-                        }
-                    }, {
                         name: 'Score error',
                         type: 'errorbar',
                         data: {{ scoreerrors|safe }},
                         tooltip: {
                             pointFormat: '(error range: {point.low}-{point.high})<br/>'
-                        }
-                    }]
+                        },
+                        stemWidth: 2,
+                        color: '#ddd',
+                        whiskerLength: 6
+                    },
+                    {
+                        name: 'Score',
+                        type: 'scatter',
+                        data: {{ scores|safe }},
+                        marker: {
+                            symbol: 'url(https://compare.drawingtest.org/media/images/gradientpoint.png)'
+                        },
+                        tooltip: {
+                            pointFormat: '<span style="font-weight: bold; color: {series.color}">{series.name}</span>: <b>{point.y:.1f}</b> '
+                        } 
+                    },                
+                ]
                 });
             </script>
             <br><br>
