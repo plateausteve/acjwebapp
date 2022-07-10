@@ -1,0 +1,859 @@
+Fisher's exact test for TOP (90% +) and NOT TOP frequency for each demographic variable within each group.
+Using scipy.stats.fisher_exact() function
+
+All sets Gender CDAT
+
+              Top  Not
+Gender F       24  139
+Gender not F   15  173
+Oddsratio: 1.991 P-value: 0.060147736863655585
+
+              Top  Not
+Gender M       14  173
+Gender not M   25  139
+Oddsratio: 0.45 P-value: 0.026395636274325576
+
+              Top  Not
+Gender N        1    0
+Gender not N   38  312
+Oddsratio: inf P-value: 0.11111111111109682
+
+All sets Gender OBSERVATION
+
+              Top  Not
+Gender F       27  136
+Gender not F   14  174
+Oddsratio: 2.467 P-value: 0.011723726702821636
+
+              Top  Not
+Gender M       14  173
+Gender not M   27  137
+Oddsratio: 0.411 P-value: 0.011901678694397639
+
+              Top  Not
+Gender N        0    1
+Gender not N   41  309
+Oddsratio: 0.0 P-value: 1.0
+
+All sets Race/Ethnicity CDAT
+
+                      Top  Not
+Race/Ethnicity H       20  167
+Race/Ethnicity not H   19  145
+Oddsratio: 0.914 P-value: 0.8653691044192409
+
+                      Top  Not
+Race/Ethnicity W       14  101
+Race/Ethnicity not W   25  211
+Oddsratio: 1.17 P-value: 0.7180719692277941
+
+                      Top  Not
+Race/Ethnicity X        3   13
+Race/Ethnicity not X   36  299
+Oddsratio: 1.917 P-value: 0.4025814403720679
+
+                      Top  Not
+Race/Ethnicity B        1    7
+Race/Ethnicity not B   38  305
+Oddsratio: 1.147 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity N        1   16
+Race/Ethnicity not N   38  296
+Oddsratio: 0.487 P-value: 0.7055685925170091
+
+                      Top  Not
+Race/Ethnicity P        0    5
+Race/Ethnicity not P   39  307
+Oddsratio: 0.0 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity A        0    3
+Race/Ethnicity not A   39  309
+Oddsratio: 0.0 P-value: 1.0
+
+All sets Race/Ethnicity OBSERVATION
+
+                      Top  Not
+Race/Ethnicity H       22  165
+Race/Ethnicity not H   19  145
+Oddsratio: 1.018 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity W       16   99
+Race/Ethnicity not W   25  211
+Oddsratio: 1.364 P-value: 0.37919615441368215
+
+                      Top  Not
+Race/Ethnicity N        2   15
+Race/Ethnicity not N   39  295
+Oddsratio: 1.009 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity X        1   15
+Race/Ethnicity not X   40  295
+Oddsratio: 0.492 P-value: 0.7052129572002888
+
+                      Top  Not
+Race/Ethnicity B        0    8
+Race/Ethnicity not B   41  302
+Oddsratio: 0.0 P-value: 0.603525723348017
+
+                      Top  Not
+Race/Ethnicity P        0    5
+Race/Ethnicity not P   41  305
+Oddsratio: 0.0 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity A        0    3
+Race/Ethnicity not A   41  307
+Oddsratio: 0.0 P-value: 1.0
+
+All sets EL CDAT
+
+          Top  Not
+EL N       28  199
+EL not N   11  113
+Oddsratio: 1.445 P-value: 0.37713678153723773
+
+          Top  Not
+EL Y       11  113
+EL not Y   28  199
+Oddsratio: 0.692 P-value: 0.37713678153723773
+
+All sets EL OBSERVATION
+
+          Top  Not
+EL N       26  201
+EL not N   15  109
+Oddsratio: 0.94 P-value: 0.8632826220421579
+
+          Top  Not
+EL Y       15  109
+EL not Y   26  201
+Oddsratio: 1.064 P-value: 0.8632826220421579
+
+-----------------------------------
+
+SET 4, Gender CDAT
+
+              Top  Not
+Gender F        2    9
+Gender not F    0    5
+Oddsratio: inf P-value: 1.0
+
+              Top  Not
+Gender M        0    5
+Gender not M    2    9
+Oddsratio: 0.0 P-value: 1.0
+
+SET 4, Gender OBSERVATION
+
+              Top  Not
+Gender F        1   10
+Gender not F    1    4
+Oddsratio: 0.4 P-value: 1.0
+
+              Top  Not
+Gender M        1    4
+Gender not M    1   10
+Oddsratio: 2.5 P-value: 1.0
+
+SET 4, Race/Ethnicity CDAT
+
+                      Top  Not
+Race/Ethnicity N        1    8
+Race/Ethnicity not N    1    6
+Oddsratio: 0.75 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity H        1    2
+Race/Ethnicity not H    1   12
+Oddsratio: 6.0 P-value: 0.3499999999999997
+
+                      Top  Not
+Race/Ethnicity W        0    4
+Race/Ethnicity not W    2   10
+Oddsratio: 0.0 P-value: 1.0
+
+SET 4, Race/Ethnicity OBSERVATION
+
+                      Top  Not
+Race/Ethnicity W        1    3
+Race/Ethnicity not W    1   11
+Oddsratio: 3.667 P-value: 0.44999999999999996
+
+                      Top  Not
+Race/Ethnicity N        1    8
+Race/Ethnicity not N    1    6
+Oddsratio: 0.75 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity H        0    3
+Race/Ethnicity not H    2   11
+Oddsratio: 0.0 P-value: 1.0
+
+SET 4, EL CDAT
+
+          Top  Not
+EL Y        1    6
+EL not Y    1    8
+Oddsratio: 1.333 P-value: 1.0
+
+          Top  Not
+EL N        1    8
+EL not N    1    6
+Oddsratio: 0.75 P-value: 1.0
+
+SET 4, EL OBSERVATION
+
+          Top  Not
+EL N        1    8
+EL not N    1    6
+Oddsratio: 0.75 P-value: 1.0
+
+          Top  Not
+EL Y        1    6
+EL not Y    1    8
+Oddsratio: 1.333 P-value: 1.0
+
+-----------------------------------
+
+SET 6, Gender CDAT
+
+              Top  Not
+Gender F        2   15
+Gender not F    1   11
+Oddsratio: 1.467 P-value: 1.0
+
+              Top  Not
+Gender M        1   11
+Gender not M    2   15
+Oddsratio: 0.682 P-value: 1.0
+
+SET 6, Gender OBSERVATION
+
+              Top  Not
+Gender F        3   14
+Gender not F    0   12
+Oddsratio: inf P-value: 0.24630541871921155
+
+              Top  Not
+Gender M        0   12
+Gender not M    3   14
+Oddsratio: 0.0 P-value: 0.24630541871921155
+
+SET 6, Race/Ethnicity CDAT
+
+                      Top  Not
+Race/Ethnicity H        2   17
+Race/Ethnicity not H    1    9
+Oddsratio: 1.059 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity W        1    3
+Race/Ethnicity not W    2   23
+Oddsratio: 3.833 P-value: 0.3705528188286809
+
+                      Top  Not
+Race/Ethnicity P        0    4
+Race/Ethnicity not P    3   22
+Oddsratio: 0.0 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity N        0    2
+Race/Ethnicity not N    3   24
+Oddsratio: 0.0 P-value: 1.0
+
+SET 6, Race/Ethnicity OBSERVATION
+
+                      Top  Not
+Race/Ethnicity H        3   16
+Race/Ethnicity not H    0   10
+Oddsratio: inf P-value: 0.5320197044334978
+
+                      Top  Not
+Race/Ethnicity W        0    4
+Race/Ethnicity not W    3   22
+Oddsratio: 0.0 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity P        0    4
+Race/Ethnicity not P    3   22
+Oddsratio: 0.0 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity N        0    2
+Race/Ethnicity not N    3   24
+Oddsratio: 0.0 P-value: 1.0
+
+SET 6, EL CDAT
+
+          Top  Not
+EL N        2   17
+EL not N    1    9
+Oddsratio: 1.059 P-value: 1.0
+
+          Top  Not
+EL Y        1    9
+EL not Y    2   17
+Oddsratio: 0.944 P-value: 1.0
+
+SET 6, EL OBSERVATION
+
+          Top  Not
+EL Y        2    8
+EL not Y    1   18
+Oddsratio: 4.5 P-value: 0.26683087027914637
+
+          Top  Not
+EL N        1   18
+EL not N    2    8
+Oddsratio: 0.222 P-value: 0.26683087027914637
+
+-----------------------------------
+
+SET 7, Gender CDAT
+
+              Top  Not
+Gender F        5   41
+Gender not F    5   40
+Oddsratio: 0.976 P-value: 1.0
+
+              Top  Not
+Gender M        5   40
+Gender not M    5   41
+Oddsratio: 1.025 P-value: 1.0
+
+SET 7, Gender OBSERVATION
+
+              Top  Not
+Gender F        6   40
+Gender not F    4   41
+Oddsratio: 1.538 P-value: 0.7394184513988991
+
+              Top  Not
+Gender M        4   41
+Gender not M    6   40
+Oddsratio: 0.65 P-value: 0.7394184513988992
+
+SET 7, Race/Ethnicity CDAT
+
+                      Top  Not
+Race/Ethnicity W        9   67
+Race/Ethnicity not W    1   14
+Oddsratio: 1.881 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity X        1   11
+Race/Ethnicity not X    9   70
+Oddsratio: 0.707 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity B        0    3
+Race/Ethnicity not B   10   78
+Oddsratio: 0.0 P-value: 1.0
+
+SET 7, Race/Ethnicity OBSERVATION
+
+                      Top  Not
+Race/Ethnicity W       10   66
+Race/Ethnicity not W    0   15
+Oddsratio: inf P-value: 0.2046576618303808
+
+                      Top  Not
+Race/Ethnicity X        0   12
+Race/Ethnicity not X   10   69
+Oddsratio: 0.0 P-value: 0.34780389154761504
+
+                      Top  Not
+Race/Ethnicity B        0    3
+Race/Ethnicity not B   10   78
+Oddsratio: 0.0 P-value: 1.0
+
+SET 7, EL CDAT
+
+          Top  Not
+EL N       10   79
+EL not N    0    2
+Oddsratio: inf P-value: 1.0
+
+          Top  Not
+EL Y        0    2
+EL not Y   10   79
+Oddsratio: 0.0 P-value: 1.0
+
+SET 7, EL OBSERVATION
+
+          Top  Not
+EL N        9   80
+EL not N    1    1
+Oddsratio: 0.112 P-value: 0.20879120879120844
+
+          Top  Not
+EL Y        1    1
+EL not Y    9   80
+Oddsratio: 8.889 P-value: 0.20879120879120844
+
+-----------------------------------
+
+SET 8, Gender CDAT
+
+              Top  Not
+Gender F        3   17
+Gender not F    2   22
+Oddsratio: 1.941 P-value: 0.6458957945061167
+
+              Top  Not
+Gender M        2   22
+Gender not M    3   17
+Oddsratio: 0.515 P-value: 0.6458957945061167
+
+SET 8, Gender OBSERVATION
+
+              Top  Not
+Gender F        4   16
+Gender not F    1   23
+Oddsratio: 5.75 P-value: 0.1604850056353175
+
+              Top  Not
+Gender M        1   23
+Gender not M    4   16
+Oddsratio: 0.174 P-value: 0.1604850056353175
+
+SET 8, Race/Ethnicity CDAT
+
+                      Top  Not
+Race/Ethnicity H        4   38
+Race/Ethnicity not H    1    1
+Oddsratio: 0.105 P-value: 0.21670190274841408
+
+                      Top  Not
+Race/Ethnicity W        1    0
+Race/Ethnicity not W    4   39
+Oddsratio: inf P-value: 0.11363636363636362
+
+                      Top  Not
+Race/Ethnicity A        0    1
+Race/Ethnicity not A    5   38
+Oddsratio: 0.0 P-value: 1.0
+
+SET 8, Race/Ethnicity OBSERVATION
+
+                      Top  Not
+Race/Ethnicity H        5   37
+Race/Ethnicity not H    0    2
+Oddsratio: inf P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity W        0    1
+Race/Ethnicity not W    5   38
+Oddsratio: 0.0 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity A        0    1
+Race/Ethnicity not A    5   38
+Oddsratio: 0.0 P-value: 1.0
+
+SET 8, EL CDAT
+
+          Top  Not
+EL N        3   12
+EL not N    2   27
+Oddsratio: 3.375 P-value: 0.31866524003506536
+
+          Top  Not
+EL Y        2   27
+EL not Y    3   12
+Oddsratio: 0.296 P-value: 0.31866524003506536
+
+SET 8, EL OBSERVATION
+
+          Top  Not
+EL Y        4   25
+EL not Y    1   14
+Oddsratio: 2.24 P-value: 0.6467153096478135
+
+          Top  Not
+EL N        1   14
+EL not N    4   25
+Oddsratio: 0.446 P-value: 0.6467153096478135
+
+-----------------------------------
+
+SET 9, Gender CDAT
+
+              Top  Not
+Gender F        3   18
+Gender not F    3   31
+Oddsratio: 1.722 P-value: 0.6640541848089017
+
+              Top  Not
+Gender M        3   31
+Gender not M    3   18
+Oddsratio: 0.581 P-value: 0.6640541848089018
+
+SET 9, Gender OBSERVATION
+
+              Top  Not
+Gender F        6   15
+Gender not F    3   31
+Oddsratio: 4.133 P-value: 0.0707115873555056
+
+              Top  Not
+Gender M        3   31
+Gender not M    6   15
+Oddsratio: 0.242 P-value: 0.0707115873555056
+
+SET 9, Race/Ethnicity CDAT
+
+                      Top  Not
+Race/Ethnicity H        5   42
+Race/Ethnicity not H    1    7
+Oddsratio: 0.833 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity W        1    2
+Race/Ethnicity not W    5   47
+Oddsratio: 4.7 P-value: 0.297732037354679
+
+                      Top  Not
+Race/Ethnicity N        0    3
+Race/Ethnicity not N    6   46
+Oddsratio: 0.0 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity A        0    1
+Race/Ethnicity not A    6   48
+Oddsratio: 0.0 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity P        0    1
+Race/Ethnicity not P    6   48
+Oddsratio: 0.0 P-value: 1.0
+
+SET 9, Race/Ethnicity OBSERVATION
+
+                      Top  Not
+Race/Ethnicity H        7   40
+Race/Ethnicity not H    2    6
+Oddsratio: 0.525 P-value: 0.6043565757217281
+
+                      Top  Not
+Race/Ethnicity W        2    1
+Race/Ethnicity not W    7   45
+Oddsratio: 12.857 P-value: 0.06632361349342478
+
+                      Top  Not
+Race/Ethnicity N        0    3
+Race/Ethnicity not N    9   43
+Oddsratio: 0.0 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity A        0    1
+Race/Ethnicity not A    9   45
+Oddsratio: 0.0 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity P        0    1
+Race/Ethnicity not P    9   45
+Oddsratio: 0.0 P-value: 1.0
+
+SET 9, EL CDAT
+
+          Top  Not
+EL Y        3   29
+EL not Y    3   20
+Oddsratio: 0.69 P-value: 0.6861682650805841
+
+          Top  Not
+EL N        3   20
+EL not N    3   29
+Oddsratio: 1.45 P-value: 0.6861682650805841
+
+SET 9, EL OBSERVATION
+
+          Top  Not
+EL N        5   18
+EL not N    4   28
+Oddsratio: 1.944 P-value: 0.46715377773256805
+
+          Top  Not
+EL Y        4   28
+EL not Y    5   18
+Oddsratio: 0.514 P-value: 0.467153777732568
+
+-----------------------------------
+
+SET 10, Gender CDAT
+
+              Top  Not
+Gender F        3   13
+Gender not F    1   20
+Oddsratio: 4.615 P-value: 0.29623741388447333
+
+              Top  Not
+Gender N        1    0
+Gender not N    3   33
+Oddsratio: inf P-value: 0.10810810810810789
+
+              Top  Not
+Gender M        0   20
+Gender not M    4   13
+Oddsratio: 0.0 P-value: 0.03603603603603595
+
+SET 10, Gender OBSERVATION
+
+              Top  Not
+Gender M        2   18
+Gender not M    1   16
+Oddsratio: 1.778 P-value: 1.0
+
+              Top  Not
+Gender F        1   15
+Gender not F    2   19
+Oddsratio: 0.633 P-value: 1.0
+
+              Top  Not
+Gender N        0    1
+Gender not N    3   33
+Oddsratio: 0.0 P-value: 1.0
+
+SET 10, Race/Ethnicity CDAT
+
+                      Top  Not
+Race/Ethnicity H        2   21
+Race/Ethnicity not H    2   12
+Oddsratio: 0.571 P-value: 0.6245892951775306
+
+                      Top  Not
+Race/Ethnicity B        1    3
+Race/Ethnicity not B    3   30
+Oddsratio: 3.333 P-value: 0.38042243924596875
+
+                      Top  Not
+Race/Ethnicity W        1    7
+Race/Ethnicity not W    3   26
+Oddsratio: 1.238 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity N        0    2
+Race/Ethnicity not N    4   31
+Oddsratio: 0.0 P-value: 1.0
+
+SET 10, Race/Ethnicity OBSERVATION
+
+                      Top  Not
+Race/Ethnicity W        1    7
+Race/Ethnicity not W    2   27
+Oddsratio: 1.929 P-value: 0.5297297297297302
+
+                      Top  Not
+Race/Ethnicity H        1   22
+Race/Ethnicity not H    2   12
+Oddsratio: 0.273 P-value: 0.5441441441441456
+
+                      Top  Not
+Race/Ethnicity N        1    1
+Race/Ethnicity not N    2   33
+Oddsratio: 16.5 P-value: 0.1576576576576577
+
+                      Top  Not
+Race/Ethnicity B        0    4
+Race/Ethnicity not B    3   30
+Oddsratio: 0.0 P-value: 1.0
+
+SET 10, EL CDAT
+
+          Top  Not
+EL N        4   31
+EL not N    0    2
+Oddsratio: inf P-value: 1.0
+
+          Top  Not
+EL Y        0    2
+EL not Y    4   31
+Oddsratio: 0.0 P-value: 1.0
+
+SET 10, EL OBSERVATION
+
+          Top  Not
+EL N        3   32
+EL not N    0    2
+Oddsratio: inf P-value: 1.0
+
+          Top  Not
+EL Y        0    2
+EL not Y    3   32
+Oddsratio: 0.0 P-value: 1.0
+
+-----------------------------------
+
+SET 11, Gender CDAT
+
+              Top  Not
+Gender F        4   17
+Gender not F    2   34
+Oddsratio: 4.0 P-value: 0.17926380140878784
+
+              Top  Not
+Gender M        2   34
+Gender not M    4   17
+Oddsratio: 0.25 P-value: 0.17926380140878784
+
+SET 11, Gender OBSERVATION
+
+              Top  Not
+Gender M        3   33
+Gender not M    3   18
+Oddsratio: 0.545 P-value: 0.6591169505767375
+
+              Top  Not
+Gender F        3   18
+Gender not F    3   33
+Oddsratio: 1.833 P-value: 0.6591169505767374
+
+SET 11, Race/Ethnicity CDAT
+
+                      Top  Not
+Race/Ethnicity H        6   47
+Race/Ethnicity not H    0    4
+Oddsratio: inf P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity W        0    2
+Race/Ethnicity not W    6   49
+Oddsratio: 0.0 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity A        0    1
+Race/Ethnicity not A    6   50
+Oddsratio: 0.0 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity N        0    1
+Race/Ethnicity not N    6   50
+Oddsratio: 0.0 P-value: 1.0
+
+SET 11, Race/Ethnicity OBSERVATION
+
+                      Top  Not
+Race/Ethnicity H        6   47
+Race/Ethnicity not H    0    4
+Oddsratio: inf P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity W        0    2
+Race/Ethnicity not W    6   49
+Oddsratio: 0.0 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity N        0    1
+Race/Ethnicity not N    6   50
+Oddsratio: 0.0 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity A        0    1
+Race/Ethnicity not A    6   50
+Oddsratio: 0.0 P-value: 1.0
+
+SET 11, EL CDAT
+
+          Top  Not
+EL Y        4   38
+EL not Y    2   13
+Oddsratio: 0.684 P-value: 0.6483704974271043
+
+          Top  Not
+EL N        2   13
+EL not N    4   38
+Oddsratio: 1.462 P-value: 0.6483704974271043
+
+SET 11, EL OBSERVATION
+
+          Top  Not
+EL Y        3   39
+EL not Y    3   12
+Oddsratio: 0.308 P-value: 0.1799424232393454
+
+          Top  Not
+EL N        3   12
+EL not N    3   39
+Oddsratio: 3.25 P-value: 0.17994242323934537
+
+-----------------------------------
+
+SET 12, Gender CDAT
+
+              Top  Not
+Gender F        2    9
+Gender not F    1   10
+Oddsratio: 2.222 P-value: 1.0
+
+              Top  Not
+Gender M        1   10
+Gender not M    2    9
+Oddsratio: 0.45 P-value: 1.0
+
+SET 12, Gender OBSERVATION
+
+              Top  Not
+Gender F        3    8
+Gender not F    0   11
+Oddsratio: inf P-value: 0.21428571428571486
+
+              Top  Not
+Gender M        0   11
+Gender not M    3    8
+Oddsratio: 0.0 P-value: 0.21428571428571486
+
+SET 12, Race/Ethnicity CDAT
+
+                      Top  Not
+Race/Ethnicity X        2    2
+Race/Ethnicity not X    1   17
+Oddsratio: 17.0 P-value: 0.0727272727272729
+
+                      Top  Not
+Race/Ethnicity W        1   16
+Race/Ethnicity not W    2    3
+Oddsratio: 0.094 P-value: 0.11688311688311695
+
+                      Top  Not
+Race/Ethnicity B        0    1
+Race/Ethnicity not B    3   18
+Oddsratio: 0.0 P-value: 1.0
+
+SET 12, Race/Ethnicity OBSERVATION
+
+                      Top  Not
+Race/Ethnicity W        2   15
+Race/Ethnicity not W    1    4
+Oddsratio: 0.533 P-value: 1.0
+
+                      Top  Not
+Race/Ethnicity X        1    3
+Race/Ethnicity not X    2   16
+Oddsratio: 2.667 P-value: 0.4701298701298712
+
+                      Top  Not
+Race/Ethnicity B        0    1
+Race/Ethnicity not B    3   18
+Oddsratio: 0.0 P-value: 1.0
+
+SET 12, EL CDAT
+
+          Top  Not
+EL N        3   19
+EL not N    0    0
+Oddsratio: nan P-value: 1.0
+
+SET 12, EL OBSERVATION
+
+          Top  Not
+EL N        3   19
+EL not N    0    0
+Oddsratio: nan P-value: 1.0
+
+-----------------------------------
+

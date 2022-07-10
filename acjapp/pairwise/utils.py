@@ -173,12 +173,12 @@ def compute_more(comps, wins):
         se = round(stdev / sqrt(comps),3) 
         # standard error of p scale measures variability of the sample mean about the true mean
         # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 13
-        logit = round(log(probability/(1 - probability)),3) # also called the MLE of phi φ 
-        fisher_info = comps * probability * ( 1 - probability) # slide 33
+        logit = round(log(probability/(1 - probability)), 3) # also called the MLE of phi φ 
+        fisher_info = comps * probability * ( 1 - probability) # slide 33 the fisher information for phi
         # see http://personal.psu.edu/abs12//stat504/online/01b_loglike/10_loglike_alternat.htm        
         # "an asymptotic confidence interval constructed on the φ scale will be more accurate in coverage than an interval constructed on the p scale"
         # note: the CI for logit is fine for this, we don't need to transform it back to p as in this article
-        ci = 1.96 * sqrt(1/fisher_info) # of logit--see slide 30
+        ci = 1.96 * sqrt(1/fisher_info) # 95% CI of at the MLE of phi--see slide 30
         logithi95 = logit + ci
         logitlo95 = logit - ci
         b = 10 # determine the spread of parameter values
