@@ -93,9 +93,6 @@
                         name: 'Score',
                         type: 'scatter',
                         data: {{ scores|safe }},
-                        marker: {
-                            symbol: 'url(https://compare.drawingtest.org/media/images/gradientpoint.png)'
-                        },
                         tooltip: {
                             pointFormat: '<span style="font-weight: bold; color: {series.color}">{series.name}</span>: <b>{point.y:.1f}</b> '
                         } 
