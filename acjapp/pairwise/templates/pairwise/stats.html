@@ -31,7 +31,7 @@
                         zoomType: 'xy'
                     },
                     title: {
-                        text: 'Scores with 95% CI and Fisher information'
+                        text: 'Scores with 95% Confidence Interval'
                     },
                     xAxis: [{
                         categories: {{ scriptids|safe }}
@@ -49,7 +49,7 @@
                                 color: Highcharts.getOptions().colors[1]
                             }
                         }
-                    }, { // Secondary yAxis
+                    }, /*{ // Secondary yAxis
                         title: {
                             text: 'Fisher Info',
                             style: {
@@ -63,13 +63,13 @@
                             }
                         },
                         opposite: true
-                    }],
+                    }*/],
 
                     tooltip: {
                         shared: true
                     },
 
-                    series: [{
+                    series: [/*{
                         name: 'Fisher Info',
                         type: 'scatter',
                         yAxis: 1,
@@ -77,7 +77,7 @@
                         tooltip: {
                             pointFormat: '<span style="font-weight: bold; color: {series.color}">{series.name}</span>: <b>{point.y:.1f}</b> '
                         }
-                    }, 
+                    }, */
                         {
                         name: 'Score error',
                         type: 'errorbar',
@@ -151,10 +151,10 @@
                     <th>Rank</th>
                     <th>Wins</th>
                     <th>Comps</th>
-                    <th>P &theta;</th>
-                    <th>SE(&theta;)</th>
+                    <th><i>p</i></th>
+                    <th>SE<sub>p</sub></th>
                     <th>Logit &phi;</th>
-                    <th>Fisher info (&phi;)</th>
+                    <th><i>I</i><sub>&phi;</sub> </th>
                     <th>Low 95% CI</th>
                     <th>Score</th>
                     <th>High 95% CI</th>
