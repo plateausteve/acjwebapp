@@ -22,7 +22,7 @@
             <figure class="highcharts-figure">
                 <div id="container1"></div>
                 <p class="highcharts-description">
-                    Scores of scripts in this set appear in blue on the chart with error bars at 95% confidence interval by the left y axis. Scripts with no score at top or bottom of distribution are not represented on this chart.
+                    Estimated scores of scripts in this set appear in blue on the chart with error bars at 95% confidence interval. Scripts with no estimated score at top or bottom of distribution are not represented on this chart.
                 </p>
             </figure>
             <script>
@@ -95,8 +95,8 @@
                         data: {{ scores|safe }},
                         tooltip: {
                             pointFormat: '<span style="font-weight: bold; color: {series.color}">{series.name}</span>: <b>{point.y:.1f}</b> '
-                        } 
-                    },                
+                        }
+                    },
                 ]
                 });
             </script>
@@ -122,7 +122,7 @@
 
                     series: [{
                         keys: ['from', 'to', 'weight'],
-                        data: {{ corr_chart_data|safe }},                     
+                        data: {{ corr_chart_data|safe }},
                         type: 'dependencywheel',
                         name: 'Dependency wheel series',
                         dataLabels: {
@@ -143,7 +143,7 @@
             <br><br>
             <h5>Ranks and scores</h5>
             <p>
-                The table below shows an estimated rank and score for each script. Click a Person ID Code to visit the script's page. Estimated scores are computed from the logit and their confidence intervals are computed from logit and Fisher information of the logit. There's a 95% probability that repeated measures with the same judges will fall within the confidence interval, and most likely they will fall much closer to the score estimate. Percentile ranks are within this set.
+                The table below shows an estimated rank and score for each script. Click a Person ID Code to visit the script's page. Estimated scores are computed from the logit, and their confidence intervals are computed from logit and Fisher information of the logit. There's a 95% probability that repeated measures with the same judges would fall within the confidence interval. Percentile ranks show what percentage of scripts in this set have lower score estimates.
             </p>
             <table class="table table-striped table-hover table-bordered">
                 <tr>
@@ -186,6 +186,6 @@
             </table>
         {% else %}
             <p>There are no stats for you from this set in the database. </p>
-        {% endif %}   
+        {% endif %}
     </body>
 {% endblock %}
