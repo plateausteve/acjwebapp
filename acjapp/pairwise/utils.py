@@ -94,7 +94,7 @@ def script_selection(set, userid):
     return compslist, scripti, scriptj, j_list
 
 def get_computed_scripts(set, judges):
-    probabilities_of_set = []
+    eps_of_set = []
     computed_scripts_for_user_in_set =[]
     scripts = Script.objects.filter(set=set)
     for script in scripts:
@@ -121,11 +121,7 @@ def get_computed_scripts(set, judges):
                 0, # percentile is set separately
                 )
         )
-        if probability == None:
-            pass
-        else:
-            probabilities_of_set.append(round(probability, 3))
-    computed_scripts_for_user_in_set = set_ranks(computed_scripts_for_user_in_set, probabilities_of_set)
+    computed_scripts_for_user_in_set = set_ranks(computed_scripts_for_user_in_set)
     return computed_scripts_for_user_in_set
 
 def build_compslist(set, userid):
@@ -191,8 +187,9 @@ def compute_more(comps, wins):
     return logit, probability, stdev, fisher_info, se, ep, hi95ci, lo95ci, randomsorter
     # more here: http://personal.psu.edu/abs12//stat504/online/01b_loglike/01b_loglike_print.htm
 
-def set_ranks(computed_scripts_for_user_in_set, probabilities_of_set):
+def set_ranks(computed_scripts_for_user_in_set):
     #now decrease (for sorting later) samep by one for every script including self with matching probability and set a rank value fo each
+    script_ranks = []
     computed_scripts_for_user_in_set.sort(key = lambda x: x.probability, reverse=True)
     rank = 0
     for script in computed_scripts_for_user_in_set:
@@ -202,13 +199,15 @@ def set_ranks(computed_scripts_for_user_in_set, probabilities_of_set):
         if script.samep == -1: #if there's only one at that value, then increase rank increment 1 for next 
             rank += 1
         script.rank = rank
-        # calculate percentile in this set using the list of probabilities in set
-        p = script.probability
-        if p == None:
+        script_ranks.append(1/rank)
+    # calculate percentile in this set using the list of probabilities in set
+    for script in computed_scripts_for_user_in_set:
+        r = 1/script.rank
+        if r == None:
             perc = None
         else: 
-            perc = percentileofscore(probabilities_of_set, float(p), kind='weak')
-        script.percentile = '{:.2f}'.format(perc)
+            perc = percentileofscore(script_ranks, float(r), kind='mean')
+            script.percentile = '{:.2f}'.format(perc)
     return computed_scripts_for_user_in_set
 
 def make_groups(setid, judgelist):
