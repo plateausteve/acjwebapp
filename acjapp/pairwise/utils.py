@@ -203,7 +203,7 @@ def set_ranks(computed_scripts_for_user_in_set):
     # calculate percentile in this set using the list of ranks in set
     for script in computed_scripts_for_user_in_set:
         r = len(script_ranks)-script.rank
-        perc = percentileofscore(script_ranks, float(r), kind='strict')
+        perc = percentileofscore(script_ranks, float(r), kind='mean')
         script.percentile = '{:.2f}'.format(perc)
     return computed_scripts_for_user_in_set
 
