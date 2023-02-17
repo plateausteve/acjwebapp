@@ -218,7 +218,7 @@ def make_groups(setid, judgelist):
         bestgroup = []
         bestagreement = 0
         corrstats_df = None
-        return bestgroup, bestagreement, corrstats_df
+        return bestgroup, bestagreement, corrstats_df, []
     set_judge_script_rank = {}
     for judge in judgelist:
         computed_scripts = get_computed_scripts(setobject, [judge])
@@ -231,7 +231,7 @@ def make_groups(setid, judgelist):
         bestgroup = judgelist
         bestagreement = coef
         corrstats_df = pandas.DataFrame(set_judge_script_rank)
-        return bestgroup, bestagreement, corrstats_df
+        return bestgroup, bestagreement, corrstats_df, []
     else:
         judgepairs = itertools.combinations(judgelist, 2)
         judgepaircorr = {}
