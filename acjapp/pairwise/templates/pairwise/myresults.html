@@ -14,7 +14,7 @@
             </tr>
             {% for script in set_scripts %}
             <tr>
-                <td><a href="{% url 'script_detail.html' pk=script.id %}">{{ script.idcode_f }}</a></td>
+                <td><a href="{% url 'script.html' pk=script.id %}">{{ script.idcode_f }}</a></td>
                 <td>{{ script.rank }}</td>
                 <td>{{ script.wins }}</td>
                 <td>{{ script.comps }}</td>
