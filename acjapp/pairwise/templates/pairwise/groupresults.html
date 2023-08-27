@@ -140,6 +140,9 @@
 
                 });
             </script>
+            <div class="cluster chart" style="align-content: center;">
+                {{ clusterchart|safe }}       
+            </div>
             <br><br>
             <h5>Ranks and scores</h5>
             <p>
@@ -178,12 +181,18 @@
                 {% endfor %}
             </table>
             <br><br>
-            <h5>All combinations of judges</h5>
+            <h5>All combinations of 3 judges</h5>
             <table class="table" style="text-align: center; font-size: smaller;">
                 <tr>
                     <td style="text-align: center;">{{ corrstats|safe }}</td>
                 </tr>
             </table>
+            <h5>Clustering</h5>
+            <table class="table" style="text-align: center; font-size: smaller;">
+                <tr>
+                    <td>{{ groupplotdata|safe }}</td>
+                </tr>
+            </table>     
         {% else %}
             <p>There are no stats for you from this set in the database. </p>
         {% endif %}

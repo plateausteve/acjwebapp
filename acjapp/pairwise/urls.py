@@ -22,10 +22,10 @@ urlpatterns = [
     path('index/', views.index, name='index.html'),
     path('compare/<set>/', views.compare, name='compare.html'),
     path('compare/', views.compare, name='compare.html'),
-    path('comparisons/<set>/', views.comparisons, name='comparison_list.html'),
-    path('stats/<set>/', views.stats, name='stats'),
-    path('script/<int:pk>/', views.script_detail, name='script_detail.html'),
-    path('set/<int:pk>/', views.set_view, name='set_view'),
+    path('comparisons/<set>/', views.comparisons, name='comparisons.html'),
+    path('groupresults/<set>/', views.groupresults, name='groupresults'),
+    path('script/<int:pk>/', views.script, name='script.html'),
+    path('myresults/<int:pk>/', views.myresults, name='myresults'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout')
 ]

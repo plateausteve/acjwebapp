@@ -24,9 +24,12 @@ from numpy import log, sqrt
 import random
 import itertools
 from operator import itemgetter
-import pandas
+import pandas as pd
 import csv
 from scipy.stats import spearmanr, percentileofscore
+import umap
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score, silhouette_samples
 
 class ComputedScript:
     def __init__(self, id, idcode, idcode_f, comps, wins, logit, probability, stdev, fisher_info, se, ep, lo95ci, hi95ci, samep, rank, randomsorter, percentile):
@@ -166,7 +169,7 @@ def compute_more(comps, wins):
         hi95ci = None
         lo95ci = None
     else:
-        se = round(stdev / sqrt(comps),3)
+        se = round(stdev/sqrt(comps),3)
         # standard error of p scale measures variability of the sample mean about the true mean
         # see https://personal.psu.edu/abs12/stat504/Lecture/lec3_4up.pdf slide 13
         logit = round(log(probability/(1 - probability)), 3) # also called the MLE of phi φ
@@ -219,19 +222,28 @@ def make_groups(setid, judgelist):
         bestagreement = 0
         corrstats_df = None
         return bestgroup, bestagreement, corrstats_df, []
+    
+    #empty dictionary to contain all the judges' rankings
     set_judge_script_rank = {}
+
+    #but if there are more than one judge for this set, get computed scripts for each.
     for judge in judgelist:
         computed_scripts = get_computed_scripts(setobject, [judge])
         computed_scripts.sort(key = lambda x: x.id)
         set_judge_script_rank[judge]=[]
         for script in computed_scripts:
             set_judge_script_rank[judge].append(script.rank)
+    
+    #when only two, easy peasy
     if len(judgelist) == 2:
         coef, p = spearmanr(set_judge_script_rank[0],set_judge_script_rank[1])
         bestgroup = judgelist
         bestagreement = coef
-        corrstats_df = pandas.DataFrame(set_judge_script_rank)
+        corrstats_df = pd.DataFrame(set_judge_script_rank)
         return bestgroup, bestagreement, corrstats_df, []
+    
+    #when 3 or more, use combinations to find the correlations of all pairs 
+    #and average correlations of all combinations of 3
     else:
         judgepairs = itertools.combinations(judgelist, 2)
         judgepaircorr = {}
@@ -272,13 +284,62 @@ def make_groups(setid, judgelist):
                 p3,
             ]
             corrdata.append(data)
-    df = pandas.DataFrame(corrdata, columns = ['Judge Group', 'Rho Average','Pair 1 Judges', 'Pair 1 Rho','Pair 1 P-value', 'Pair 2 Judges', 'Pair 2 Rho', 'Pair 2 P-value', 'Pair 3 Judges', 'Pair 3 Rho', 'Pair 3 P-value'])
+
+        # when more thant two judges,
+        # also do the makegroups using UMAP dimension reduction and K-means clustering
+
+        # first, set up dataframe with judges as rows and probabilities of each item in columns 
+        df = pd.DataFrame(set_judge_script_rank).transpose()
+
+        #reduce dimensions to 2 with UMAP
+        reducer = umap.UMAP(
+            n_neighbors=len(judgelist)-1,
+            min_dist=0.0,
+            n_components=2,
+            random_state=42
+        ).fit_transform(df)
+
+        #now to select the number of clusters with the greatest silhouette average
+        #iterate through clusters from 2 to n-1, sort by silhouette average, select that as best grouping
+        models=[]
+        for i in range(2, len(reducer)):
+            kmeans = KMeans(
+                init="random",
+                n_clusters=i,
+                n_init=10,
+                max_iter=300,
+                random_state=42
+            ).fit(reducer)
+            silhouette_avg = silhouette_score(reducer, kmeans.labels_)
+            models.append([i, kmeans, silhouette_avg])
+
+        #sort the models best to worst 
+        sorted_models = sorted(models, key=itemgetter(2), reverse=True)
+
+        #assign kmeans object to the first(best) model in the sorted list
+        kmeans=sorted_models[0][1]
+        #get the silhouette score of each judge in this grouping
+        silhouette = silhouette_samples(reducer, kmeans.labels_)
+
+        #output x & y & group for each judge in a group
+        arr = []
+        for i, group in enumerate(kmeans.labels_):
+            arr.append([group, reducer[i][0], reducer[i][1], silhouette[i]])
+        labeledarray = np.array(arr)
+        groupplotdata = pd.DataFrame(
+            labeledarray, 
+            index=df.index.values.tolist(), 
+            columns = ["cluster","x","y","silhouette"]
+            ).sort_values(by=['cluster','silhouette'], ascending=False)
+
+    df = pd.DataFrame(corrdata, columns = ['Judge Group', 'Rho Average','Pair 1 Judges', 'Pair 1 Rho','Pair 1 P-value', 'Pair 2 Judges', 'Pair 2 Rho', 'Pair 2 P-value', 'Pair 3 Judges', 'Pair 3 Rho', 'Pair 3 P-value'])
     df_sorted = df.sort_values(by='Rho Average', ascending=False)
     corrstats_df = df_sorted.set_index('Judge Group')
     b = corrstats_df.iat[0, 0]
     bestagreement = round(b,3)
-    bestgroup = pandas.DataFrame.first_valid_index(corrstats_df)
-    return bestgroup, bestagreement, corrstats_df, corr_chart_data
+    bestgroup = pd.DataFrame.first_valid_index(corrstats_df)
+
+    return bestgroup, bestagreement, corrstats_df, corr_chart_data, groupplotdata #add an list of 2D arrays for scatterplot of each group
 
 # used from the django manage.py python shell
 def bulkcreatescripts(filepath, user_id, set_id):
@@ -307,7 +368,7 @@ def judgereport(judgeid):
         else:
             maxcomps = setobject.override_end
         report.append([set, n, maxcomps])
-    df = pandas.DataFrame(report, columns = ["Set","Done So Far","End"])
+    df = pd.DataFrame(report, columns = ["Set","Done So Far","End"])
     htmltable = df.to_html(index=False)
     return df, htmltable
 
@@ -315,7 +376,7 @@ def judgereport(judgeid):
 # usage example: a,b,c,d,e = groupstats(4, [1,27,26],[36,35,38])
 def groupstats(set, judgelist1, judgelist2):
     computed_scripts = get_computed_scripts(set, judgelist1)
-    rankorder1_df = pandas.DataFrame([script.__dict__ for script in computed_scripts ]) # convert list of objects into a dataframe
+    rankorder1_df = pd.DataFrame([script.__dict__ for script in computed_scripts ]) # convert list of objects into a dataframe
     rankorder1_df.drop(['idcode_f', 'fisher_info', 'samep', 'randomsorter', 'percentile','comps','wins','stdev','probability','se','ep','lo95ci','hi95ci'], axis = 1, inplace=True) # drop unneeded columns
     idorder1_df = rankorder1_df.sort_values("id")
     if judgelist2 == []:
@@ -324,7 +385,7 @@ def groupstats(set, judgelist1, judgelist2):
         rankcorr_df = "None"
     else:
         computed_scripts = get_computed_scripts(set, judgelist2)
-        rankorder2_df = pandas.DataFrame([script.__dict__ for script in computed_scripts ])
+        rankorder2_df = pd.DataFrame([script.__dict__ for script in computed_scripts ])
         rankorder2_df.drop(['idcode_f', 'fisher_info', 'samep', 'randomsorter', 'percentile','comps','wins','stdev','probability','se','ep','lo95ci','hi95ci'], axis = 1, inplace=True) # drop unneeded columns
         idorder2_df = rankorder2_df.sort_values("id")
         rankcorr_df = idorder1_df.corrwith(idorder2_df, axis = 0, method = "spearman")
