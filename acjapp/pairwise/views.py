@@ -206,7 +206,7 @@ def compare(request, set):
 
 def chartmaker(groupplotdata):
     fig, ax = plt.subplots()
-    fig.set_size_inches(8,8)
+    fig.set_size_inches(6,6)
     points = ax.scatter(groupplotdata['x'], groupplotdata['y'], c=groupplotdata['cluster'], cmap='tab10')
     labels=[]
     n = len(groupplotdata['cluster'])
@@ -216,9 +216,9 @@ def chartmaker(groupplotdata):
     for i  in range(0, n):
         labels.append(["Group: " + str(int(c[i])) + "; Judge: "+ str(index[i])+"; Silhouette: " + str(round(s[i],3))])
     
-    #ax.set_xlabel('dimension 1')
-    #ax.set_ylabel('dimension 2')
-    ax.set_title('UMAP projection of the judges grouping')
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_title('UMAP Projection of Judge Groups')
 
     tooltip = plugins.PointHTMLTooltip(
         points, 
