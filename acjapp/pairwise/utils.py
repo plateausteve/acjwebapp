@@ -20,7 +20,7 @@
 
 from .models import Script, Comparison, Set
 import numpy as np
-from numpy import log, sqrt
+from numpy import log, sqrt, std
 import random
 import itertools
 from operator import itemgetter
@@ -76,6 +76,11 @@ def script_selection(set, userid):
     # Go through all comparable scripts, and choose the first as scripti.
     # Then calculate the difference in probability 'p_diff' between scripti and every other script
     j_list = []
+    set_probabilities = []
+    for script in computed_scripts_for_user_in_set:
+        set_probabilities.append(float(script.probability))
+    arr = np.array(set_probabilities)
+    set_p_std = np.std(arr)
     for i, script in enumerate(computed_scripts_for_user_in_set):
         if i == 0:
             if script.comps == scriptcount-1:
@@ -84,10 +89,11 @@ def script_selection(set, userid):
             p_i = float(script.probability)
         elif [scripti.id, script.id] not in compslist and [script.id, scripti.id] not in compslist: # don't consider this for scriptj if it's already been compared
             p_j = float(script.probability)
-            p_diff = round(abs(p_i - p_j),3)
-            j_list.append([script.id, p_diff, script.comps, script.samep, script.fisher_info, script.randomsorter])
+            p_diff = round(abs(p_i - p_j)-set_p_std,3) # subtract 1 SD in probability to improve match.
 
-    # Based on lowest probability difference, then random index, choose the most similar script to display as scriptj
+            j_list.append([script.id, p_diff, script.comps, script.samep, script.fisher_info, script.randomsorter])
+    
+    # Based on lowest probability difference from 1 stdev away, then random index, choose the most similar script to display as scriptj
     if j_list:
         j_list.sort(key=itemgetter(1,5)) # 1 is p_diff, 5 is randomsorter
         scriptj = Script.objects.get(pk = j_list[0][0]) # the item that has the smallest log odds difference (lodiff)

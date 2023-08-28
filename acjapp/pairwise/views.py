@@ -225,7 +225,6 @@ def chartmaker(groupplotdata):
         labels, 
         voffset=10, 
         hoffset=10 
-        #css=css
     )
 
     plugins.connect(fig, tooltip)
