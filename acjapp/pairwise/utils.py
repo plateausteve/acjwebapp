@@ -75,12 +75,16 @@ def script_selection(set, userid):
 
     # Go through all comparable scripts, and choose the first as scripti.
     # Then calculate the difference in probability 'p_diff' between scripti and every other script
-    j_list = []
-    set_probabilities = []
+    
+    #create list of all probabilities in the set to calc standard deviation
+    set_probabilities = [] 
     for script in computed_scripts_for_user_in_set:
         set_probabilities.append(float(script.probability))
     arr = np.array(set_probabilities)
     set_p_std = np.std(arr)
+    
+    #create a list of all possible script j's and order them for selection
+    j_list = []
     for i, script in enumerate(computed_scripts_for_user_in_set):
         if i == 0:
             if script.comps == scriptcount-1:
@@ -89,8 +93,7 @@ def script_selection(set, userid):
             p_i = float(script.probability)
         elif [scripti.id, script.id] not in compslist and [script.id, scripti.id] not in compslist: # don't consider this for scriptj if it's already been compared
             p_j = float(script.probability)
-            p_diff = round(abs(p_i - p_j)-set_p_std,3) # subtract 1 SD in probability to improve match.
-
+            p_diff = round(abs(p_i - p_j-set_p_std), 3) # subtract 1 SD in probability to improve match.
             j_list.append([script.id, p_diff, script.comps, script.samep, script.fisher_info, script.randomsorter])
     
     # Based on lowest probability difference from 1 stdev away, then random index, choose the most similar script to display as scriptj
