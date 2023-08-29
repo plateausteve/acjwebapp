@@ -27,6 +27,7 @@ from mpld3 import plugins
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('svg')
+import ast
 
 def index(request):
     if request.user.is_authenticated:
@@ -60,8 +61,25 @@ def script(request, pk):
     return render(request, 'pairwise/script.html', {'script': script})
 
 @login_required(login_url="login")
-def groupresults(request, set):
-    judgelist = [] # the make_groups function can also take preselected judges when needed -- right now command line only
+def groupresults(request, setjudges):
+    if "-" in list(setjudges): #enter desired judgelist after set number in url with dashes between.
+        
+        #start here to debug. Try entering this url: 
+        # http://127.0.0.1:8000/groupresults/4/ works
+        #http://127.0.0.1:8000/groupresults/4-1-26-27-30-25/ works
+        #http://127.0.0.1:8000/groupresults/4-1-26-27/ doesn't
+        #so far this new feature only works when you enter none or 4 or more judge IDs. 
+
+        
+        setjudges = setjudges.split("-")
+        set = str(setjudges[0])
+        judgelist =[]
+        for judge in setjudges[1:]:
+            judgelist.append(int(judge))
+    else: 
+        set = setjudges
+        judgelist = [] # the make_groups function can also take preselected judges when needed -- right now command line only
+    print(set, judgelist)
     j, a, corrstats_df, corr_chart_data, groupplotdata = make_groups(set, judgelist)
     if len(j) < 2:
         judges = [request.user.id]
@@ -118,6 +136,7 @@ def myresults(request, pk):
         'set_scripts': computed_scripts
         }
     )
+
 
 @login_required(login_url="login")
 def comparisons(request, set):
