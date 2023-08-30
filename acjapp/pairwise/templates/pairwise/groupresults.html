@@ -22,7 +22,7 @@
             <figure class="highcharts-figure">
                 <div id="container1"></div>
                 <p class="highcharts-description">
-                    Estimated scores of scripts in this set appear in blue on the chart with error bars at 95% confidence interval. Scripts with no estimated score at top or bottom of distribution are not represented on this chart.
+                    Estimated scores of scripts in this set appear in blue on the chart with error bars at 95% confidence interval. Scripts with no estimated score at top or bottom of distribution are not represented on this chart. See table below for more information.
                 </p>
             </figure>
             <script>
@@ -140,13 +140,15 @@
 
                 });
             </script>
+            {% if groupplotdata|length > 0 %}
             <div class="cluster chart" align="center">
                 {{ clusterchart|safe }}       
             </div>
+            {% endif %}
             <br><br>
             <h5>Ranks and scores</h5>
             <p>
-                The table below shows an estimated rank and score for each script. Click a Person ID Code to visit the script's page. Estimated scores are computed from the logit, and their confidence intervals are computed from logit and Fisher information of the logit. There's a 95% probability that repeated measures with the same judges would fall within the confidence interval. Percentile ranks show what percentage of scripts in this set have lower score estimates.
+                This table shows an estimated rank and score for each script. Click a Person ID Code to visit the script's page. Estimated scores are computed from the logit, and their confidence intervals are computed from logit and Fisher information of the logit. There's a 95% probability that repeated measures with the same judges would fall within the confidence interval. Percentile ranks show what percentage of scripts in this set have lower score estimates.
             </p>
             <table class="table table-striped table-hover table-bordered">
                 <tr>

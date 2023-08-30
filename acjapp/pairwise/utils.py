@@ -230,9 +230,10 @@ def make_groups(setid, judgelist):
         bestgroup = []
         bestagreement = 0
         corrstats_df = None
-        return bestgroup, bestagreement, corrstats_df, []
+        groupplotdata = pd.DataFrame({"cluster":[],"x":[],"y":[],"silhouette":[]})
+        return bestgroup, bestagreement, corrstats_df, [], groupplotdata
     
-    #empty dictionary to contain all the judges' rankings
+    #empty dictionary to contain the judges' rankings
     set_judge_script_rank = {}
 
     #but if there are more than one judge for this set, get computed scripts for each.
@@ -245,11 +246,14 @@ def make_groups(setid, judgelist):
     
     #when only two, easy peasy
     if len(judgelist) == 2:
-        coef, p = spearmanr(set_judge_script_rank[0],set_judge_script_rank[1])
+        judge1 = judgelist[0]
+        judge2 = judgelist[1]
+        coef, p = spearmanr(set_judge_script_rank[judge1],set_judge_script_rank[judge2]) 
         bestgroup = judgelist
         bestagreement = coef
         corrstats_df = pd.DataFrame(set_judge_script_rank)
-        return bestgroup, bestagreement, corrstats_df, []
+        groupplotdata = pd.DataFrame({"cluster":[],"x":[],"y":[],"silhouette":[]})
+        return bestgroup, bestagreement, corrstats_df, [], groupplotdata
     
     #when 3 or more, use combinations to find the correlations of all pairs 
     #and average correlations of all combinations of 3
@@ -271,7 +275,7 @@ def make_groups(setid, judgelist):
             judge1=judgegroup[0]
             judge2=judgegroup[1]
             judge3=judgegroup[2]
-            rho1 = judgepaircorr[(judge1,judge2)][0]
+            rho1 = judgepaircorr[(judge1,judge2)][0] #combine these 2 lines as so: rho1, p1 = 
             p1 = judgepaircorr[(judge1,judge2)][1]
             rho2 = judgepaircorr[(judge1,judge3)][0]
             p2 = judgepaircorr[(judge1,judge3)][1]
@@ -294,52 +298,55 @@ def make_groups(setid, judgelist):
             ]
             corrdata.append(data)
 
-        # when more thant two judges,
+
+        # when more than three judges,
         # also do the makegroups using UMAP dimension reduction and K-means clustering
-
-        # first, set up dataframe with judges as rows and probabilities of each item in columns 
-        df = pd.DataFrame(set_judge_script_rank).transpose()
-
-        #reduce dimensions to 2 with UMAP
-        reducer = umap.UMAP(
-            n_neighbors=len(judgelist)-1,
-            min_dist=0.0,
-            n_components=2,
-            random_state=42
-        ).fit_transform(df)
-
-        #now to select the number of clusters with the greatest silhouette average
-        #iterate through clusters from 2 to n-1, sort by silhouette average, select that as best grouping
-        models=[]
-        for i in range(2, len(reducer)):
-            kmeans = KMeans(
-                init="random",
-                n_clusters=i,
-                n_init=10,
-                max_iter=300,
+        if len(judgelist) == 3:
+            groupplotdata = pd.DataFrame({"cluster":[],"x":[],"y":[],"silhouette":[]})
+        else:
+            # first, set up dataframe with judges as rows and probabilities of each item in columns 
+            df = pd.DataFrame(set_judge_script_rank).transpose()
+        
+            #reduce dimensions to 2 with UMAP
+            reducer = umap.UMAP(
+                n_neighbors=len(judgelist)-1,
+                min_dist=0.0,
+                n_components=2,
                 random_state=42
-            ).fit(reducer)
-            silhouette_avg = silhouette_score(reducer, kmeans.labels_)
-            models.append([i, kmeans, silhouette_avg])
+            ).fit_transform(df)
+            
+            #now to select the number of clusters with the greatest silhouette average
+            #iterate through clusters from 2 to n-1, sort by silhouette average, select that as best grouping
+            models=[]
+            for i in range(2, len(reducer)):
+                kmeans = KMeans(
+                    init="random",
+                    n_clusters=i,
+                    n_init=10,
+                    max_iter=300,
+                    random_state=42
+                ).fit(reducer)
+                silhouette_avg = silhouette_score(reducer, kmeans.labels_)
+                models.append([i, kmeans, silhouette_avg])
 
-        #sort the models best to worst 
-        sorted_models = sorted(models, key=itemgetter(2), reverse=True)
+            #sort the models best to worst 
+            sorted_models = sorted(models, key=itemgetter(2), reverse=True)
 
-        #assign kmeans object to the first(best) model in the sorted list
-        kmeans=sorted_models[0][1]
-        #get the silhouette score of each judge in this grouping
-        silhouette = silhouette_samples(reducer, kmeans.labels_)
+            #assign kmeans object to the first(best) model in the sorted list
+            kmeans=sorted_models[0][1]
+            #get the silhouette score of each judge in this grouping
+            silhouette = silhouette_samples(reducer, kmeans.labels_)
 
-        #output x & y & group for each judge in a group
-        arr = []
-        for i, group in enumerate(kmeans.labels_):
-            arr.append([group, reducer[i][0], reducer[i][1], silhouette[i]])
-        labeledarray = np.array(arr)
-        groupplotdata = pd.DataFrame(
-            labeledarray, 
-            index=df.index.values.tolist(), 
-            columns = ["cluster","x","y","silhouette"]
-            ).sort_values(by=['cluster','silhouette'], ascending=False)
+            #output x & y & group for each judge in a group
+            arr = []
+            for i, group in enumerate(kmeans.labels_):
+                arr.append([group, reducer[i][0], reducer[i][1], silhouette[i]])
+            labeledarray = np.array(arr)
+            groupplotdata = pd.DataFrame(
+                labeledarray, 
+                index=df.index.values.tolist(), 
+                columns = ["cluster","x","y","silhouette"]
+                ).sort_values(by=['cluster','silhouette'], ascending=False)
 
     df = pd.DataFrame(corrdata, columns = ['Judge Group', 'Rho Average','Pair 1 Judges', 'Pair 1 Rho','Pair 1 P-value', 'Pair 2 Judges', 'Pair 2 Rho', 'Pair 2 P-value', 'Pair 3 Judges', 'Pair 3 Rho', 'Pair 3 P-value'])
     df_sorted = df.sort_values(by='Rho Average', ascending=False)
@@ -348,7 +355,7 @@ def make_groups(setid, judgelist):
     bestagreement = round(b,3)
     bestgroup = pd.DataFrame.first_valid_index(corrstats_df)
 
-    return bestgroup, bestagreement, corrstats_df, corr_chart_data, groupplotdata #add an list of 2D arrays for scatterplot of each group
+    return bestgroup, bestagreement, corrstats_df, corr_chart_data, groupplotdata #add a list of 2D arrays for scatterplot of each group
 
 # used from the django manage.py python shell
 def bulkcreatescripts(filepath, user_id, set_id):

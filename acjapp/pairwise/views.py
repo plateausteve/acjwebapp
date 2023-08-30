@@ -62,15 +62,7 @@ def script(request, pk):
 
 @login_required(login_url="login")
 def groupresults(request, setjudges):
-    if "-" in list(setjudges): #enter desired judgelist after set number in url with dashes between.
-        
-        #start here to debug. Try entering this url: 
-        # http://127.0.0.1:8000/groupresults/4/ works
-        #http://127.0.0.1:8000/groupresults/4-1-26-27-30-25/ works
-        #http://127.0.0.1:8000/groupresults/4-1-26-27/ doesn't
-        #so far this new feature only works when you enter none or 4 or more judge IDs. 
-
-        
+    if "-" in list(setjudges): #enter preselected judgelist after set number in url with dashes between.
         setjudges = setjudges.split("-")
         set = str(setjudges[0])
         judgelist =[]
@@ -78,8 +70,7 @@ def groupresults(request, setjudges):
             judgelist.append(int(judge))
     else: 
         set = setjudges
-        judgelist = [] # the make_groups function can also take preselected judges when needed -- right now command line only
-    print(set, judgelist)
+        judgelist = [] # the make_groups function can take preselected judges when desired
     j, a, corrstats_df, corr_chart_data, groupplotdata = make_groups(set, judgelist)
     if len(j) < 2:
         judges = [request.user.id]
@@ -89,7 +80,8 @@ def groupresults(request, setjudges):
         judges = j
         a2 = a
         corrstats = corrstats_df.to_html()
-        clusterchart = chartmaker(groupplotdata)
+    
+    clusterchart = chartmaker(groupplotdata)
     computed_scripts = get_computed_scripts(set, judges)
 
     #build lists to send to Highchart charts for error bar chart -- re-sort for low to high scores
