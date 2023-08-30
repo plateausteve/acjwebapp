@@ -98,7 +98,6 @@ def groupresults(request, setjudges):
             fisher.append(script.fisher_info)
             scores.append(script.ep)
             scoreerrors.append([script.lo95ci, script.hi95ci])
-
     return render(request, 'pairwise/groupresults.html', {
         'script_table': computed_scripts, 
         'set': set,

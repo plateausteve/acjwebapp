@@ -101,51 +101,53 @@
                 });
             </script>
             <br><br>
-            <figure class="highcharts-figure">
-                <div id="container"></div>
-                <p class="highcharts-description">
-                    Each color arc on this dependency wheel represents a judge with multiple weighted links to other judges. The weight of each link is the Spearman's rank correlation coefficient (rho). Minimum rho represented is .60.
-                </p>
-            </figure>
-            <script>
-                Highcharts.chart('container', {
+            {% if judges|length > 2 %}
+                <figure class="highcharts-figure">
+                    <div id="container"></div>
+                    <p class="highcharts-description">
+                        Each color arc on this dependency wheel represents a judge with multiple weighted links to other judges. The weight of each link is the Spearman's rank correlation coefficient (rho). Minimum rho represented is .60.
+                    </p>
+                </figure>
+                <script>
+                    Highcharts.chart('container', {
 
-                    title: {
-                        text:  "Similar rankings between judges"
-                    },
-
-                    accessibility: {
-                        point: {
-                            valueDescriptionFormat: '{index}. From {point.from} to {point.to}: {point.weight}.'
-                        }
-                    },
-
-                    series: [{
-                        keys: ['from', 'to', 'weight'],
-                        data: {{ corr_chart_data|safe }},
-                        type: 'dependencywheel',
-                        name: 'Dependency wheel series',
-                        dataLabels: {
-                            color: '#333',
-                            textPath: {
-                                enabled: true,
-                                attributes: {
-                                    dy: 5
-                                }
-                            },
-                            distance: 10
+                        title: {
+                            text:  "Similar rankings between judges"
                         },
-                        size: '95%'
-                    }]
 
-                });
-            </script>
-            {% if groupplotdata|length > 0 %}
-            <div class="cluster chart" align="center">
-                {{ clusterchart|safe }}       
-            </div>
+                        accessibility: {
+                            point: {
+                                valueDescriptionFormat: '{index}. From {point.from} to {point.to}: {point.weight}.'
+                            }
+                        },
+
+                        series: [{
+                            keys: ['from', 'to', 'weight'],
+                            data: {{ corr_chart_data|safe }},
+                            type: 'dependencywheel',
+                            name: 'Dependency wheel series',
+                            dataLabels: {
+                                color: '#333',
+                                textPath: {
+                                    enabled: true,
+                                    attributes: {
+                                        dy: 5
+                                    }
+                                },
+                                distance: 10
+                            },
+                            size: '95%'
+                        }]
+
+                    });
+                </script>
             {% endif %}
-            <br><br>
+            {% if groupplotdata|length > 0 %}
+                <div class="cluster chart" align="center">
+                    {{ clusterchart|safe }}       
+                </div>
+            {% endif %}
+            <br>
             <h5>Ranks and scores</h5>
             <p>
                 This table shows an estimated rank and score for each script. Click a Person ID Code to visit the script's page. Estimated scores are computed from the logit, and their confidence intervals are computed from logit and Fisher information of the logit. There's a 95% probability that repeated measures with the same judges would fall within the confidence interval. Percentile ranks show what percentage of scripts in this set have lower score estimates.
@@ -182,19 +184,21 @@
                 </tr>
                 {% endfor %}
             </table>
-            <br><br>
-            <h5>All combinations of 3 judges</h5>
-            <table class="table" style="text-align: center; font-size: smaller;">
-                <tr>
-                    <td style="text-align: center;">{{ corrstats|safe }}</td>
-                </tr>
-            </table>
-            <h5>Clustering</h5>
-            <table class="table" style="text-align: center; font-size: smaller;">
-                <tr>
-                    <td>{{ groupplotdata|safe }}</td>
-                </tr>
-            </table>     
+            <br>
+            {% if judges|length > 2 %}
+                <h5>All combinations of 3 judges</h5>
+                <table class="table" style="text-align: center; font-size: smaller;">
+                    <tr>
+                        <td style="text-align: center;">{{ corrstats|safe }}</td>
+                    </tr>
+                </table>
+                <h5>Clustering</h5>
+                <table class="table" style="text-align: center; font-size: smaller;">
+                    <tr>
+                        <td>{{ groupplotdata|safe }}</td>
+                    </tr>
+                </table>    
+            {% endif %} 
         {% else %}
             <p>There are no stats for you from this set in the database. </p>
         {% endif %}
