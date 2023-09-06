@@ -93,7 +93,7 @@ def script_selection(set, userid):
             p_i = float(script.probability)
         elif [scripti.id, script.id] not in compslist and [script.id, scripti.id] not in compslist: # don't consider this for scriptj if it's already been compared
             p_j = float(script.probability)
-            p_diff = round(abs(p_i - p_j-set_p_std), 3) # subtract 1 SD in probability to improve match.
+            p_diff = round(abs(p_i - p_j - set_p_std), 3) # subtract 1 SD in probability to improve match.
             j_list.append([script.id, p_diff, script.comps, script.samep, script.fisher_info, script.randomsorter])
     
     # Based on lowest probability difference from 1 stdev away, then random index, choose the most similar script to display as scriptj
@@ -189,11 +189,11 @@ def compute_more(comps, wins):
         ci = 1.96 * sqrt(1/fisher_info) # 95% CI of at the MLE of phi--see slide 30
         logithi95 = logit + ci
         logitlo95 = logit - ci
-        b = 10 # determine the spread of parameter values
-        a = int(100 - (3.18 * b )) # aim for max parameter of 100 for logit=3.18 / p = .96)
-        ep = round((logit * b), 1) + a
-        hi95ci = round((((logithi95) * b) + a), 1)
-        lo95ci = round((((logitlo95) * b) + a), 1)
+        #b = 10 # determine the spread of parameter values
+        #a = int(100 - (3.18 * b )) # aim for max parameter of 100 for logit=3.18 / p = .96)
+        ep = round((logit + 5) * 10, 1) # scores will range from 4 to 96 generally
+        hi95ci = round((logithi95 + 5) * 10, 1)
+        lo95ci = round((logitlo95 + 5) * 10, 1)
 
     randomsorter = random.randint(0,1000)
     return logit, probability, stdev, fisher_info, se, ep, hi95ci, lo95ci, randomsorter
