@@ -68,17 +68,19 @@ def groupresults(request, setjudges):
         judgelist =[]
         for judge in setjudges[1:]:
             judgelist.append(int(judge))
+        j, a, corrstats_df, corr_chart_data, groupplotdata = make_groups(set, judgelist) 
+        j = judgelist #override j returned from make_groups to include all judges assigned in request url
+
     else: 
         set = setjudges
         judgelist = [] # the make_groups function can take preselected judges when desired
-    j, a, corrstats_df, corr_chart_data, groupplotdata = make_groups(set, judgelist)
+        j, a, corrstats_df, corr_chart_data, groupplotdata = make_groups(set, judgelist)
     if len(j) < 2:
         judges = [request.user.id]
-        a2 = 1
+        a = 1
         corrstats = None
     else:
         judges = j
-        a2 = a
         corrstats = corrstats_df.to_html()
     
     clusterchart = chartmaker(groupplotdata)
@@ -102,7 +104,7 @@ def groupresults(request, setjudges):
         'script_table': computed_scripts, 
         'set': set,
         'judges': judges,
-        'a': a2,
+        'a': a,
         'corrstats': corrstats,
         'corr_chart_data': corr_chart_data,
         'scriptids': scriptids,

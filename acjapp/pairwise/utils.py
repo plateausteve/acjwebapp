@@ -221,7 +221,8 @@ def set_ranks(computed_scripts_for_user_in_set):
 
 def make_groups(setid, judgelist):
     setobject = Set.objects.get(pk=setid)
-    if judgelist == []: #judgelist is only used from command line to get combined stats for a set of preselected judges
+    preselected_judges = len(judgelist)
+    if judgelist == []: #judgelist input is only used to get combined stats for a set of preselected judges
         try: # if comps exist for this set, query a list of unique judge ids who have made comparisons on this set
             judgelist = Comparison.objects.filter(set=setobject).values_list('judge_id', flat=True).distinct()
         except:
@@ -236,7 +237,7 @@ def make_groups(setid, judgelist):
     #empty dictionary to contain the judges' rankings
     set_judge_script_rank = {}
 
-    #but if there are more than one judge for this set, get computed scripts for each.
+    #if there are more than one judge for this set, get computed scripts for each.
     for judge in judgelist:
         computed_scripts = get_computed_scripts(setobject, [judge])
         computed_scripts.sort(key = lambda x: x.id)
@@ -268,6 +269,8 @@ def make_groups(setid, judgelist):
             judgepaircorr[judgepair]=[coef, p]
             if coef >= .6:
                 corr_chart_data.append([str(judge1), str(judge2), round(coef,3)])
+        corr_df = pd.DataFrame(corr_chart_data, columns = ["judge1", "judge2", "rho"]) # this is just used with preselected judges
+        print(corr_df)
 
         judgegroups = itertools.combinations(judgelist, 3)
         corrdata = []
@@ -302,7 +305,7 @@ def make_groups(setid, judgelist):
         # when more than three judges,
         # also do the makegroups using UMAP dimension reduction and K-means clustering
         if len(judgelist) == 3:
-            groupplotdata = pd.DataFrame({"cluster":[],"x":[],"y":[],"silhouette":[]})
+            groupplotdata = pd.DataFrame({"cluster":[],"x":[],"y":[],"silhouette":[]}) # empty dataframe column labels
         else:
             # first, set up dataframe with judges as rows and probabilities of each item in columns 
             df = pd.DataFrame(set_judge_script_rank).transpose()
@@ -351,11 +354,15 @@ def make_groups(setid, judgelist):
     df = pd.DataFrame(corrdata, columns = ['Judge Group', 'Rho Average','Pair 1 Judges', 'Pair 1 Rho','Pair 1 P-value', 'Pair 2 Judges', 'Pair 2 Rho', 'Pair 2 P-value', 'Pair 3 Judges', 'Pair 3 Rho', 'Pair 3 P-value'])
     df_sorted = df.sort_values(by='Rho Average', ascending=False)
     corrstats_df = df_sorted.set_index('Judge Group')
-    b = corrstats_df.iat[0, 0]
+    if preselected_judges == 0:
+        b = corrstats_df.iat[0, 0]
+    else:
+        b = corr_df["rho"].mean()
     bestagreement = round(b,3)
     bestgroup = pd.DataFrame.first_valid_index(corrstats_df)
 
-    return bestgroup, bestagreement, corrstats_df, corr_chart_data, groupplotdata #add a list of 2D arrays for scatterplot of each group
+    return bestgroup, bestagreement, corrstats_df, corr_chart_data, groupplotdata 
+    #add a list of 2D arrays for scatterplot of each group?
 
 # used from the django manage.py python shell
 def bulkcreatescripts(filepath, user_id, set_id):
