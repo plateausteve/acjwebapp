@@ -37,7 +37,7 @@ class Script(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True, verbose_name="the user who uploaded the script")
     set = models.ForeignKey(Set, on_delete=models.CASCADE, blank=True, null=True, verbose_name="the one set to which the script belongs")
     pdf = models.FileField(upload_to="scripts/pdfs", null=True, blank=True)
-    idcode = models.PositiveIntegerField(editable = True, default = 1000, blank=False, null=False, verbose_name="person ID code")
+    idcode = models.PositiveIntegerField(editable = True, default = 1000, blank=False, null=False, verbose_name="student ID code")
     
     def idcode_f(self):
         f = self.idcode
