@@ -8,7 +8,7 @@ import pandas
 from models import Comparison, Script
 import numpy as np
 from numpy import sqrt, re
-from .utils import *
+from ..utils import *
 
 def make_groups_percentagree(setobject):
     try: # if comps exist for this set, query a list of unique judge ids who have made comparisons on this set

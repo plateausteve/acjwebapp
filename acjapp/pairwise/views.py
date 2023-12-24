@@ -22,6 +22,12 @@ from .utils import *
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
+import mpld3
+from mpld3 import plugins
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('svg')
+import ast
 
 def index(request):
     if request.user.is_authenticated:
@@ -50,25 +56,37 @@ def logout_view(request):
         return redirect('index.html')
 
 @login_required(login_url="login")
-def script_detail(request, pk):
+def script(request, pk):
     script=get_object_or_404(Script, pk=pk)
-    return render(request, 'pairwise/script_detail.html', {'script': script})
+    return render(request, 'pairwise/script.html', {'script': script})
 
 @login_required(login_url="login")
-def stats(request, set):
-    judgelist = [] # the make_groups function can also take preselected judges when needed -- right now command line only
-    j, a, corrstats_df, corr_chart_data = make_groups(set, judgelist)
+def groupresults(request, setjudges):
+    if "-" in list(setjudges): #enter preselected judgelist after set number in url with dashes between.
+        setjudges = setjudges.split("-")
+        set = str(setjudges[0])
+        judgelist =[]
+        for judge in setjudges[1:]:
+            judgelist.append(int(judge))
+        j, a, corrstats_df, corr_chart_data, groupplotdata = make_groups(set, judgelist) 
+        j = judgelist #override j returned from make_groups to include all judges assigned in request url
+
+    else: 
+        set = setjudges
+        judgelist = [] # the make_groups function can take preselected judges when desired
+        j, a, corrstats_df, corr_chart_data, groupplotdata = make_groups(set, judgelist)
     if len(j) < 2:
         judges = [request.user.id]
-        a2 = 1
+        a = 1
         corrstats = None
     else:
         judges = j
-        a2 = a
         corrstats = corrstats_df.to_html()
+    
+    clusterchart = chartmaker(groupplotdata)
     computed_scripts = get_computed_scripts(set, judges)
 
-    #build lists to send to Highchart charts for error bar chart -- resort for low to high scores
+    #build lists to send to Highchart charts for error bar chart -- re-sort for low to high scores
     lohi_computed_scripts = sorted(computed_scripts, key = lambda x: x.probability)
     scriptids=[]
     fisher=[]
@@ -82,34 +100,36 @@ def stats(request, set):
             fisher.append(script.fisher_info)
             scores.append(script.ep)
             scoreerrors.append([script.lo95ci, script.hi95ci])
-
-    return render(request, 'pairwise/stats.html', {
+    return render(request, 'pairwise/groupresults.html', {
         'script_table': computed_scripts, 
         'set': set,
         'judges': judges,
-        'a': a2,
+        'a': a,
         'corrstats': corrstats,
         'corr_chart_data': corr_chart_data,
         'scriptids': scriptids,
         'fisher': fisher,
         'scores': scores,
-        'scoreerrors': scoreerrors
+        'scoreerrors': scoreerrors,
+        'groupplotdata': groupplotdata,
+        'clusterchart': clusterchart
         } 
     )
 
 @login_required(login_url="login")
-def set_view(request, pk):
+def myresults(request, pk):
     judges = []
     judges.append(request.user.id)
     allowed_sets_ids = get_allowed_sets(request.user.id)
     request.session['sets'] = allowed_sets_ids
     computed_scripts = get_computed_scripts(pk, judges)
     computed_scripts.sort(key = lambda x: x.probability, reverse=True)
-    return render(request, 'pairwise/set.html', {
+    return render(request, 'pairwise/myresults.html', {
         'pk': pk, 
         'set_scripts': computed_scripts
         }
     )
+
 
 @login_required(login_url="login")
 def comparisons(request, set):
@@ -120,7 +140,7 @@ def comparisons(request, set):
         html="<p>ERROR: Set not available.</p>"
         return HttpResponse(html)
     comparisons = Comparison.objects.filter(set=set, judge=userid)
-    return render(request, 'pairwise/comparison_list.html', {
+    return render(request, 'pairwise/comparisons.html', {
         'set': set,
         'comparisons': comparisons,
         }
@@ -172,7 +192,7 @@ def compare(request, set):
     now = datetime.now()
     starttime = now.timestamp
     set_object = Set.objects.get(pk=set)
-    if set_object.override_end == None: # check if an comparisons limit override has been defined for the set
+    if set_object.override_end == None: # check if a comparisons limit override has been defined for the set
         compstarget = int(round((.66 * compsmax),-1))
     else:
         compstarget = set_object.override_end
@@ -195,3 +215,31 @@ def compare(request, set):
             'message': message
             } 
         )
+
+def chartmaker(groupplotdata):
+    fig, ax = plt.subplots()
+    fig.set_size_inches(6,6)
+    points = ax.scatter(groupplotdata['x'], groupplotdata['y'], c=groupplotdata['cluster'], cmap='tab10')
+    labels=[]
+    n = len(groupplotdata['cluster'])
+    c = list(groupplotdata['cluster'])
+    s = list(groupplotdata['silhouette'])
+    index = groupplotdata.index.values.tolist()
+    for i  in range(0, n):
+        labels.append(["Group: " + str(int(c[i])) + "; Judge: "+ str(index[i])+"; Silhouette: " + str(round(s[i],3))])
+    
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_title('UMAP Projection of Judge Groups')
+
+    tooltip = plugins.PointHTMLTooltip(
+        points, 
+        labels, 
+        voffset=10, 
+        hoffset=10 
+    )
+
+    plugins.connect(fig, tooltip)
+
+    clusterchart=mpld3.fig_to_html(fig=fig)
+    return clusterchart
