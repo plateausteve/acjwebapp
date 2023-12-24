@@ -20,5 +20,8 @@ compare.drawingtest.org.key
 # do not back up the media we upload
 acjapp/media
 
+#do not back up analysis files
+acjapp/analysis
+
 *.csv
 *.sql
