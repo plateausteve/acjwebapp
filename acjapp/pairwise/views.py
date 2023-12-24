@@ -243,3 +243,14 @@ def chartmaker(groupplotdata):
 
     clusterchart=mpld3.fig_to_html(fig=fig)
     return clusterchart
+
+@login_required(login_url="login")
+def myaccount(request):
+    accountid = request.user.id
+    allowed_sets_ids = get_allowed_sets(request.user.id)
+    request.session['sets'] = allowed_sets_ids
+    return render(request, 'pairwise/account.html', {
+        'accountid': accountid, 
+        'allowed_sets_ids': allowed_sets_ids
+        }
+    )

@@ -27,5 +27,6 @@ urlpatterns = [
     path('script/<int:pk>/', views.script, name='script.html'),
     path('myresults/<int:pk>/', views.myresults, name='myresults'),
     path('login/', views.login_view, name='login'),
-    path('logout/', views.logout_view, name='logout')
+    path('logout/', views.logout_view, name='logout'),
+    path('account/',views.myaccount, name='account')
 ]
