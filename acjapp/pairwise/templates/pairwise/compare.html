@@ -83,8 +83,8 @@
     <div>
     {%if user.is_superuser %}
         <p>Debug information:</p>
-        <p>Script i ID: {{ scripti.id }}; PERSON ID: {{ scripti.idcode }}</p>
-        <p>Script j ID: {{ scriptj.id }}; PERSON ID: {{ scriptj.idcode }}</p>
+        <p>Script i ID: {{ scripti.id }}; STUDENT ID: {{ scripti.idcode }}</p>
+        <p>Script j ID: {{ scriptj.id }}; STUDENT ID: {{ scriptj.idcode }}</p>
         <p>List of Js [id, p_diff, comps, samep, Fisher I, rand]: {{ j_list }}</p>
     {% endif %}
     {% else %}
