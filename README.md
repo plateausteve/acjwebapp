@@ -1,22 +1,23 @@
 # Drawing Test
 Adaptive comparative judgment web app
 
-What's this?
+This ACJ web app collects comparative judgment data that can be analyzed with Thurstone's law of comparative judgment (CJ), which is related to Rasch modeling and Item Response Theory in modern day psychometrics. Comparative Judgment is a measurement tool for estimating an unknown paramater attribute for a group of items from the perspective of one or more judges. The parameter investigated with this method should be a holistic attribute all items share to varying degrees.
 
-This web app collects comparative judgment data that can be analyzed with Thurstone's Law of Comparative Judgment (CJ). Comparative Judgment is a measurement tool for estimating an unknown paramater attribute for a group of items from the perspective of one or more judges. The parameter investigated with this method should be a holistic attribute all items share to varying degrees.
-
-The value of collecting and crunching these data comes from the resulting information about:
+The value of collecting and crunching comparatice judgment data comes from the resulting information about:
 
     The perception of the judge(s), and
     An estimated measure of a parameter, quality, or characteristic of the items being compared.
 
-Terms
+Users
+
+Users of the app are educators who assess other educators' students' work, upload thier own students' work for other educators to assess, or both. Users agree to the Terms of Use and Assessment Privacy Policy protecting personal information.
+Terminology
 
     Set is the collection of items being compared.
     Script is the term used in early research literature for an item being compared.
-    Estimate is the estimated parameter value of item after comparison.
+    Score is the estimated parameter value of item after comparison.
     Judge is the person doing pairwise comparisons.
-    Person ID is the anonymous ID code that links an item to the person who created it.
+    Student ID is the anonymous ID code that links an item to the person who created it.
 
 Making comparisons
 
@@ -31,7 +32,7 @@ Checking your results
 Select a set from the My Results menu to see dynamically computed statistics based on the comparisons you've made. The purpose of this table is to show your progress as you make comparisons. The reliability and validity of these rankings and statistics are not sufficient for educational decisionmaking.
 Viewing combined ranks and scores
 
-Select a set from the Stats menu to see how ranks and scores are estimated combining the comparisons of up to three judges. When the similarity of the rank order of scripts by three judges reaches acceptable levels, the scores will be finalized.
+Select a set from the Group Results menu to see how ranks and scores are estimated combining the comparisons of up to three judges. When the similarity of the rank order of scripts by three judges reaches acceptable levels, the scores will be finalized.
 
 # Installation
 

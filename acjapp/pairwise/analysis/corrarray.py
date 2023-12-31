@@ -22,8 +22,6 @@ def corrpairs(setid, cormin):
         for script in computed_scripts:
             set_judge_script_rank[judge].append(script.rank)
 
-        # show the rank of scripts in order for each judge
-        # print("Judge " + str(judge) + ": " + str(set_judge_script_rank[judge]))
 
     
 

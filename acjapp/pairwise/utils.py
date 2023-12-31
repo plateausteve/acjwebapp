@@ -18,9 +18,10 @@
 # Aleksandra B. Slavković | Professor of Statistics
 # Department of Statistics, Penn State University, University Park, PA 16802
 
-from .models import Script, Comparison, Set
+from .models import Script, Comparison, Set, Student
 import numpy as np
 from numpy import log, sqrt, std
+import datetime
 import random
 import itertools
 from operator import itemgetter
@@ -270,7 +271,7 @@ def make_groups(setid, judgelist):
             if coef >= .6:
                 corr_chart_data.append([str(judge1), str(judge2), round(coef,3)])
         corr_df = pd.DataFrame(corr_chart_data, columns = ["judge1", "judge2", "rho"]) # this is just used with preselected judges
-        print(corr_df)
+
 
         judgegroups = itertools.combinations(judgelist, 3)
         corrdata = []
@@ -374,7 +375,43 @@ def bulkcreatescripts(filepath, user_id, set_id):
         id=int(row[0])
         script = Script(set_id=set_id, idcode=id, user_id=user_id)
         script.save()
-        print("Created script instance for for idcode ", id, "in set ", set_id, " for user ", user_id)
+    return
+
+def bulkassignscripts(filepath):
+    # in python shell define the variable as this example
+    # bulkcreatescripts("analysis/scriptsetassignments.csv")
+    file = open(filepath, "r", encoding='utf-8-sig')
+    csv_reader = csv.reader(file)
+    for row in csv_reader:
+        setid=int(row[0])
+        setobject = Set.objects.get(pk=setid)
+        setobject1=Set.objects.get(pk=13)
+        userobject = setobject.owner
+        scriptobjects = Script.objects.filter(idcode=int(row[1]))
+        for (n, scriptobject) in enumerate(scriptobjects):
+            script = scriptobject
+            if n == 0:
+                script.set.add(setobject)
+                student = Student(
+                    idcode=int(row[1]),
+                    birth_date=row[2],
+                    first_name="N/A",
+                    last_name="N/A",
+                    user=userobject,
+                    gender=row[5],
+                    race=row[3],
+                    ed=row[6],
+                    el=row[7]
+                )
+                student.save()
+            else:
+                script.set.add(setobject1)    
+            script.grade=int(row[4])
+            script.age=float(row[9])
+            script.date=row[8]
+            studentobject=Student.objects.get(idcode=row[1])
+            script.student = studentobject
+            script.save()
     return
 
 # used from the django manage.py python shell

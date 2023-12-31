@@ -23,21 +23,206 @@ from numpy import log
 import numpy as np
 import datetime
 
+    
+class Student(models.Model):
+    idcode = models.PositiveBigIntegerField(
+        editable=True, 
+        default=100000, 
+        blank=False, 
+        null=False, 
+        verbose_name="student ID code"
+    ) 
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        blank=True, 
+        null=True, 
+        verbose_name="the user who uploaded the student information"
+    )
+    first_name = models.CharField(
+        max_length=80, 
+        blank=False, 
+        null=False, 
+        verbose_name="first name(s)"
+    )
+    last_name = models.CharField(
+        max_length=80, 
+        blank=False, 
+        null=False, 
+        verbose_name="last name(s)"
+    )
+    birth_date = models.DateField(
+        default=datetime.date(
+            datetime.date.today().year-10, 
+            datetime.date.today().month, 
+            datetime.date.today().day
+            ),
+        editable=True,
+        blank=False,
+        null=False,
+        verbose_name="date of birth"
+    )
+    gender_choices = [
+        ("F","female"),
+        ("M","male"),
+        ("N","nobinary")
+    ]
+    gender = models.CharField(
+        max_length=1, 
+        choices=gender_choices, 
+        default="F", 
+        blank=False, 
+        null=False, 
+        verbose_name="student gender"
+    )
+    race_choices = [
+        ("A","Asian"),
+        ("B","Black or African American"),
+        ("H","Hispanic or Latino of any race"),
+        ("N","American Indian or Alaska Native"),
+        ("P","Native Hawaiian or other Pacific Islander"),
+        ("W","White"),
+        ("M","Two or more races"),
+        ("X","Decline to state"),
+    ]
+    race = models.CharField(
+        max_length=1, 
+        choices=race_choices, 
+        blank=False, 
+        null=False, 
+        verbose_name="student race/ethnicity"
+    )
+
+    ed = models.CharField(
+        choices=[
+            ("N","Not economically disadvantaged"),
+            ("Y","Economically disadvantaged")
+            ],
+        max_length=1,
+        default="N",
+        blank=False,
+        null=False,
+        verbose_name="student economic disadvantage"
+    )
+    el = models.CharField(
+        choices=[
+            ("N","Not currently and English learner"),
+            ("Y","Currently an English learner")
+            ],
+        max_length=1,
+        default="N",
+        blank=False,
+        null=False,
+        verbose_name="student English learner status"
+    )
+                    
+    def idcode_f(self):
+        f = self.idcode
+        return '%06d' % (f)
+    
+#   def __str__(self):
+#       return str(self.idcode)
+
 class Set(models.Model):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, verbose_name="the user who uploaded the scripts of this set")
-    judges = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='judges', verbose_name="the users with comparing capabilities for this set", blank=True)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL,
+        null=True, 
+        blank=True, 
+        verbose_name="the user who uploaded the scripts of this set"
+    )
+    judges = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, 
+        related_name='judges', 
+        verbose_name="the users with comparing capabilities for this set", 
+        blank=True
+    )
+
     name = models.CharField(max_length=100)
-    greater_statement = models.CharField(default="Greater", max_length=50, verbose_name="the comparative adjective posed as question for judges about the items")
-    override_end = models.PositiveSmallIntegerField(editable = True, blank = True, null = True, verbose_name = "end after so many comparisons override")
+
+    greater_statement = models.CharField(
+        default="Greater", 
+        max_length=50, 
+        verbose_name="the comparative adjective posed as question for judges about the items"
+    )
+    override_end = models.PositiveSmallIntegerField(
+        editable = True, 
+        blank = True, 
+        null = True, 
+        verbose_name = "end after so many comparisons override"
+    )
   
     def __str__(self):
         return str(self.pk)
 
 class Script(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True, verbose_name="the user who uploaded the script")
-    set = models.ForeignKey(Set, on_delete=models.CASCADE, blank=True, null=True, verbose_name="the one set to which the script belongs")
-    pdf = models.FileField(upload_to="scripts/pdfs", null=True, blank=True)
-    idcode = models.PositiveIntegerField(editable = True, default = 1000, blank=False, null=False, verbose_name="student ID code")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL,
+        blank=True, 
+        null=True, 
+        verbose_name="the user who uploaded the script"
+    )
+    set = models.ManyToManyField(
+        Set, 
+        related_name="sets",
+        blank=True,
+        verbose_name="the sets to which the script belongs"
+    )
+    pdf = models.FileField(
+        upload_to="scripts/pdfs", 
+        null=True, 
+        blank=True
+    )
+    idcode = models.PositiveIntegerField(
+        editable=True, 
+        default=1000, 
+        blank=False, 
+        null=False, 
+        verbose_name="script ID code"
+    )
+    student = models.ForeignKey(
+        Student, 
+        on_delete=models.SET_NULL,
+        blank=True, 
+        null=True, 
+        verbose_name="the student to which the script belongs"
+    )
+    grade_choices = [
+        (0, "Kindergarten"),
+        (1, "First"),
+        (2, "Second"),
+        (3, "Third"),
+        (4, "Fourth"),
+        (5, "Fifth"),
+        (6, "Sixth"),
+        (7, "Seventh"),
+        (8, "Eighth"),
+        (9, "Ninth"),
+        (10, "Tenth"),
+        (11, "Eleventh"),
+        (12, "Twelfth")
+    ]
+    grade = models.IntegerField(
+        choices=grade_choices, 
+        default=4, 
+        blank=False, 
+        null=False, 
+        verbose_name="student grade at time of test"
+    )
+
+    
+    age = models.FloatField(
+        blank=True,
+        null=True,
+        verbose_name="age of student at time of test"
+    )
+    
+    date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="date when the student took the test"
+    )
     
     def idcode_f(self):
         f = self.idcode
@@ -48,15 +233,51 @@ class Script(models.Model):
 
 
 class Comparison(models.Model):
-    set = models.ForeignKey(Set, on_delete=models.CASCADE, verbose_name="the set to which this comparison belongs")
-    judge = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="the user judging the pair")
-    scripti = models.ForeignKey(Script, on_delete=models.CASCADE, related_name="+", verbose_name="the left script in the comparison")
-    scriptj = models.ForeignKey(Script, on_delete=models.CASCADE, related_name="+", verbose_name="the right script in the comparison")
-    wini = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name="is left lesser or greater?")
-    form_start_variable = models.FloatField(blank=True, null=True)
-    decision_start = models.DateTimeField(editable = False, blank=True, null=True)
-    decision_end = models.DateTimeField(editable = False, blank=True, null=True)
-    duration = models.DurationField(blank=True, null=True)
+    set = models.ForeignKey(
+        Set, 
+        on_delete=models.CASCADE, 
+        verbose_name="the set to which this comparison belongs"
+    )
+    judge = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        verbose_name="the user judging the pair"
+    )
+    scripti = models.ForeignKey(
+        Script, 
+        on_delete=models.CASCADE, 
+        related_name="+", 
+        verbose_name="the left script in the comparison"
+    )
+    scriptj = models.ForeignKey(
+        Script, 
+        on_delete=models.CASCADE, 
+        related_name="+", 
+        verbose_name="the right script in the comparison"
+    )
+    wini = models.PositiveSmallIntegerField(
+        blank=True, 
+        null=True, 
+        verbose_name="is left lesser or greater?"
+    )
+    form_start_variable = models.FloatField(
+        blank=True, 
+        null=True
+    )
+    decision_start = models.DateTimeField(
+        editable = False, 
+        blank=True, 
+        null=True
+    )
+    decision_end = models.DateTimeField(
+        editable = False, 
+        blank=True, 
+        null=True
+    )
+    duration = models.DurationField(
+        blank=True, 
+        null=True
+    )
 
     def duration_HHmm(self):
         seconds = round(self.duration.total_seconds(),0)
@@ -68,7 +289,13 @@ class Comparison(models.Model):
 class WinForm(forms.ModelForm):
     class Meta:
         model = Comparison
-        fields = ['set','wini','scripti','scriptj', 'form_start_variable']
+        fields = [
+            'set',
+            'wini',
+            'scripti',
+            'scriptj', 
+            'form_start_variable'
+        ]
         widgets = {
             'set': forms.HiddenInput(),
             'wini': forms.HiddenInput(),

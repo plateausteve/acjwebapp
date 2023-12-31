@@ -32,6 +32,4 @@ def corrpairs(setid, cormin):
             judgepaircorr[judgepair]=[coef, p]
             if coef >= cormin:
                 corr_chart_data.append([int(judge1), int(judge2), round(coef,3)])
-    print(corr_chart_data)
-    print(judgelist)
     return corr_chart_data
