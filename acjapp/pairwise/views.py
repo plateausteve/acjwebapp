@@ -17,7 +17,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from datetime import datetime
 from django.http import HttpResponse
-from .models import Script, Comparison, Set, WinForm
+from .models import Script, Comparison, Set, WinForm, Student
 from .utils import * 
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required

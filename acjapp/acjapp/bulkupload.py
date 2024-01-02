@@ -21,5 +21,3 @@ for file in os.listdir("."):
 		# what information is required here?
 
 # for everything that's new (name doesn't match DB entry?) create a new item for it
-
-
