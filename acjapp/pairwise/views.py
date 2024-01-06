@@ -64,7 +64,7 @@ def script(request, pk):
 def groupresults(request, setjudges):
     if "-" in list(setjudges): #enter preselected judgelist after set number in url with dashes between.
         setjudges = setjudges.split("-")
-        set = str(setjudges[0])
+        setid = str(setjudges[0])
         judgelist =[]
         for judge in setjudges[1:]:
             judgelist.append(int(judge))
@@ -72,9 +72,9 @@ def groupresults(request, setjudges):
         j = judgelist #override j returned from make_groups to include all judges assigned in request url
 
     else: 
-        set = setjudges
+        setid = setjudges
         judgelist = [] # the make_groups function can take preselected judges when desired
-        j, a, corrstats_df, corr_chart_data, groupplotdata = make_groups(set, judgelist)
+        j, a, corrstats_df, corr_chart_data, groupplotdata = make_groups(setid, judgelist)
     if len(j) < 2:
         judges = [request.user.id]
         a = 1
@@ -84,7 +84,7 @@ def groupresults(request, setjudges):
         corrstats = corrstats_df.to_html()
     
     clusterchart = chartmaker(groupplotdata)
-    computed_scripts = get_computed_scripts(set, judges)
+    computed_scripts = get_computed_scripts(setid, judges)
 
     #build lists to send to Highchart charts for error bar chart -- re-sort for low to high scores
     lohi_computed_scripts = sorted(computed_scripts, key = lambda x: x.probability)
@@ -148,11 +148,12 @@ def comparisons(request, set):
        
 @login_required(login_url="login")
 def compare(request, set):
+    set = int(set)
     userid=request.user.id
     allowed_sets_ids = get_allowed_sets(userid)
     request.session['sets']= allowed_sets_ids
     message = "" # empty message will be ignored in template
-    if int(set) not in allowed_sets_ids:    
+    if set not in allowed_sets_ids:    
         html = "<p>ERROR: Set not available.</p>"
         return HttpResponse(html) 
     if request.method == 'POST': #if arriving here after submitting a form
@@ -186,16 +187,23 @@ def compare(request, set):
   
     #whether POST or GET, set all these variables afresh and render comparision form template        
     compslist, scripti, scriptj, j_list = script_selection(set, userid)
+    print(f"compslist={compslist}; scripti={scripti}; scriptj={scriptj}; j_list={j_list}")
     compscount = len(compslist)
-    script_count = Script.objects.filter(set=set).count()
+    print(f"Compscount={compscount}")
+    script_count = Script.objects.filter(sets__id=set).count()
+    print(f"script_count={script_count}")
     compsmax = int(script_count * (script_count - 1) * .5)
+    print(f"compsmax={compsmax}")
     now = datetime.now()
     starttime = now.timestamp
-    set_object = Set.objects.get(pk=set)
+    set_object = Set.objects.get(id=set)
+    print(f"set object is set id {set_object} and override end is {set_object.override_end}")
+
     if set_object.override_end == None: # check if a comparisons limit override has been defined for the set
-        compstarget = int(round((.66 * compsmax),-1))
+        compstarget = int(round((.66 * compsmax)) - 1)
     else:
         compstarget = set_object.override_end
+    print(f"compstarget={compstarget}")
     winform = WinForm()
     if len(j_list) == 0 or compscount >= compstarget:
         scripti=None

@@ -59,11 +59,13 @@ def get_allowed_sets(userid):
     return allowed_sets_ids
 
 def script_selection(set, userid):
-    scriptcount = Script.objects.filter(set=set).count()
-    set_object = Set.objects.get(pk=set) # sometimes we need to use object not just the string of the set ID number
+    set=int(set)
+    scriptcount = Script.objects.filter(sets__id=set).count()
+    set_object = Set.objects.get(id=set) # sometimes we need to use object not just the string of the set ID number
     compslist = build_compslist(set, userid)
     judges = [userid] #judges must be a list, even if it only has one judge in it
     computed_scripts_for_user_in_set = get_computed_scripts(set, judges)
+    print(computed_scripts_for_user_in_set)
     maxcomps=(scriptcount * (scriptcount-1)/2)
     switch=min(scriptcount + (scriptcount * (scriptcount-1)/6), maxcomps)
     if len(compslist) < switch: #prioritize minimum comps until comps = min of n+max/3 or max, then . . .
@@ -85,6 +87,7 @@ def script_selection(set, userid):
     
     #create a list of all possible script j's and order them for selection
     j_list = []
+    scripti = None
     for i, script in enumerate(computed_scripts_for_user_in_set):
         if i == 0:
             if script.comps == scriptcount-1:
@@ -105,10 +108,10 @@ def script_selection(set, userid):
         scriptj = None
     return compslist, scripti, scriptj, j_list
 
-def get_computed_scripts(set, judges):
-    eps_of_set = []
-    computed_scripts_for_user_in_set =[]
-    scripts = Script.objects.filter(set=set)
+def get_computed_scripts(setid, judges):
+    computed_scripts_for_user_in_set = []
+    setid=int(setid)
+    scripts = Script.objects.filter(sets__id=setid)
     for script in scripts:
         comps, wins = compute_comps_wins(script, judges)
         logit, probability, stdev, fisher_info, se, ep, hi95ci, lo95ci, randomsorter = compute_more(comps, wins)
@@ -220,6 +223,7 @@ def set_ranks(computed_scripts_for_user_in_set):
     return computed_scripts_for_user_in_set
 
 def make_groups(setid, judgelist):
+    print(setid,type(setid))
     setobject = Set.objects.get(pk=setid)
     preselected_judges = len(judgelist)
     if judgelist == []: #judgelist input is only used to get combined stats for a set of preselected judges
@@ -239,7 +243,7 @@ def make_groups(setid, judgelist):
 
     #if there are more than one judge for this set, get computed scripts for each.
     for judge in judgelist:
-        computed_scripts = get_computed_scripts(setobject, [judge])
+        computed_scripts = get_computed_scripts(setid, [judge])
         computed_scripts.sort(key = lambda x: x.id)
         set_judge_script_rank[judge]=[]
         for script in computed_scripts:
@@ -270,7 +274,6 @@ def make_groups(setid, judgelist):
             if coef >= .6:
                 corr_chart_data.append([str(judge1), str(judge2), round(coef,3)])
         corr_df = pd.DataFrame(corr_chart_data, columns = ["judge1", "judge2", "rho"]) # this is just used with preselected judges
-        print(corr_df)
 
         judgegroups = itertools.combinations(judgelist, 3)
         corrdata = []
@@ -363,34 +366,3 @@ def make_groups(setid, judgelist):
 
     return bestgroup, bestagreement, corrstats_df, corr_chart_data, groupplotdata 
     #add a list of 2D arrays for scatterplot of each group?
-
-# used from the django manage.py python shell
-def bulkcreatescripts(filepath, user_id, set_id):
-    # in python shell define the variable as this example
-    # bulkcreatescripts("data/set4.csv",24,4)
-    file = open(filepath, "r", encoding='utf-8-sig')
-    csv_reader = csv.reader(file)
-    for row in csv_reader:
-        id=int(row[0])
-        script = Script(set_id=set_id, idcode=id, user_id=user_id)
-        script.save()
-        print("Created script instance for for idcode ", id, "in set ", set_id, " for user ", user_id)
-    return
-
-# used from the django manage.py python shell
-# usage example: a, b = judgereport(30)
-def judgereport(judgeid):
-    sets = get_allowed_sets(judgeid)
-    report = []
-    for set in sets:
-        n = Comparison.objects.filter(judge__pk = judgeid, set = set).count()
-        scriptcount = Script.objects.filter(set=set).count()
-        setobject = Set.objects.get(pk=set)
-        if setobject.override_end == None:
-            maxcomps = int(scriptcount * (scriptcount-1) * .333)
-        else:
-            maxcomps = setobject.override_end
-        report.append([set, n, maxcomps])
-    df = pd.DataFrame(report, columns = ["Set","Done So Far","End"])
-    htmltable = df.to_html(index=False)
-    return df, htmltable

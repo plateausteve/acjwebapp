@@ -71,3 +71,35 @@ def groupstats(set, judgelist1, judgelist2):
         idorder2_df = rankorder2_df.sort_values("id")
         rankcorr_df = idorder1_df.corrwith(idorder2_df, axis = 0, method = "spearman")
     return rankorder1_df, idorder1_df, rankorder2_df, idorder2_df, rankcorr_df
+
+
+# used from the django manage.py python shell
+def bulkcreatescripts(filepath, user_id, set_id):
+    # in python shell define the variable as this example
+    # bulkcreatescripts("data/set4.csv",24,4)
+    file = open(filepath, "r", encoding='utf-8-sig')
+    csv_reader = csv.reader(file)
+    for row in csv_reader:
+        id=int(row[0])
+        script = Script(set_id=set_id, idcode=id, user_id=user_id)
+        script.save()
+        print("Created script instance for for idcode ", id, "in set ", set_id, " for user ", user_id)
+    return
+
+# used from the django manage.py python shell
+# usage example: a, b = judgereport(30)
+def judgereport(judgeid):
+    sets = get_allowed_sets(judgeid)
+    report = []
+    for set in sets:
+        n = Comparison.objects.filter(judge__pk = judgeid, set = set).count()
+        scriptcount = Script.objects.filter(set=set).count()
+        setobject = Set.objects.get(pk=set)
+        if setobject.override_end == None:
+            maxcomps = int(scriptcount * (scriptcount-1) * .333)
+        else:
+            maxcomps = setobject.override_end
+        report.append([set, n, maxcomps])
+    df = pd.DataFrame(report, columns = ["Set","Done So Far","End"])
+    htmltable = df.to_html(index=False)
+    return df, htmltable
