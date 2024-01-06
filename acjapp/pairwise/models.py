@@ -158,7 +158,6 @@ class Script(models.Model):
         editable=True,
         verbose_name="the set(s) to which the script belongs"
     )
-    
     pdf = models.FileField(
         upload_to="scripts/pdfs", 
         null=True, 
