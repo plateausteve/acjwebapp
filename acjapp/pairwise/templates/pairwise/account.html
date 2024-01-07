@@ -9,4 +9,39 @@
         <li>a link to a form to view, edit, add, or delete student information</li>
     <p>Your user ID is {{ accountid }}.</p>
     <p>The sets of student work you are assigned to assess are {{ allowed_sets_ids }}.</p>
+
+    {% if user_students %}
+        <h4>Your students:</h4>
+        <table class="table table-striped table-hover table-bordered">
+            <tr>
+                <th>Student Code</th>
+                <th>First</th>
+                <th>Last</th>
+                <th>DOB</th>
+                <th>Gender</th>
+                <th>Race/Ethnicity</th>
+                <th>Economic Disadvantage</th>
+                <th>English Learner</th>
+                <th>Edit</th>
+            </tr>
+            {% for student in user_students %}
+            <tr>
+                <td>{{ student.idcode }}</a></td>
+                <td>{{ student.first_name }}</td>
+                <td>{{ student.last_name }}</td>
+                <td>{{ student.birth_date }}</td>
+                <td>{{ student.gender }}</td>
+                <td>{{ student.race }}</td>
+                <td>{{ student.ed }}</td>
+                <td>{{ student.el }}</td>
+                <td><a href="student/{{ student.id }}">Update</a></td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>You haven't added any students yet.</p>
+    {% endif %}
+    <p><a href="student/add/">Add a student.</a></p>
+
+
 {% endblock %}

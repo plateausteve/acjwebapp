@@ -23,6 +23,8 @@ from numpy import log
 import numpy as np
 import datetime
 
+
+
 class Student(models.Model):
     idcode = models.PositiveBigIntegerField(
         editable=True, 
@@ -36,7 +38,7 @@ class Student(models.Model):
         on_delete=models.SET_NULL, 
         blank=True, 
         null=True, 
-        verbose_name="the user who uploaded the student information"
+        verbose_name="user who uploaded the student information"
     )
     first_name = models.CharField(
         max_length=80, 
@@ -149,14 +151,14 @@ class Script(models.Model):
         on_delete=models.SET_NULL, 
         blank=True, 
         null=True, 
-        verbose_name="the user who uploaded the script"
+        verbose_name="user who uploaded the script"
     )
     sets = models.ManyToManyField(
         Set,
         related_name="sets",
         blank=True, 
         editable=True,
-        verbose_name="the set(s) to which the script belongs"
+        verbose_name="set(s) to which the script belongs"
     )
     pdf = models.FileField(
         upload_to="scripts/pdfs", 
@@ -175,7 +177,7 @@ class Script(models.Model):
         on_delete=models.SET_NULL,
         blank=True, 
         null=True, 
-        verbose_name="the student to which the script belongs"
+        verbose_name="student to which the script belongs"
     )
     grade_choices = [
         (0, "Kindergarten"),
@@ -205,9 +207,9 @@ class Script(models.Model):
     date = models.DateField(
         blank=True,
         null=True,
-        verbose_name="date when the student took the test"
+        verbose_name="date the student took the test (YYYY-MM-DD)"
     )
-
+    
     def idcode_f(self):
         f = self.idcode
         return '%06d' % (f)
@@ -268,15 +270,3 @@ class Comparison(models.Model):
 
     def __str__(self):
         return str(self.pk)
-
-class WinForm(forms.ModelForm):
-    class Meta:
-        model = Comparison
-        fields = ['set','wini','scripti','scriptj', 'form_start_variable']
-        widgets = {
-            'set': forms.HiddenInput(),
-            'wini': forms.HiddenInput(),
-            'scripti': forms.HiddenInput(),
-            'scriptj': forms.HiddenInput(),
-            'form_start_variable': forms.HiddenInput(),
-        }

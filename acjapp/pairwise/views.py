@@ -17,7 +17,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from datetime import datetime
 from django.http import HttpResponse
-from .models import Script, Comparison, Set, WinForm, Student
+from .models import Script, Comparison, Set, Student
+from .forms import WinForm, StudentForm, ScriptForm
 from .utils import * 
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -55,10 +56,31 @@ def logout_view(request):
         logout(request)
         return redirect('index.html')
 
+#need to create a dynamic form in view rather than a model form in order to control choices from view
 @login_required(login_url="login")
 def script(request, pk):
     script=get_object_or_404(Script, pk=pk)
-    return render(request, 'pairwise/script.html', {'script': script})
+    message = ""
+    update_time = None
+    if script.user == request.user:
+        if request.method == 'POST':
+            scriptform = ScriptForm(request.POST, instance=script)
+            if scriptform.is_valid():
+                scriptform.save(commit=False)
+                scriptform.user = request.user
+                scriptform.save()
+                update_time = datetime.now()
+                message = "Information updated at "
+        scriptform = ScriptForm(instance=script)
+    else:
+        scriptform = None
+    return render(request, 'pairwise/script.html', {
+        'script': script,
+        'form': scriptform,
+        "message": message,
+        "time": update_time
+        }
+    )
 
 @login_required(login_url="login")
 def groupresults(request, setjudges):
@@ -187,23 +209,17 @@ def compare(request, set):
   
     #whether POST or GET, set all these variables afresh and render comparision form template        
     compslist, scripti, scriptj, j_list = script_selection(set, userid)
-    print(f"compslist={compslist}; scripti={scripti}; scriptj={scriptj}; j_list={j_list}")
     compscount = len(compslist)
-    print(f"Compscount={compscount}")
     script_count = Script.objects.filter(sets__id=set).count()
-    print(f"script_count={script_count}")
     compsmax = int(script_count * (script_count - 1) * .5)
-    print(f"compsmax={compsmax}")
     now = datetime.now()
     starttime = now.timestamp
     set_object = Set.objects.get(id=set)
-    print(f"set object is set id {set_object} and override end is {set_object.override_end}")
 
     if set_object.override_end == None: # check if a comparisons limit override has been defined for the set
         compstarget = int(round((.66 * compsmax)) - 1)
     else:
         compstarget = set_object.override_end
-    print(f"compstarget={compstarget}")
     winform = WinForm()
     if len(j_list) == 0 or compscount >= compstarget:
         scripti=None
@@ -257,8 +273,52 @@ def myaccount(request):
     accountid = request.user.id
     allowed_sets_ids = get_allowed_sets(request.user.id)
     request.session['sets'] = allowed_sets_ids
+    user_students = Student.objects.filter(user=request.user)
     return render(request, 'pairwise/account.html', {
         'accountid': accountid, 
-        'allowed_sets_ids': allowed_sets_ids
+        'allowed_sets_ids': allowed_sets_ids,
+        'user_students': user_students
+        }
+    )
+
+@login_required(login_url="login")
+def student(request, id):
+    student = Student.objects.get(id=id)
+    scripts = Script.objects.filter(student=student)
+    message = ""
+    update_time = None
+    if student.user != request.user:    
+        html = "<p>ERROR: Student not available.</p>"
+        return HttpResponse(html) 
+    if request.method == 'POST':
+        studentform = StudentForm(request.POST, instance=student)
+        if studentform.is_valid():
+            studentupdate = studentform.save(commit=False)
+            studentupdate.user = request.user
+            studentform.save()
+            update_time = datetime.now()
+            message = "Student information updated at " 
+    studentform = StudentForm(instance=student) #prepopulate the form with an existing student
+    return render(request, 'pairwise/student.html', {
+        'form':studentform,
+        'student': student,
+        'scripts': scripts,
+        'message': message,
+        'time': update_time
+        }
+    )
+
+@login_required(login_url="login")
+def add_student(request):
+    if request.method == 'POST':
+        studentform = StudentForm(request.POST)
+        if studentform.is_valid():
+            studentupdate = studentform.save(commit=False)
+            studentupdate.user = request.user
+            student = studentform.save()
+            return redirect('account')
+    studentform = StudentForm()
+    return render(request, 'pairwise/add.html', {
+        'form': studentform,
         }
     )
