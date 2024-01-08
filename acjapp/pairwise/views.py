@@ -23,6 +23,7 @@ from .utils import *
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib import messages
 import mpld3
 from mpld3 import plugins
 import matplotlib.pyplot as plt
@@ -59,8 +60,8 @@ def logout_view(request):
 #need to create a dynamic form in view rather than a model form in order to control choices from view
 @login_required(login_url="login")
 def script(request, pk):
-    script=get_object_or_404(Script, pk=pk)
-    message = ""
+    script = get_object_or_404(Script, pk=pk)
+    student = script.student
     update_time = None
     if script.user == request.user:
         if request.method == 'POST':
@@ -70,15 +71,15 @@ def script(request, pk):
                 scriptform.user = request.user
                 scriptform.save()
                 update_time = datetime.now()
-                message = "Information updated at "
+                # .strftime does not seem to accept %P for am/pm lowercase, so we use %p for AM/PM and force lowercase
+                messages.success(request, "Script information updated at " + update_time.strftime("%D, %l:%M%p").lower())
         scriptform = ScriptForm(instance=script)
     else:
         scriptform = None
     return render(request, 'pairwise/script.html', {
         'script': script,
-        'form': scriptform,
-        "message": message,
-        "time": update_time
+        'student': student,
+        'form': scriptform
         }
     )
 
@@ -111,6 +112,7 @@ def groupresults(request, setjudges):
     #build lists to send to Highchart charts for error bar chart -- re-sort for low to high scores
     lohi_computed_scripts = sorted(computed_scripts, key = lambda x: x.probability)
     scriptids=[]
+    studentids=[]
     fisher=[]
     scores=[]
     scoreerrors=[]
@@ -122,14 +124,17 @@ def groupresults(request, setjudges):
             fisher.append(script.fisher_info)
             scores.append(script.ep)
             scoreerrors.append([script.lo95ci, script.hi95ci])
+            studentids.append(script.studentid)
+   
     return render(request, 'pairwise/groupresults.html', {
         'script_table': computed_scripts, 
-        'set': set,
+        'set': setid,
         'judges': judges,
         'a': a,
         'corrstats': corrstats,
         'corr_chart_data': corr_chart_data,
         'scriptids': scriptids,
+        'studentids': studentids,
         'fisher': fisher,
         'scores': scores,
         'scoreerrors': scoreerrors,
@@ -285,11 +290,10 @@ def myaccount(request):
 def student(request, id):
     student = Student.objects.get(id=id)
     scripts = Script.objects.filter(student=student)
-    message = ""
     update_time = None
     if student.user != request.user:    
-        html = "<p>ERROR: Student not available.</p>"
-        return HttpResponse(html) 
+        messages.warning(request, "Warning: Student "+ str(student.id) + " not available to you.")
+        return redirect('account')
     if request.method == 'POST':
         studentform = StudentForm(request.POST, instance=student)
         if studentform.is_valid():
@@ -297,14 +301,13 @@ def student(request, id):
             studentupdate.user = request.user
             studentform.save()
             update_time = datetime.now()
-            message = "Student information updated at " 
+            # .strftime does not seem to accept %P for am/pm lowercase, so we use %p for AM/PM and force lowercase
+            messages.success(request, "Student information updated at " + update_time.strftime("%D, %l:%M%p").lower())
     studentform = StudentForm(instance=student) #prepopulate the form with an existing student
     return render(request, 'pairwise/student.html', {
         'form':studentform,
         'student': student,
         'scripts': scripts,
-        'message': message,
-        'time': update_time
         }
     )
 
@@ -318,7 +321,42 @@ def add_student(request):
             student = studentform.save()
             return redirect('account')
     studentform = StudentForm()
-    return render(request, 'pairwise/add.html', {
+    return render(request, 'pairwise/studentadd.html', {
         'form': studentform,
         }
     )
+
+@login_required(login_url="login")
+def add_script(request):
+    if request.method == 'POST':
+        scriptform = ScriptForm(request.POST)
+        if scriptform.is_valid():
+            scriptupdate = script.save(commit=False)
+            scriptupdate.user = request.user
+            script = scriptform.save()
+            return redirect('account')
+    scriptform = ScriptForm()
+    return render(request, 'pairwise/scriptadd.html', {
+        'form': scriptform,
+        }
+    )
+
+@login_required(login_url="login")
+def delete_student(request, id):
+    student = get_object_or_404(Student, pk=id)
+    if request.method == 'GET':
+        return render(request, 'pairwise/studentdelete.html', {'student': student})
+    elif request.method == 'POST':
+        student.delete()
+        messages.success(request, 'The student has been deleted.')
+        return redirect('account')
+
+@login_required(login_url="login")
+def delete_script(request, id):
+    script = get_object_or_404(Script, pk=id)
+    if request.method == 'GET':
+        return render(request, 'pairwise/scriptdelete.html', {'script': script})
+    elif request.method == 'POST':
+        script.delete()
+        messages.success(request, 'The script has been deleted.')
+        return redirect('account')

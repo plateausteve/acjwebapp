@@ -1,12 +1,22 @@
 {% extends "pairwise/base.html" %}
 
 {% block content %}
+    {% if messages %}
+        <div class="message_box">
+            <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+    
     <h1>My Account</h1>
 
     <p>On this page there will be:</p>
+    <ul>
         <li>account information</li>
         <li>a link to a form to update account information</li>
-        <li>a link to a form to view, edit, add, or delete student information</li>
+    </ul>
     <p>Your user ID is {{ accountid }}.</p>
     <p>The sets of student work you are assigned to assess are {{ allowed_sets_ids }}.</p>
 
@@ -34,14 +44,14 @@
                 <td>{{ student.race }}</td>
                 <td>{{ student.ed }}</td>
                 <td>{{ student.el }}</td>
-                <td><a href="student/{{ student.id }}">Update</a></td>
+                <td><a href="/student/{{ student.id }}">Update</a> / <a href="/student/delete/{{ student.id }}">Delete</a></td>
             </tr>
             {% endfor %}
         </table>
     {% else %}
         <p>You haven't added any students yet.</p>
     {% endif %}
-    <p><a href="student/add/">Add a student.</a></p>
+    <p><a href="/student/add/">Add a student.</a></p>
 
 
 {% endblock %}

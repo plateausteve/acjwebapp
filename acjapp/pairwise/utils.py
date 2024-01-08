@@ -32,7 +32,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score, silhouette_samples
 
 class ComputedScript:
-    def __init__(self, id, idcode, idcode_f, comps, wins, logit, probability, stdev, fisher_info, se, ep, lo95ci, hi95ci, samep, rank, randomsorter, percentile):
+    def __init__(self, id, idcode, idcode_f, comps, wins, logit, probability, stdev, fisher_info, se, ep, lo95ci, hi95ci, samep, rank, randomsorter, percentile, studentid):
             self.id = id
             self.idcode = idcode
             self.idcode_f = idcode_f
@@ -50,6 +50,7 @@ class ComputedScript:
             self.rank = rank
             self.randomsorter = randomsorter
             self.percentile = percentile
+            self.studentid = studentid
 
 def get_allowed_sets(userid):
     sets = Set.objects.filter(judges__id__exact=userid).order_by('pk')
@@ -113,6 +114,7 @@ def get_computed_scripts(setid, judges):
     setid=int(setid)
     scripts = Script.objects.filter(sets__id=setid)
     for script in scripts:
+        studentid = script.student.idcode
         comps, wins = compute_comps_wins(script, judges)
         logit, probability, stdev, fisher_info, se, ep, hi95ci, lo95ci, randomsorter = compute_more(comps, wins)
         computed_scripts_for_user_in_set.append(
@@ -134,6 +136,7 @@ def get_computed_scripts(setid, judges):
                 0, # rank is set separately
                 randomsorter,
                 0, # percentile is set separately
+                studentid,
                 )
         )
     computed_scripts_for_user_in_set = set_ranks(computed_scripts_for_user_in_set)

@@ -1,10 +1,15 @@
 {% extends 'pairwise/base.html' %}
 
 {% block content %}
+<style>
+    h5 {text-align: center; font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;}
+    h6 {text-align: center; font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;}
+</style>
 {% if scriptj and scripti %}
     {% if user.is_authenticated %}
     <div class="container-fluid">
-        <p style="text-align: center">You are comparing items from Set {{ set_object.pk }} {{ set_object.name }}. You have completed {{ compscount }} of {{ compsmax }} possible comparisions in this set so far. About {{ compstarget }} are needed. {{ message }} Ready to compare.</p>
+        <h5>Compare</h5>
+        <h6>You are comparing items from Set {{ set_object.pk }} {{ set_object.name }}. You have completed {{ compscount }} of {{ compsmax }} possible comparisions in this set so far. About {{ compstarget }} are needed. {{ message }} Ready to compare.</h6>
         <div class="row justify-content-around">
             <div class="col justify-content-start">
                 <form method="POST" style="text-align: center">

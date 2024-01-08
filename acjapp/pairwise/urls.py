@@ -29,6 +29,9 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('account/',views.myaccount, name='account'),
-    path('account/student/<int:id>/',views.student, name='student'),
-    path('account/student/add/',views.add_student, name='add-student')
+    path('student/<int:id>/',views.student, name='student'),
+    path('student/add/', views.add_student, name='addstudent'),
+    path('student/delete/<int:id>/', views.delete_student, name='deletestudent'),
+    path('script/delete/<int:id>/', views.delete_script, name='deletescript'),
+    path('script/add/', views.add_script, name='addscript'),
 ]

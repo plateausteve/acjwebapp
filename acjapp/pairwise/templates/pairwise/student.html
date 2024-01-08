@@ -1,22 +1,24 @@
 {% extends "pairwise/base.html" %}
 
 {% block content %}
+    {% if messages %}
+    <div class="message_box">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        {% for message in messages %}
+            {{ message }}
+        {% endfor %}
+    </div>
+    {% endif %}
 <h2>Student Information</h2>
 
 <form action="" method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <input type="submit" value="Save as shown above">    
+    <input type="submit" value="Save student information shown above">    
 </form>
-{% if message %}
-    <p>{{ message }} {{ time }}</p>
-    <br>
-{% endif %}
-<p><a href='/account/'>Return to account page.</a></p>
 <br>
-<br>
-
-<h3>Scripts uploaded for your student {{ student.first_name }} {{ student.last_name }}</h3>
+<h4><a href='/account/'>Return to account page</a> or <a href="/script/add/">add a script</a>.</h4>
+<h4>Scripts uploaded for your student {{ student.first_name }} {{ student.last_name }}</h4>
 {% if scripts %}
     <table class="table table-striped table-hover table-bordered">
         <tr>
@@ -25,10 +27,11 @@
             <th>Age</th>
             <th>Date</th>
             <th>Sets</th>
+            <th>Edit</th>
         </tr>
         {% for script in scripts %}
         <tr>
-            <td><a href="{% url 'script.html' pk=script.id %}">{{ script.idcode_f }}</a></td>
+            <td>{{ script.idcode_f }}</td>
             <td>{{ script.grade }}</td>
             <td>{{ script.age }}</td>
             <td>{{ script.date }}</td>
@@ -37,11 +40,12 @@
                     {{ set.id }}  
                 {% endfor %}
             </td>
+            <td><a href="{% url 'script.html' pk=script.id %}">Update</a> | <a href="/script/delete/{{ script.id }}">Delete</a></td>
         </tr>
         {% endfor %}
     </table>
 {% else %}
-    <p>No scripts related to this student yet. Click here to add a script.</p>
+    <p>No scripts related to this student yet.</p>
 {% endif %}
 
 

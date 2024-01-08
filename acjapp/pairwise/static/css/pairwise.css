@@ -1,51 +1,33 @@
-.page-header {
-    background-color: #24457e;
-    margin-top: 0;
-    padding: 20px 20px 20px 40px;
+/* The alert message box */
+.message_box {
+  padding: 20px;
+  background-color: #2196F3; /* Blue */
+  color: white;
+  margin-bottom: 15px;
 }
 
-.page-header h1, .page-header h1 a, .page-header h1 a:visited, .page-header h1 a:active {
-    color: #ffffff;
-    font-size: 36pt;
-    text-decoration: none;
-    text-align: center;
-    padding-bottom: 0px;
+/* The close button */
+.closebtn {
+  margin-left: 15px;
+  color: white;
+  font-weight: bold;
+  float: right;
+  font-size: 22px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
-.important {
-    font-size: 11pt;
-}
+/* When moving the mouse over the close button */
+.closebtn:hover {
+  color: black;
+} 
 
-.content {
-    margin-left: 40;
-    font-size: 10pt;
-    max-width: 100%
+h5 {
+  text-align: center; 
+  font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;
 }
-
-.compare {
-    margin-left: -40;
-}
-
-h1, h2, h3, h4, h5, h6 {
-    font-family: "Open Sans Condensed", sans;
-    padding-bottom: 10px;
-}
-
-p a {
-    color: #5975a7;
-}
-
-div.sidenav {
-    position: absolute;
-    right: -5;
-    top: 120;
-}
-
-div.sidenav table {
-    table-layout: auto;
-    width: 50%;
-}
-
-div.sidenav table th, div.sidenav table td {
-    padding: 2px;
+h6 {
+  text-align: center; 
+  font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;
 }

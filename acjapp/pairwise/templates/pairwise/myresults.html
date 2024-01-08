@@ -2,10 +2,11 @@
 
 {% block content %}
     {% if set_scripts %}
-        <h4>Your Set {{ pk }} results:</h4>
+        <h4>My Set {{ pk }} Results</h4>
         <table class="table table-striped table-hover table-bordered">
             <tr>
-                <th>Student Code</th>
+                <th>Script ID</th>
+                <th>Student ID</th>
                 <th>Rank</th>
                 <th>Wins</th>
                 <th>Comparisons</th>
@@ -15,6 +16,7 @@
             {% for script in set_scripts %}
             <tr>
                 <td><a href="{% url 'script.html' pk=script.id %}">{{ script.idcode_f }}</a></td>
+                <td>{{ script.studentid }}</td>
                 <td>{{ script.rank }}</td>
                 <td>{{ script.wins }}</td>
                 <td>{{ script.comps }}</td>

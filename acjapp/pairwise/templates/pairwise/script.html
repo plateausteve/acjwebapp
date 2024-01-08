@@ -1,31 +1,34 @@
 {% extends 'pairwise/base.html' %}
 
 {% block content %}
-<h2>Script Detail</h2>
-<p>Script ID {{ script.idcode }} for student ID {{ script.student }}</p>
-    <div class="container-fluid">   
-        <p>Directions: Use the back button on your browser or links on the navigation bar to navigate away from this page.</p>
-        {% if form %}
-            <p>You may update the information for this script in the fields below.</p>
-            <p>Note: will have to see if pdf uploader in form works in production.</p>
+{% if messages %}
+<div class="message_box">
+    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+    {% for message in messages %}
+        {{ message }}
+    {% endfor %}
+</div>
+{% endif %}
+<div class="container-fluid"> 
+    <h2>Script Detail</h2>
+    <p>Script ID {{ script.idcode }} in set(s) {% for set in script.sets.all %}{{ set }} {% endfor %}uploaded by user {{ script.user.id }}.</p>
+    <p>For student <a href="/student/{{ script.student.id }}">{{ script.student }}</a>, age {{ script.age }}, grade {{ script.grade }} on {{ script.date }} test date.</p>
+
+    {% if form %}
+        <form enctype="multipart/form-data" action="" method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" value="Save script information shown above">    
+        </form>
+        {% if message %}
+            <p>{{ message }} {{ time }}</p>
             <br>
-            <form enctype="multipart/form-data" action="" method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <input type="submit" value="Save information shown above">    
-            </form>
-            {% if message %}
-                <p>{{ message }} {{ time }}</p>
-                <br>
-            {% endif %}
-        {% else %}
-            <p>In sets {% for set in script.sets.all %}{{ set }} {% endfor %}uploaded by user {{ script.user.id }} </p>
-            <p>For student {{ script.student }}, age {{ script.age }}, grade {{ script.grade }} on {{ script.date }} test date.</p>
         {% endif %}
-        <div class="ratio" style="--bs-aspect-ratio: 150%;">
-            {% if script.pdf.url %}
-                <embed src="{{ script.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="100%" >
-            {% endif %}
-        </div>
+    {% endif %}        
+    <div class="ratio" style="--bs-aspect-ratio: 150%;">
+        {% if script.pdf.url %}
+            <embed src="{{ script.pdf.url }}" type="application/pdf" scrollbar="1" view="fit" width="100%" height="100%" >
+        {% endif %}
     </div>
+</div>
 {% endblock %}

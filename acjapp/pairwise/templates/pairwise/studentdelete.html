@@ -1,0 +1,14 @@
+{% extends 'pairwise/base.html' %} 
+
+{% block content %}
+<h2>Delete Student</h2>
+
+<form method="POST">
+  {% csrf_token %}
+  <p>Are you sure that you want to delete the student {{student.id}} {{ student.first_name }} {{ student.last_name }}?</p>
+  <div>
+    <button type="submit">Yes, Delete</button> | <a href="/account/">Cancel</a>
+  </div>
+</form>
+
+{% endblock content %}
