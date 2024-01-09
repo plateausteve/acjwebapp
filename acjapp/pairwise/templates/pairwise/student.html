@@ -32,7 +32,7 @@
                     {{ set.id }}  
                 {% endfor %}
             </td>
-            <td><a href="{% url 'script.html' pk=script.id %}">Update</a> | <a href="/script/delete/{{ script.id }}">Delete</a></td>
+            <td><a href="{% url 'script' pk=script.id %}">Update</a> | <a href="{% url 'deletescript' pk=script.id %}">Delete</a></td>
         </tr>
         {% endfor %}
     </table>

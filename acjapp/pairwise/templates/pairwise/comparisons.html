@@ -14,13 +14,13 @@
             {% for comparison in comparisons %}
             <tr>
                 <td>{{ comparison.pk }}</td>
-                <td><a href="{% url 'script.html' pk=comparison.scripti.pk %}">
+                <td><a href="{% url 'script' pk=comparison.scripti.pk %}">
                     {% if comparison.wini == 1 %}<b>{% endif %}
                         {{ comparison.scripti.idcode_f }}
                     {% if comparison.wini == 1 %}</b>{% endif %}
                     </a>
                 </td>
-                <td><a href="{% url 'script.html' pk=comparison.scriptj.pk %}">
+                <td><a href="{% url 'script' pk=comparison.scriptj.pk %}">
                     {% if comparison.wini == 0 %}<b>{% endif %}
                         {{ comparison.scriptj.idcode_f }}
                     {% if comparison.wini == 0 %}</b>{% endif %}
@@ -32,7 +32,7 @@
             {% endfor %}
         </table>
           {% else %}
-            <p>You have not made any comparisons for set {{ set }}. Click <a href="{% url 'compare.html' set %}">here</a> to do your first comparison.</p>
+            <p>You have not made any comparisons for set {{ set }}. Click <a href="{% url 'compare' set %}">here</a> to do your first comparison.</p>
           {% endif %}       
         <br>
     </body>

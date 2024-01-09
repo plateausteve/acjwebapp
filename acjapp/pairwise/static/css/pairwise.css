@@ -1,9 +1,19 @@
 /* The alert message box */
 .message_box {
   padding: 20px;
-  background-color: #2196F3; /* Blue */
   color: white;
+  background-color: black;
   margin-bottom: 15px;
+}
+
+/* Message box for success */
+.success {
+  background-color: #2196F3; /* Blue */
+}
+
+/* Message box for warning */
+.warning {
+  background-color: #f44336; /* Red */
 }
 
 /* The close button */

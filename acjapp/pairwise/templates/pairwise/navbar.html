@@ -26,7 +26,7 @@
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                             {% if request.session.sets %}
                                 {% for set in request.session.sets %}
-                                <a class="dropdown-item" href="{% url 'compare.html' set %}">Set {{ set }}</a>
+                                <a class="dropdown-item" href="{% url 'compare' set %}">Set {{ set }}</a>
                                 {% endfor %}
                             {% endif %}
                         </div>
@@ -38,7 +38,7 @@
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                             {% if request.session.sets %}
                                 {% for set in request.session.sets %}
-                                <a class="dropdown-item" href="{% url 'comparisons.html' set %}">Set {{ set }}</a>
+                                <a class="dropdown-item" href="{% url 'comparisons' set %}">Set {{ set }}</a>
                                 {% endfor %}
                             {% endif %}
                         </div>

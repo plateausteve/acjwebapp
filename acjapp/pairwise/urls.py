@@ -18,13 +18,13 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.index, name='index.html'),
-    path('index/', views.index, name='index.html'),
-    path('compare/<set>/', views.compare, name='compare.html'),
-    path('compare/', views.compare, name='compare.html'),
-    path('comparisons/<set>/', views.comparisons, name='comparisons.html'),
+    path('', views.index, name='index'),
+    path('index/', views.index, name='index'),
+    path('compare/<set>/', views.compare, name='compare'),
+    path('compare/', views.compare, name='compare'),
+    path('comparisons/<set>/', views.comparisons, name='comparisons'),
     path('groupresults/<setjudges>/', views.groupresults, name='groupresults'),
-    path('script/<int:pk>/', views.script, name='script.html'),
+    path('script/<int:pk>/', views.script, name='script'),
     path('myresults/<int:pk>/', views.myresults, name='myresults'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
@@ -34,4 +34,5 @@ urlpatterns = [
     path('student/delete/<int:id>/', views.delete_student, name='deletestudent'),
     path('script/delete/<int:id>/', views.delete_script, name='deletescript'),
     path('script/add/', views.add_script, name='addscript'),
+    path('account/changepassword/', views.change_password, name='changepassword')
 ]

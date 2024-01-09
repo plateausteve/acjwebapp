@@ -20,9 +20,9 @@ from django.http import HttpResponse
 from .models import Script, Comparison, Set, Student
 from .forms import WinForm, StudentForm, ScriptForm
 from .utils import * 
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib import messages
 import mpld3
 from mpld3 import plugins
@@ -47,7 +47,7 @@ def login_view(request):
             if 'next' in request.POST:
                 return redirect(request.POST.get('next'))
             else:
-                return redirect('index.html')
+                return redirect('index')
     else:
         form = AuthenticationForm()
     return render(request,'pairwise/login.html', {'form': form })
@@ -55,9 +55,22 @@ def login_view(request):
 def logout_view(request):
     if request.method == 'POST':
         logout(request)
-        return redirect('index.html')
+        return redirect('index')
 
-#need to create a dynamic form in view rather than a model form in order to control choices from view
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important!
+            messages.success(request, 'Your password was successfully updated.')
+            return redirect('changepassword')
+        else:
+            messages.error(request, 'Please correct the error below.')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'pairwise/changepassword.html', {'form': form})
+
 @login_required(login_url="login")
 def script(request, pk):
     script = get_object_or_404(Script, pk=pk)
@@ -344,6 +357,9 @@ def add_script(request):
 @login_required(login_url="login")
 def delete_student(request, id):
     student = get_object_or_404(Student, pk=id)
+    if student.user != request.user:    
+        messages.warning(request, "Warning: Student "+ str(student.id) + " not available to you.")
+        return redirect('account')
     if request.method == 'GET':
         return render(request, 'pairwise/studentdelete.html', {'student': student})
     elif request.method == 'POST':
@@ -354,6 +370,9 @@ def delete_student(request, id):
 @login_required(login_url="login")
 def delete_script(request, id):
     script = get_object_or_404(Script, pk=id)
+    if script.user != request.user:    
+        messages.warning(request, "Warning: Script "+ str(script.id) + " not available to you.")
+        return redirect('account')
     if request.method == 'GET':
         return render(request, 'pairwise/scriptdelete.html', {'script': script})
     elif request.method == 'POST':
