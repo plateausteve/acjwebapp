@@ -28,8 +28,17 @@
         {% include 'pairwise/navbar.html' %}
         <br>
         <div class="content container">
-            {% block content %}
-            {% endblock %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="message_box {{ message.level_tag }}">
+                <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          {% block content %}
+          {% endblock %}
         </div>
         <footer class="bg-light text-center text-lg-start">
           <!-- Grid container -->

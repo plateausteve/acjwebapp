@@ -1,14 +1,6 @@
 {% extends "pairwise/base.html" %}
 
 {% block content %}
-    {% if messages %}
-    <div class="message_box">
-        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
-        {% for message in messages %}
-            {{ message }}
-        {% endfor %}
-    </div>
-    {% endif %}
 <h2>Student Information</h2>
 
 <form action="" method="post">

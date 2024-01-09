@@ -1,14 +1,6 @@
 {% extends 'pairwise/base.html' %}
 
 {% block content %}
-{% if messages %}
-<div class="message_box">
-    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
-    {% for message in messages %}
-        {{ message }}
-    {% endfor %}
-</div>
-{% endif %}
 <div class="container-fluid"> 
     <h2>Script Detail</h2>
     <p>Script ID {{ script.idcode }} in set(s) {% for set in script.sets.all %}{{ set }} {% endfor %}uploaded by user {{ script.user.id }}.</p>
