@@ -300,8 +300,8 @@ def myaccount(request):
     )
 
 @login_required(login_url="login")
-def student(request, id):
-    student = Student.objects.get(id=id)
+def student(request, pk):
+    student = Student.objects.get(id=pk)
     scripts = Script.objects.filter(student=student)
     update_time = None
     if student.user != request.user:    
@@ -355,8 +355,8 @@ def add_script(request):
     )
 
 @login_required(login_url="login")
-def delete_student(request, id):
-    student = get_object_or_404(Student, pk=id)
+def delete_student(request, pk):
+    student = get_object_or_404(Student, pk=pk)
     if student.user != request.user:    
         messages.warning(request, "Warning: Student "+ str(student.id) + " not available to you.")
         return redirect('account')
@@ -368,8 +368,8 @@ def delete_student(request, id):
         return redirect('account')
 
 @login_required(login_url="login")
-def delete_script(request, id):
-    script = get_object_or_404(Script, pk=id)
+def delete_script(request, pk):
+    script = get_object_or_404(Script, pk=pk)
     if script.user != request.user:    
         messages.warning(request, "Warning: Script "+ str(script.id) + " not available to you.")
         return redirect('account')

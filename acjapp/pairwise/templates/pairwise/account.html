@@ -36,14 +36,14 @@
                 <td>{{ student.race }}</td>
                 <td>{{ student.ed }}</td>
                 <td>{{ student.el }}</td>
-                <td><a href="/student/{{ student.id }}">Update</a> / <a href="/student/delete/{{ student.id }}">Delete</a></td>
+                <td><a href="{% url 'student' pk=student.id %} ">Update</a> / <a href="{% url 'deletestudent' pk=student.id %}">Delete</a></td>
             </tr>
             {% endfor %}
         </table>
     {% else %}
         <p>You haven't added any students yet.</p>
     {% endif %}
-    <p><a href="/student/add/">Add a student.</a></p>
+    <p><a href="{% url 'addstudent' %}">Add a student.</a></p>
 
 
 {% endblock %}

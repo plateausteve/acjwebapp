@@ -29,10 +29,10 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('account/',views.myaccount, name='account'),
-    path('student/<int:id>/',views.student, name='student'),
+    path('student/<int:pk>/',views.student, name='student'),
     path('student/add/', views.add_student, name='addstudent'),
-    path('student/delete/<int:id>/', views.delete_student, name='deletestudent'),
-    path('script/delete/<int:id>/', views.delete_script, name='deletescript'),
+    path('student/delete/<int:pk>/', views.delete_student, name='deletestudent'),
+    path('script/delete/<int:pk>/', views.delete_script, name='deletescript'),
     path('script/add/', views.add_script, name='addscript'),
     path('account/changepassword/', views.change_password, name='changepassword')
 ]
