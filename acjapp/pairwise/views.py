@@ -170,7 +170,6 @@ def myresults(request, pk):
         }
     )
 
-
 @login_required(login_url="login")
 def comparisons(request, set):
     userid=request.user.id

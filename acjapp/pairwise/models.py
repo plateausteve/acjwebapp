@@ -112,6 +112,28 @@ class Student(models.Model):
     def __str__(self):
         return str(self.idcode)
 
+class Test(models.Model):
+    name = models.CharField(max_length=200, verbose_name="name of the test")
+
+    greater_statement = models.CharField(
+        default="Greater", 
+        max_length=50, 
+        verbose_name="comparative terms posed as question for judges about the items"
+    )
+
+    description = models.TextField(
+        max_length=400,
+        verbose_name="description of this test"
+    )
+
+    administration = models.TextField(
+        max_length=400,
+        verbose_name="parameters for administration"
+    )
+
+    def __str__(self):
+        return str(self.name)
+    
 class Set(models.Model):
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
@@ -126,13 +148,15 @@ class Set(models.Model):
         verbose_name="the users with comparing capabilities for this set", 
         blank=True
     )
-    name = models.CharField(max_length=100)
-
-    greater_statement = models.CharField(
-        default="Greater", 
-        max_length=50, 
-        verbose_name="the comparative adjective posed as question for judges about the items"
+    
+    test = models.ForeignKey(
+        Test,
+        on_delete=models.SET_NULL,
+        blank=True, 
+        null=True, 
+        verbose_name="test administered to students in this set"
     )
+    
     override_end = models.PositiveSmallIntegerField(
         editable = True, 
         blank = True, 
@@ -270,3 +294,4 @@ class Comparison(models.Model):
 
     def __str__(self):
         return str(self.pk)
+

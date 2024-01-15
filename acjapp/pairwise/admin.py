@@ -1,7 +1,11 @@
 from django.contrib import admin
-from .models import Script, Comparison, Set, Student
+from .models import Script, Comparison, Set, Student, Test
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
+
+class TestResource(resources.ModelResource):
+    class Meta:
+        model = Test
 
 class SetResource(resources.ModelResource):
     class Meta:
@@ -19,10 +23,14 @@ class StudentResource(resources.ModelResource):
     class Meta:
         model = Student
 
+class TestAdmin(ImportExportModelAdmin):
+    resource_class = TestResource
+    list_display = ['name']
+
 class SetAdmin(ImportExportModelAdmin):
     resource_class = SetResource
     filter_horizontal = ('judges',)
-    list_display = ['id','owner','name']
+    list_display = ['id','owner','test']
 
 class ComparisonAdmin(ImportExportModelAdmin):
     resource_class = ComparisonResource
@@ -44,3 +52,4 @@ admin.site.register(Comparison, ComparisonAdmin)
 admin.site.register(Script, ScriptAdmin)
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Set, SetAdmin)
+admin.site.register(Test, TestAdmin)

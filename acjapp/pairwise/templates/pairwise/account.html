@@ -10,7 +10,7 @@
         <li><a href="/account/changepassword/">change password</a></li>
     </ul>
     <p>Your user ID is {{ accountid }}.</p>
-    <p>The sets of student work you are assigned to assess are {{ allowed_sets_ids }}.</p>
+    <p>The sets of student work you are assigned to assess are{% for set in allowed_sets_ids %} {{ set }}{% endfor %}.</p>
 
     {% if user_students %}
         <h4>Your students:</h4>
