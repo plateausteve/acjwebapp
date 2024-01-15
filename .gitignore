@@ -9,7 +9,8 @@ acjapp/.env
 *.code-workspace
 venv
 settings.py
-acjapp/pairwise/migrations/
+acjapp/pairwise/migrations/*
+!acjapp/pairwise/migrations/__init__.py
 .env                                                                                                                                                                                                     
 acjapp/static/css/
 
